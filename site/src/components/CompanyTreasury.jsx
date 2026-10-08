@@ -553,7 +553,7 @@ export default function CompanyTreasury({ company, companies, wallet, onChanged 
     try {
       const [t, g, payTokens] = await Promise.all([
         getCompanyTreasury(company.id, wallet.provider),
-        getCompanyGovernance(company.id, wallet.provider, "Governance"),
+        getCompanyGovernance(company.id, wallet.provider),
         getApprovedPaymentTokens(wallet.provider),
       ]);
       setData({ ...t, payTokens }); setGov(g); setLoadError("");

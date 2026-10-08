@@ -26,8 +26,10 @@ Last updated: October 2026, for the v8 rebuild (RoundAuction v8, the new Governa
 split out of RoundAuction) and `contracts/CompanyTreasury.sol` (v6) — the
 three contracts that carry all real economic and governance logic for
 live listings. `InvestToken.sol` and `OpenVerifier.sol` were reviewed at their
-original deployment and have had no code changes since; `ShareAuction.sol`
-is deployed and verified but currently carries no real listings.
+original deployment and have had no code changes since; the v8 deploy
+redeploys them fresh alongside the rest (see `REDEPLOY_V8.md`).
+`ShareAuction.sol` never carried a real listing and is retired in v8: it
+is not redeployed and the site no longer uses it.
 
 ## Methodology
 
@@ -569,7 +571,13 @@ plainly:
    own jurisdictions.
 6. **Operations:** monitoring of live contracts, an incident-response
    plan, and an upgrade path that does not require wiping every user's
-   position on redeploy, as every redeploy so far has.
+   position on redeploy, as every redeploy so far has. This happened for
+   real on the October 3 partial redeploy: the author's own wallet stayed
+   a verified citizen who had already claimed (InvestToken was kept), while
+   its shares and spent INVEST were left in the retired RoundAuction, with
+   no way to claim again. v8 avoids it only by redeploying everything
+   while there are no other citizens; it would not be acceptable once
+   there are.
 
 Items 1–3 are engineering work. Items 4–5 are policy decisions about
 what the project is meant to be, as much as they are code.

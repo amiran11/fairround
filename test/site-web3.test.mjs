@@ -50,33 +50,33 @@ console.log("Auction");
   await W.settleRoundReal(b, 0); // gas margin path
   const co = (await W.getListedRoundCompanies(P))[0];
   ok(co.sharesIssued === 5n && (await W.getRoundBids(0, P)).length === 0, "settled through the site helper: 5 shares issued, bids cleared");
-  ok((await W.getMyShareCount(0, a.address, P, "Governance")) === 3n, "share count read for Governance-mode companies");
+  ok((await W.getMyShareCount(0, a.address, P)) === 3n, "share count read for Governance-mode companies");
 }
 
 console.log("Election");
 {
   const rules = await W.getElectionRules(P);
   ok(rules.maxCandidates === 20n && rules.minStakeBps === 10n, "reads election limits (20 candidates, 0.1% stake)");
-  await W.declareCandidacyReal(a, 0, "Reinvest mine income into rail; quarterly reports.", "Governance");
-  await W.declareCandidacyReal(b, 0, "Pay dividends every term.", "Governance");
-  let cands = await W.getCandidates(0, P, "Governance");
+  await W.declareCandidacyReal(a, 0, "Reinvest mine income into rail; quarterly reports.");
+  await W.declareCandidacyReal(b, 0, "Pay dividends every term.");
+  let cands = await W.getCandidates(0, P);
   ok(cands.length === 2 && cands[0].program.startsWith("Reinvest") && cands[0].stake === 3n && cands[1].stake === 1n, "candidates listed with their full programs and share stakes");
   await warp(2);
-  await W.openGovernanceVoteReal(c, 0, "Governance");
-  const g = await W.getCompanyGovernance(0, P, "Governance");
+  await W.openGovernanceVoteReal(c, 0);
+  const g = await W.getCompanyGovernance(0, P);
   ok(g.round === 1n && g.snapshot > 0n, "governance state includes the round's balance snapshot");
-  ok((await W.getMyVoteWeight(0, a.address, g, P, "Governance")) === 3n, "vote weight = shares held when the round opened");
-  try { await W.declareCandidacyReal(c, 0, "late", "Governance"); ok(false, "late candidacy"); }
+  ok((await W.getMyVoteWeight(0, a.address, g, P)) === 3n, "vote weight = shares held when the round opened");
+  try { await W.declareCandidacyReal(c, 0, "late"); ok(false, "late candidacy"); }
   catch (e) { ok(W.friendlyError(e).startsWith("Candidacy is closed"), "late candidacy blocked with a readable message"); }
-  await W.voteReal(a, 0, a.address, "Governance");
-  await W.voteReal(b, 0, a.address, "Governance");
-  ok(await W.hasVotedThisRound(0, g.round, a.address, P, "Governance"), "voted flag readable");
-  cands = await W.getCandidates(0, P, "Governance");
+  await W.voteReal(a, 0, a.address);
+  await W.voteReal(b, 0, a.address);
+  ok(await W.hasVotedThisRound(0, g.round, a.address, P), "voted flag readable");
+  cands = await W.getCandidates(0, P);
   ok(cands.find((x) => x.address === a.address).votes === 4n, "live vote totals shown on candidates");
   await warp(3 * DAY + 1);
-  await W.tallyRoundReal(c, 0, "Governance");
-  await W.setOperatingKeyReal(a, 0, key.address, "Governance");
-  const g2 = await W.getCompanyGovernance(0, P, "Governance");
+  await W.tallyRoundReal(c, 0);
+  await W.setOperatingKeyReal(a, 0, key.address);
+  const g2 = await W.getCompanyGovernance(0, P);
   ok(g2.governor === a.address && g2.operatingKey === key.address && g2.termNum === 1n, "governor elected and operating key registered via the site helpers");
 }
 

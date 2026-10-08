@@ -99,7 +99,7 @@ function CandidateCard({ c, wallet, sharesIssued, showVotes, totalVotes, childre
   );
 }
 
-function CandidacyForm({ company, wallet, source, myShares, rules, candidateCount, onDone }) {
+function CandidacyForm({ company, wallet, myShares, rules, candidateCount, onDone }) {
   const [program, setProgram] = useState("");
   const { busy, error, run } = useTx();
   const bytes = new TextEncoder().encode(program).length;
@@ -132,7 +132,7 @@ function CandidacyForm({ company, wallet, source, myShares, rules, candidateCoun
           {bytes.toLocaleString()} / {MAX_PROGRAM_BYTES.toLocaleString()} bytes (about 700 words). It can't be edited after you declare.
         </span>
       </div>
-      <Button busy={busy} disabled={!program.trim() || bytes > MAX_PROGRAM_BYTES} onClick={() => run(() => declareCandidacyReal(wallet.signer, company.id, program, source), onDone)}>
+      <Button busy={busy} disabled={!program.trim() || bytes > MAX_PROGRAM_BYTES} onClick={() => run(() => declareCandidacyReal(wallet.signer, company.id, program), onDone)}>
         Declare candidacy
       </Button>
       <ErrorLine error={error} />
@@ -140,7 +140,7 @@ function CandidacyForm({ company, wallet, source, myShares, rules, candidateCoun
   );
 }
 
-export default function CompanyGovernance({ company, wallet, source = "ShareAuction" }) {
+export default function CompanyGovernance({ company, wallet }) {
   const [gov, setGov] = useState(null);
   const [candidates, setCandidates] = useState(null);
   const [myShares, setMyShares] = useState(0n);
@@ -152,24 +152,21 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
   const [loadError, setLoadError] = useState("");
   const { busy, error, run } = useTx();
 
-  // Governance (the live companies) opens once half the shares are issued,
-  // sold out or not. The older ShareAuction screen also waited for its
-  // one-shot auction to finish, so that rule is kept for it.
-  const halfAssigned = company.sharesIssued * 2n >= company.totalShares;
-  const eligible = source === "Governance" ? halfAssigned : company.finalized && halfAssigned;
+  // Elections open once half the shares are issued, sold out or not.
+  const eligible = company.sharesIssued * 2n >= company.totalShares;
 
   const load = useCallback(async () => {
     if (!eligible) return;
     try {
       const [g, c, shares, r] = await Promise.all([
-        getCompanyGovernance(company.id, wallet.provider, source),
-        getCandidates(company.id, wallet.provider, source),
-        getMyShareCount(company.id, wallet.address, wallet.provider, source),
-        source === "Governance" ? getElectionRules(wallet.provider) : Promise.resolve(null),
+        getCompanyGovernance(company.id, wallet.provider),
+        getCandidates(company.id, wallet.provider),
+        getMyShareCount(company.id, wallet.address, wallet.provider),
+        getElectionRules(wallet.provider),
       ]);
       const [weight, voted, keyBal] = await Promise.all([
-        getMyVoteWeight(company.id, wallet.address, g, wallet.provider, source),
-        g.round > 0n ? hasVotedThisRound(company.id, g.round, wallet.address, wallet.provider, source) : Promise.resolve(false),
+        getMyVoteWeight(company.id, wallet.address, g, wallet.provider),
+        g.round > 0n ? hasVotedThisRound(company.id, g.round, wallet.address, wallet.provider) : Promise.resolve(false),
         g.operatingKey !== ZERO ? getEthBalance(g.operatingKey, wallet.provider) : Promise.resolve(null),
       ]);
       setGov(g); setCandidates(c); setMyShares(shares); setRules(r);
@@ -178,7 +175,7 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
     } catch (err) {
       setLoadError(err.shortMessage || err.message || "Couldn't read governance state.");
     }
-  }, [company.id, wallet, source, eligible]);
+  }, [company.id, wallet, eligible]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -210,7 +207,7 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
   const iAmCandidate = candidates?.some((c) => same(c.address, wallet.address));
   const standing = candidates?.filter((c) => !c.eliminated) || [];
   const lowGas = keyBalance !== null && keyBalance < LOW_GAS_WEI;
-  const registerKey = (addr) => run(() => setOperatingKeyReal(wallet.signer, company.id, addr, source), async () => { setShowReplace(false); await load(); });
+  const registerKey = (addr) => run(() => setOperatingKeyReal(wallet.signer, company.id, addr), async () => { setShowReplace(false); await load(); });
   const sortedByVotes = [...(candidates || [])].sort((a, b) => (b.votes > a.votes ? 1 : b.votes < a.votes ? -1 : 0));
 
   return (
@@ -261,14 +258,14 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
           )}
 
           {termCountdown.passed && (
-            <Button kind="light" busy={busy} onClick={() => run(() => startNewTermReal(wallet.signer, company.id, source), load)}>Start the next election</Button>
+            <Button kind="light" busy={busy} onClick={() => run(() => startNewTermReal(wallet.signer, company.id), load)}>Start the next election</Button>
           )}
         </div>
       ) : gov.round === 0n ? (
         /* Candidacy phase */
         <div>
           {myShares > 0n && !iAmCandidate && (
-            <CandidacyForm company={company} wallet={wallet} source={source} myShares={myShares} rules={rules} candidateCount={candidates?.length || 0} onDone={load} />
+            <CandidacyForm company={company} wallet={wallet} myShares={myShares} rules={rules} candidateCount={candidates?.length || 0} onDone={load} />
           )}
           {myShares === 0n && <Muted style={{ marginBottom: 10 }}>Hold shares in this company to stand as a candidate or vote.</Muted>}
 
@@ -282,7 +279,7 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
                 Anyone can open voting. It runs for 3 days, and no new candidates can join after that, so wait until everyone who wants to stand has declared.
                 If nobody votes, voting simply reopens for another 3 days.
               </Muted>
-              <Button kind="light" busy={busy} onClick={() => run(() => openGovernanceVoteReal(wallet.signer, company.id, source), load)}>Open voting</Button>
+              <Button kind="light" busy={busy} onClick={() => run(() => openGovernanceVoteReal(wallet.signer, company.id), load)}>Open voting</Button>
             </>
           ) : (
             <Muted>No candidates yet.</Muted>
@@ -296,7 +293,7 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
           </div>
           <Muted style={{ marginBottom: 10 }}>
             A candidate with 51% of the votes cast wins. Otherwise the top two go to a runoff.
-            {source === "Governance" && " Votes count the shares each wallet held when this round opened."}
+             Votes count the shares each wallet held when this round opened.
           </Muted>
           {myVoted ? (
             <Notice color={C.ok}>You've voted in this round with {count(myWeight, "share")}.</Notice>
@@ -305,10 +302,10 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
           ) : myShares > 0n ? (
             <Muted style={{ marginBottom: 10 }}>You got your shares after this round opened, so you can't vote in it. You'll be able to vote in later rounds.</Muted>
           ) : null}
-          {(source === "Governance" ? sortedByVotes : candidates).map((c) => (
+          {sortedByVotes.map((c) => (
             <CandidateCard key={c.address} c={c} wallet={wallet} sharesIssued={company.sharesIssued} showVotes totalVotes={gov.totalVotesCast}>
               {!c.eliminated && myWeight > 0n && !myVoted && (
-                <Button small busy={busy} onClick={() => run(() => voteReal(wallet.signer, company.id, c.address, source), load)}>Vote</Button>
+                <Button small busy={busy} onClick={() => run(() => voteReal(wallet.signer, company.id, c.address), load)}>Vote</Button>
               )}
             </CandidateCard>
           ))}
@@ -321,7 +318,7 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
               ? "Voting closed with no votes. Counting it reopens voting for another 3 days."
               : "Voting has closed. Anyone can count the votes: this elects a governor or starts a runoff between the top two."}
           </Muted>
-          <Button kind="light" busy={busy} onClick={() => run(() => tallyRoundReal(wallet.signer, company.id, source), load)}>
+          <Button kind="light" busy={busy} onClick={() => run(() => tallyRoundReal(wallet.signer, company.id), load)}>
             {gov.totalVotesCast === 0n ? "Reopen voting" : "Count the votes"}
           </Button>
         </div>

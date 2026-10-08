@@ -8,7 +8,7 @@ const E = (n) => ethers.parseEther(String(n));
 const w = async (p) => (await p).wait();
 const warp = async (s) => { await P.send("evm_increaseTime", [s]); await P.send("evm_mine", []); };
 const S = await Promise.all((await P.listAccounts()).map((a) => P.getSigner(a.address)));
-const [owner, A, B, Cc, KEY, V, D] = S;
+const [owner, A, B, Cc, KEY, V, D, NEWBIE] = S;
 const deploy = async (n, ...a) => { const c = await new ethers.ContractFactory(art(n).abi, art(n).bytecode, owner).deploy(...a); await c.waitForDeployment(); return c; };
 
 const IT = await deploy("InvestToken", 1000);
@@ -16,12 +16,12 @@ const it = await IT.getAddress();
 const RA = await deploy("RoundAuction", it);
 const GOV = await deploy("Governance", await RA.getAddress());
 const CT = await deploy("CompanyTreasury", it, await RA.getAddress(), await GOV.getAddress());
-const SA = await deploy("ShareAuction", it);
 const OV = await deploy("OpenVerifier", it);
 const GEL = await deploy("MockERC20", "GEL");
 const [ra, ct, gel] = [await RA.getAddress(), await CT.getAddress(), await GEL.getAddress()];
 await w(RA.setGovernance(await GOV.getAddress())); await w(RA.setTreasury(ct));
 await w(IT.setAuthorizedSink(ra, true)); await w(IT.setAuthorizedSink(ct, true)); await w(IT.setRoundAuctionForTradability(ra));
+await w(IT.setVerifier(await OV.getAddress(), true)); // as in REDEPLOY_V8 step 8
 await w(CT.setApprovedPaymentToken(gel, true));
 
 const cits = [A, B, Cc, V, D];
@@ -74,8 +74,8 @@ await w(RA.connect(A).placeBid(1, E(50))); await w(RA.connect(V).placeBid(1, E(2
 
 const chainNow = (await P.getBlock("latest")).timestamp;
 fs.writeFileSync("state.json", JSON.stringify({
-  addresses: { InvestToken: it, RoundAuction: ra, Governance: await GOV.getAddress(), CompanyTreasury: ct, ShareAuction: await SA.getAddress(), OpenVerifier: await OV.getAddress() },
-  gel, viewer: V.address, key: KEY.address, candidateB: B.address, cc: Cc.address,
+  addresses: { InvestToken: it, RoundAuction: ra, Governance: await GOV.getAddress(), CompanyTreasury: ct, OpenVerifier: await OV.getAddress() },
+  gel, newbie: NEWBIE.address, viewer: V.address, key: KEY.address, candidateB: B.address, cc: Cc.address,
   offsetMs: chainNow * 1000 - Date.now(),
 }, null, 2));
 console.log("setup done; chain is", Math.round((chainNow * 1000 - Date.now()) / 3600000), "hours ahead of wall clock");

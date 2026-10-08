@@ -12,7 +12,8 @@ compiled with Solidity 0.8.34, optimizer 200 runs, viaIR, OpenZeppelin 5.x
 | `roundauction.gas.mjs` | Worst-case settlement gas | 22.1M of 32M |
 | `system.test.mjs` | All three contracts together, incl. the full corporate chain (asset sale → invest → corporate shares → corporate vote → corporate dividend) | 57 passed |
 | `site-web3.test.mjs` | The website's own `site/src/web3.js` functions against freshly deployed contracts | 38 passed |
-| `ui/` | The built website in Chromium: bidding, reading candidate programs and voting, sealed bids, payment votes, the INVEST market, governor withdrawals; every click checked on chain | 21 passed |
+| `rehearse-fresh-deploy.mjs` | `REDEPLOY_V8.md` performed step by step with the same read-back checks, then a new citizen verifies, claims, bids and receives shares | all checks passed |
+| `ui/` | The built website in Chromium: a new wallet verifying and claiming, bidding, reading candidate programs and voting, sealed bids, payment votes, the INVEST market, governor withdrawals; every click checked on chain | 25 passed |
 
 Contract tests expect compiled artifacts in `art8/art_<Name>.json`; the
 site tests set `ART` to a folder of `<Name>.art.json` files. `ui/run-ui.sh`

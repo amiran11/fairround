@@ -108,7 +108,7 @@ function RoundCompanyCard({ company, companies, wallet, rules, onChanged }) {
 
       <ErrorLine error={error} />
 
-      <CompanyGovernance company={company} wallet={wallet} source="Governance" />
+      <CompanyGovernance company={company} wallet={wallet} />
       <CompanyTreasury company={company} companies={companies} wallet={wallet} onChanged={onChanged} />
     </div>
   );

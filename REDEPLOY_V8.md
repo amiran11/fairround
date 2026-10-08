@@ -1,193 +1,217 @@
-# Redeploy checklist: v8 (RoundAuction v8, Governance, CompanyTreasury v6)
+# Fresh deploy checklist: v8 (everything from scratch)
 
-This replaces RoundAuction and CompanyTreasury and adds a new Governance
-contract. Why: SECURITY_REVIEW.md, Findings 9–22.
+Deploys a complete new set of contracts on Arbitrum One:
 
-**Stays exactly as is (no redeploy):** InvestToken, OpenVerifier,
-ShareAuction.
+| # | Contract | What it does |
+|---|---|---|
+| 1 | InvestToken | Citizen list and the INVEST currency |
+| 2 | OpenVerifier | Lets anyone holding 0.0083+ ETH verify themselves as a citizen |
+| 3 | RoundAuction v8 | Share auctions, share NFTs, company capital |
+| 4 | Governance | Elections, governors, operating keys |
+| 5 | CompanyTreasury v6 | Company money: custody, auctions, payments, dividends, INVEST market |
 
-| Contract | Address (Arbitrum One) |
-|---|---|
-| InvestToken (unchanged) | `0x38E02e24Fddc1F34a8F5BDFD1cc308407627c766` |
-| OpenVerifier (unchanged) | `0x4Be82ae3f86Bdf35725f686b33b8FfB9a8aE6512` |
-| RoundAuction v7 (being replaced) | `0xf78B615cC0aA83BDa50b2990817A96b0434Cc38d` |
-| CompanyTreasury v5 (being replaced) | `0x6640Ba0D2E5E8652dbF2cddE7af8B01055A84241` |
+**Why from scratch, not partial:** citizenship lives in InvestToken and
+assets lived in the old RoundAuction. The October 3 partial redeploy left
+the author's wallet marked as a citizen who had already claimed, with
+its shares and INVEST stranded in a retired contract. A fresh
+InvestToken gives everyone a clean start. Nobody else has joined, so
+nothing is lost.
 
-**Golden rule, same as every deploy:** after every transaction, read the
-value back and check it before moving on. A green receipt is not proof.
+**ShareAuction is retired.** It never had a listing. It is not deployed
+again, and the site no longer shows it.
 
-Write each new address down as you go. You'll need all three at the end.
+**Rehearsed:** this exact sequence, with the same checks, runs clean on
+a local chain set to Arbitrum's limits (`test/rehearse-fresh-deploy.mjs`).
 
----
+**Golden rule:** after every transaction, read the value back and
+compare. A green receipt is not proof.
 
-## Part 0 — Before you start (about 10 minutes)
+Write each new address down as you go:
 
-**0.1 Write down the 10 companies from the old contract.** The new
-RoundAuction starts empty, so you'll relist them with the same values.
-
-1. In Remix, open **RoundAuction.sol** from the `main` branch version
-   (the one currently live) and compile it.
-2. Go to **Deploy & Run Transactions**. Environment: **Injected
-   Provider – MetaMask**, network **Arbitrum One**.
-3. Contract dropdown: **RoundAuction**. Paste
-   `0xf78B615cC0aA83BDa50b2990817A96b0434Cc38d` into **At Address** and
-   click it. Do NOT click Deploy.
-4. In the loaded contract, find **companies**, type `0`, click it.
-   Write down **name**, **totalShares** and **roundDuration**.
-5. Repeat for `1` through `9`.
-
-> **Worth a decision before relisting:** v8 sells at most 300 shares per
-> round (Finding 11). A company with millions of shares would take
-> thousands of rounds to sell half and open elections. If any of your
-> totalShares are very large, you may want smaller numbers this time.
-> Tell me and I'll suggest values.
-
-**0.2 Get the new contract files.** On GitHub, switch to the
-**rebuild-v8** branch. You need these four from the `contracts` folder:
-`InvestToken.sol` (unchanged, needed for imports), `RoundAuction.sol`,
-`Governance.sol`, `CompanyTreasury.sol`. Put them in Remix, replacing
-the old RoundAuction.sol and CompanyTreasury.sol.
-
-**0.3 Compiler settings** (Solidity Compiler tab → Advanced
-Configurations), same as October 3:
-
-- Compiler: **0.8.34**
-- **Enable optimization**, runs **200**
-- **viaIR: on** (via the compiler configuration file, as on October 3)
-- EVM version: leave as you used on October 3
-
-**0.4 Check you're on the real network.** In Deploy & Run, the account
-shown must be your owner wallet (the one that owns InvestToken), and
-MetaMask must say **Arbitrum One**. If you ever see account
-`0x5B38Da…` or block numbers like 1, 2, 3, you are on Remix VM. Stop
-and switch to Injected Provider.
+| | Address | Deploy block |
+|---|---|---|
+| NEW_IT (InvestToken) | | |
+| NEW_OV (OpenVerifier) | | |
+| NEW_RA (RoundAuction) | | |
+| NEW_GOV (Governance) | | |
+| NEW_CT (CompanyTreasury) | | |
 
 ---
 
-## Part 1 — Deploy the three contracts
+## Part 0 — Decide and prepare (about 15 minutes)
 
-### Step 1. Deploy RoundAuction v8
+**0.1 Citizen limit.** InvestToken caps how many citizens can ever claim.
+Suggested: **1000** (or the value on the current InvestToken: load it at
+`0x38E02e24Fddc1F34a8F5BDFD1cc308407627c766` with At Address and click
+**maxCitizens**). It can be raised later with **setMaxCitizens**.
 
-1. Compile **RoundAuction.sol**. Contract dropdown: **RoundAuction**.
-2. Next to Deploy, enter `_investToken`:
-   `0x38E02e24Fddc1F34a8F5BDFD1cc308407627c766`
-3. Click **Deploy**, confirm in MetaMask.
-4. **Check (stale-bytecode trap):** in the deployed contract's function
-   list, you must see **getActiveBids**, **activeBidCount**,
-   **setGovernance** and **shareCountAt**. If they're missing, Remix
-   deployed the old file: stop and tell me.
-5. **Check:** click **investToken** → must read `0x38E0…c766`.
-6. Write down the address: **NEW_RA = ______________**
+**0.2 Companies and share counts.** This matters more than it looks.
+Every citizen gets 1,000 INVEST, and a share sells for at least 1 INVEST.
+Elections open only once half a company's shares are sold. Selling half
+of a 10,000-share company takes at least 5,000 INVEST, five citizens
+spending everything on that one company. With 10,000–100,000 shares per
+company, elections would effectively never open during a pilot.
 
-### Step 2. Deploy Governance
+Suggested for the pilot (ids 0–9, round length 3600 seconds = 1 hour):
 
-1. Compile **Governance.sol**. Contract dropdown: **Governance**.
-2. Enter `_shares`: **NEW_RA** (from step 1).
+| id | name | totalShares |
+|---|---|---|
+| 0 | (your company 0) | 100 |
+| 1 | (your company 1) | 200 |
+| 2 | (your company 2) | 300 |
+| 3 | (your company 3) | 400 |
+| 4 | (your company 4) | 500 |
+| 5 | (your company 5) | 600 |
+| 6 | (your company 6) | 700 |
+| 7 | (your company 7) | 800 |
+| 8 | (your company 8) | 900 |
+| 9 | (your company 9) | 1000 |
+
+To keep your current names: load the current RoundAuction at
+`0xf78B615cC0aA83BDa50b2990817A96b0434Cc38d` with At Address, click
+**companies** for ids 0–9, and copy each **name** (and **roundDuration**
+if you want to keep it).
+
+**0.3 Files.** On GitHub, switch to the **rebuild-v8** branch. From the
+`contracts` folder you need: `InvestToken.sol`, `OpenVerifier.sol`,
+`RoundAuction.sol`, `Governance.sol`, `CompanyTreasury.sol`. Put them in
+Remix, replacing any older copies.
+
+**0.4 Compiler** (Solidity Compiler tab → Advanced Configurations), same
+as October 3: version **0.8.34**, **optimization on, 200 runs**, **viaIR
+on**, EVM version as you used on October 3.
+
+**0.5 Network.** Deploy & Run → Environment **Injected Provider –
+MetaMask**, network **Arbitrum One**, account = the wallet that will own
+everything. If you see account `0x5B38Da…` or block numbers like 1, 2, 3,
+you're on Remix VM: stop and switch.
+
+**0.6 Gas.** Five deploys plus about 20 transactions. Have roughly
+0.002 ETH on Arbitrum One in the owner wallet.
+
+---
+
+## Part 1 — Deploy
+
+### Step 1. InvestToken
+
+1. Compile **InvestToken.sol**, choose **InvestToken**.
+2. `_maxCitizens`: your number from 0.1 (for example `1000`).
 3. Deploy, confirm.
-4. **Check:** click **shares** → must read NEW_RA. You should also see
-   **lastRoundId** in the function list.
-5. Write down: **NEW_GOV = ______________**
+4. **Check:** **symbol** reads `INVEST`; **maxCitizens** reads your
+   number; **owner** reads your wallet.
+5. Write down **NEW_IT** and its **deploy block** (Arbiscan → the
+   transaction → Block). The site needs this block number.
 
-### Step 3. Deploy CompanyTreasury v6
+### Step 2. OpenVerifier
 
-1. Compile **CompanyTreasury.sol**. Contract dropdown: **CompanyTreasury**.
-2. Three constructor fields (new: there are three now, not two):
-   - `_investToken`: `0x38E02e24Fddc1F34a8F5BDFD1cc308407627c766`
-   - `_roundAuction`: **NEW_RA**
-   - `_governance`: **NEW_GOV**
-3. Deploy, confirm.
-4. **Check:** **roundAuction** reads NEW_RA, **governance** reads
-   NEW_GOV, **investToken** reads `0x38E0…c766`. You should see
-   **claimTreasuryAuction** and **vendorPaymentPasses**, and NOT see
-   **distribute**.
-5. Write down: **NEW_CT = ______________**
+1. Compile **OpenVerifier.sol**, choose **OpenVerifier**.
+2. `_investToken`: **NEW_IT**. Deploy, confirm.
+3. **Check:** **investToken** reads NEW_IT; **MIN_BALANCE** reads
+   `8300000000000000` (0.0083 ETH).
+4. Write down **NEW_OV**.
 
----
+### Step 3. RoundAuction v8
 
-## Part 2 — Wire them together
+1. Compile **RoundAuction.sol**, choose **RoundAuction**.
+2. `_investToken`: **NEW_IT**. Deploy, confirm.
+3. **Check (stale-bytecode trap):** the function list must include
+   **getActiveBids**, **setGovernance** and **shareCountAt**. If not,
+   Remix deployed an old file: stop and tell me.
+4. **Check:** **investToken** reads NEW_IT.
+5. Write down **NEW_RA**.
 
-### Step 4. RoundAuction → Governance
+### Step 4. Governance
 
-1. On NEW_RA: **setGovernance**, paste NEW_GOV, transact.
-2. **Check:** **governance** reads NEW_GOV.
-3. This can only be set once. If you paste the wrong address, stop and
-   tell me: it means redeploying RoundAuction.
+1. Compile **Governance.sol**, choose **Governance**.
+2. `_shares`: **NEW_RA**. Deploy, confirm.
+3. **Check:** **shares** reads NEW_RA; **lastRoundId** is in the list.
+4. Write down **NEW_GOV**.
 
-### Step 5. RoundAuction → CompanyTreasury
+### Step 5. CompanyTreasury v6
 
-1. On NEW_RA: **setTreasury**, paste NEW_CT, transact.
-2. **Check:** **treasury** reads NEW_CT. Also set-once.
-
-### Step 6. Load InvestToken
-
-In Remix, compile **InvestToken.sol**, choose **InvestToken**, paste
-`0x38E02e24Fddc1F34a8F5BDFD1cc308407627c766` into **At Address**, click it.
-
-### Step 7. Allow citizens to send INVEST to the new contracts
-
-1. On InvestToken: **setAuthorizedSink** with `account` = NEW_RA,
-   `allowed` = `true`. Transact.
-2. **Check:** **authorizedSink**(NEW_RA) reads `true`.
-3. Same again with `account` = **NEW_CT**, `allowed` = `true`.
-4. **Check:** **authorizedSink**(NEW_CT) reads `true`.
-
-### Step 8. Point tradability at the new RoundAuction
-
-1. On InvestToken: **setRoundAuctionForTradability**, paste NEW_RA, transact.
-2. **Check:** **roundAuctionForTradability** reads NEW_RA.
-
-### Step 9. Close the old contracts to deposits
-
-So nobody can accidentally send INVEST to the retired contracts. From
-this step until the updated site goes live, the current site can't take
-bids (it still points at the old contracts). Since no citizens have
-joined yet, that's harmless; just do steps 9–13 in one sitting.
-
-1. **setAuthorizedSink**(`0xf78B615cC0aA83BDa50b2990817A96b0434Cc38d`, `false`)
-2. **Check:** authorizedSink of that address reads `false`.
-3. **setAuthorizedSink**(`0x6640Ba0D2E5E8652dbF2cddE7af8B01055A84241`, `false`)
-4. **Check:** reads `false`.
+1. Compile **CompanyTreasury.sol**, choose **CompanyTreasury**.
+2. Three fields: `_investToken` **NEW_IT**, `_roundAuction` **NEW_RA**,
+   `_governance` **NEW_GOV**. Deploy, confirm.
+3. **Check:** **investToken**, **roundAuction**, **governance** read back
+   those three. **claimTreasuryAuction** is in the list; **distribute**
+   is NOT.
+4. Write down **NEW_CT**.
 
 ---
 
-## Part 3 — Relist and finish
+## Part 2 — Wire
 
-### Step 10. Relist the 10 companies
+### Step 6. RoundAuction → Governance
 
-On NEW_RA, for each company you wrote down in step 0.1:
-**listCompany**(`companyId`, `name`, `totalShares`, `roundDuration`).
+On NEW_RA: **setGovernance**(NEW_GOV). **Check:** **governance** reads
+NEW_GOV. *Set-once: a wrong address means redeploying RoundAuction.*
 
-- Use the same ids 0–9 as before.
-- **Check after each:** **companies**(id) shows the right name and
-  totalShares, and **companiesListed** has gone up by one.
+### Step 7. RoundAuction → Treasury
 
-### Step 11. Payment tokens for the INVEST market (only if used before)
+On NEW_RA: **setTreasury**(NEW_CT). **Check:** **treasury** reads NEW_CT.
+*Also set-once.*
 
-If you had approved a payment token (for example a stablecoin) on the
-old treasury: on NEW_CT, **setApprovedPaymentToken**(token address,
-`true`). **Check:** **approvedPaymentTokens**(token) reads `true`.
+### Step 8. Let OpenVerifier verify citizens
 
-### Step 12. Verify the source code publicly
+On NEW_IT: **setVerifier**(NEW_OV, `true`). **Check:** **verifier**(NEW_OV)
+reads `true`.
 
-Verify NEW_RA, NEW_GOV and NEW_CT on Arbiscan, Sourcify and Blockscout,
-with exactly the compiler settings from step 0.3, the same way as on
-October 3. Governance has one constructor argument (NEW_RA);
-CompanyTreasury has three.
+### Step 9. Let citizens spend INVEST into the system
 
-### Step 13. Send me the three addresses
+On NEW_IT: **setAuthorizedSink**(NEW_RA, `true`), then
+**setAuthorizedSink**(NEW_CT, `true`). **Check:** **authorizedSink** of
+each reads `true`.
 
-Send NEW_RA, NEW_GOV and NEW_CT, plus the **block number** of the
-RoundAuction deploy (shown in its Arbiscan transaction page). I'll
-update the site so it uses the new contracts.
+### Step 10. Tradability
+
+On NEW_IT: **setRoundAuctionForTradability**(NEW_RA). **Check:**
+**roundAuctionForTradability** reads NEW_RA.
+
+Do **not** call **setAuctionHouse**. **Check:** **auctionHouse** reads
+`0x0000000000000000000000000000000000000000`.
+
+---
+
+## Part 3 — List, verify, test
+
+### Step 11. List the companies
+
+On NEW_RA, for each row of your table from 0.2:
+**listCompany**(id, name, totalShares, 3600).
+**Check after each:** **companies**(id) shows the right name and
+totalShares; **companiesListed** went up by one.
+
+### Step 12. Payment token for the INVEST market (optional)
+
+Only if you want the INVEST market open now: on NEW_CT,
+**setApprovedPaymentToken**(token address, `true`). **Check:**
+**approvedPaymentTokens**(token) reads `true`.
+
+### Step 13. Verify the source code
+
+Verify all five on Arbiscan, Sourcify and Blockscout, with exactly the
+compiler settings from 0.4. Constructor values: InvestToken
+(maxCitizens), OpenVerifier (NEW_IT), RoundAuction (NEW_IT), Governance
+(NEW_RA), CompanyTreasury (NEW_IT, NEW_RA, NEW_GOV).
+
+### Step 14. Send me the addresses
+
+Send the five addresses and NEW_IT's deploy block. I'll point the site
+at them and merge `rebuild-v8` into `main`.
+
+### Step 15. Smoke test with your own wallet (after the site is updated)
+
+1. On the live page, connect, click verify, then claim: you should get
+   1,000 INVEST.
+2. Bid a few INVEST on the smallest company. After the round closes,
+   settle it: the share NFTs appear in your wallet.
 
 ---
 
 ## If something goes wrong
 
-- **A transaction fails:** don't retry blindly. Send me a screenshot of
-  the error.
-- **A Check shows the wrong value:** stop there and tell me which step.
-- **Nothing is lost by stopping halfway:** until step 8, the live site
-  keeps working on the old contracts.
-- **After step 9,** the live site can't take bids until I ship the
-  updated frontend with your new addresses.
+- **A transaction fails:** don't retry blindly. Send me a screenshot.
+- **A Check shows the wrong value:** stop at that step and tell me which.
+- **Stopping halfway is safe.** Nothing touches the old contracts, and
+  the live site keeps using them until I switch it in step 14.

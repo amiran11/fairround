@@ -60,6 +60,22 @@ async function openAs(account) {
 const card = (page, name) => page.locator(`xpath=//div[contains(@class,'zilla') and normalize-space(text())='${name}']/ancestor::div[2]`);
 const until = async (fn, ms = 15000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await fn()) return true; await new Promise((r) => setTimeout(r, 250)); } return false; };
 
+// ------------------------------------------------------------- new citizen
+console.log("As a brand-new wallet (REDEPLOY_V8 step 15)");
+{
+  const npage = await openAs(st.newbie);
+  ok(!(await IT.verifiedCitizen(st.newbie)), "starts unverified");
+  await npage.getByText("VERIFY THIS WALLET (REAL TRANSACTION)").click();
+  await npage.getByText("CLAIM 1000 INVEST (REAL TRANSACTION)").waitFor({ timeout: 20000 });
+  ok(await IT.verifiedCitizen(st.newbie), "the page's verify button made it a citizen (via OpenVerifier)");
+  await npage.getByText("CLAIM 1000 INVEST (REAL TRANSACTION)").click();
+  await npage.getByText("Claimed for real.").waitFor({ timeout: 20000 });
+  ok((await IT.balanceOf(st.newbie)) === E(1000), "the page's claim button delivered 1,000 INVEST");
+  ok((await npage.locator("body").innerText()).indexOf("ShareAuction") === -1, "no ShareAuction section or address on the page");
+  await npage.screenshot({ path: `${SHOTS}/00-new-citizen.png` });
+  await npage.close();
+}
+
 // ------------------------------------------------------------- shareholder
 console.log("As a shareholder");
 const page = await openAs(st.viewer);

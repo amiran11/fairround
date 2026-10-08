@@ -67,7 +67,7 @@ export default function InvestMarket({ wallet, companies }) {
       const ids = [...new Set(o.filter((x) => x.isCorporateOffer).map((x) => x.creditCompanyId.toString()))];
       const keys = {};
       await Promise.all(ids.map(async (id) => {
-        const g = await getCompanyGovernance(Number(id), wallet.provider, "Governance");
+        const g = await getCompanyGovernance(Number(id), wallet.provider);
         if (g.operatingKey !== ZERO) keys[id] = g.operatingKey;
       }));
       setOffers(o); setPayTokens(t); setBalance(b); setOperatingKeys(keys); setLoadError("");
