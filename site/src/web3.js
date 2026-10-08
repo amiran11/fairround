@@ -3,10 +3,10 @@
 // The REAL blockchain layer, entirely separate from the simulated game
 // in App.jsx. Every chain-specific value flows from the config below.
 //
-// v8 is a complete fresh deployment (REDEPLOY_V8.md): new InvestToken,
-// OpenVerifier, RoundAuction, Governance and CompanyTreasury. ShareAuction
-// is retired. Addresses stay blank until the deploy; until then the site
-// on this branch can only run against a local test chain.
+// v8 is a complete fresh deployment (REDEPLOY_V8.md), done on Arbitrum
+// One on 8 October 2026: new InvestToken, OpenVerifier, RoundAuction,
+// Governance and CompanyTreasury, all owned by 0xD9fb…b2de0. ShareAuction
+// is retired.
 export const NETWORKS = {
   arbitrum: {
     chainIdHex: "0xa4b1", // 42161
@@ -18,13 +18,13 @@ export const NETWORKS = {
     isTestnet: false,
     // From REDEPLOY_V8.md step 14. deploymentBlock = InvestToken's deploy
     // block, the first contract deployed, so no event can be earlier.
-    deploymentBlock: 0, // V8: NEW_IT deploy block
+    deploymentBlock: 512862832, // InvestToken deploy, 8 Oct 2026
     addresses: {
-      InvestToken: "", // V8: NEW_IT
-      OpenVerifier: "", // V8: NEW_OV
-      RoundAuction: "", // V8: NEW_RA
-      Governance: "", // V8: NEW_GOV
-      CompanyTreasury: "", // V8: NEW_CT
+      InvestToken: "0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a",
+      OpenVerifier: "0x444653dDbBb24B24bcD8D674e30b371800Cc2ad2",
+      RoundAuction: "0x9739e5dCcc76BD424BcD12e7f1ce56143e77b796",
+      Governance: "0x5668F72F3dB11c4DA6aF682604d1184763bB971d",
+      CompanyTreasury: "0xaD50c4726E78a8e8a18a1A188bd60E7ef0A501e8",
     },
   },
 };
