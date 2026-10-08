@@ -35,7 +35,7 @@ import {
   getApprovedPaymentTokens,
   governorOfferInvestReal,
 } from "../web3.js";
-import { C, ZERO, short, same, fmt, fmtDate, useCountdown, useTx } from "./liveUtils.js";
+import { C, ZERO, short, same, fmt, fmtDate, useCountdown, useTx, count } from "./liveUtils.js";
 import { Button, Input, Select, Field, Notice, Muted, ErrorLine, Section, Row } from "./ui.jsx";
 
 function Countdown({ to, prefix }) {
@@ -277,7 +277,7 @@ function PaymentCard({ p, wallet, reload }) {
       </div>
       {open && !p.voted && p.myWeight > 0n && (
         <div className="flex gap-2">
-          <Button small busy={busy} onClick={() => run(() => voteVendorPaymentReal(wallet.signer, p.id, true), reload)}>Approve ({p.myWeight.toLocaleString()} shares)</Button>
+          <Button small busy={busy} onClick={() => run(() => voteVendorPaymentReal(wallet.signer, p.id, true), reload)}>Approve ({count(p.myWeight, "share")})</Button>
           <Button small kind="quiet" busy={busy} onClick={() => run(() => voteVendorPaymentReal(wallet.signer, p.id, false), reload)}>Reject</Button>
         </div>
       )}
@@ -328,7 +328,7 @@ function TermCard({ company, t, wallet, reload }) {
       )}
       {(voting || awaitingResolve) && (
         <div className="mono" style={{ fontSize: 10.5, opacity: 0.7, marginBottom: 8 }}>
-          Pay a dividend: {t.dividendWeight.toLocaleString()} · Reinvest: {t.reinvestWeight.toLocaleString()} ({total.toLocaleString()} shares voted)
+          Pay a dividend: {t.dividendWeight.toLocaleString()} · Reinvest: {t.reinvestWeight.toLocaleString()} ({count(total, "share")} voted)
           {" · "}{voting ? <Countdown to={t.voteEnd} prefix="closes in" /> : "voting closed"}
         </div>
       )}
@@ -336,7 +336,7 @@ function TermCard({ company, t, wallet, reload }) {
         <div className="flex gap-2">
           <Button small busy={busy} onClick={() => run(() => votePolicyReal(wallet.signer, company.id, t.term, true), reload)}>Pay a dividend</Button>
           <Button small kind="quiet" busy={busy} onClick={() => run(() => votePolicyReal(wallet.signer, company.id, t.term, false), reload)}>Reinvest</Button>
-          <span className="mono" style={{ fontSize: 10.5, opacity: 0.6, alignSelf: "center" }}>{t.myWeight.toLocaleString()} shares</span>
+          <span className="mono" style={{ fontSize: 10.5, opacity: 0.6, alignSelf: "center" }}>{count(t.myWeight, "share")}</span>
         </div>
       )}
       {voting && t.hasVoted && <Muted>You've voted.</Muted>}
@@ -412,7 +412,7 @@ function FreeAllowance({ companyId, token, wallet, data }) {
   useEffect(() => {
     if (!token) { setLeft(null); return; }
     getFreeAllowanceLeft(companyId, token, wallet.provider).then(setLeft).catch(() => setLeft(null));
-  }, [companyId, token, wallet.provider]);
+  }, [companyId, token, wallet.provider, data]); // data changes after every withdrawal
   const info = data.tokens.find((t) => same(t.address, token));
   if (!info || left === null) return null;
   return <Muted style={{ marginBottom: 8 }}>You can still withdraw {fmt(left, info.decimals, 4)} {info.symbol} on your own this term.</Muted>;
@@ -494,7 +494,7 @@ function GovernorTools({ company, companies, wallet, data, reload }) {
         <Title>Shares this company holds elsewhere</Title>
         {holdings === null ? <Muted>Loading…</Muted> : holdings.length === 0 ? <Muted>None yet. Reinvesting builds them.</Muted> : (
           <>
-            {holdings.map((h) => <Row key={h.companyId} label={h.name}>{h.shares.toLocaleString()} shares</Row>)}
+            {holdings.map((h) => <Row key={h.companyId} label={h.name}>{count(h.shares, "share")}</Row>)}
             <div style={{ marginTop: 10 }}>
               <Field label="Company">
                 <Select value={corpTarget} onChange={(e) => setCorpTarget(e.target.value)}>

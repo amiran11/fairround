@@ -14,6 +14,8 @@ export const C = {
 
 export const ZERO = "0x0000000000000000000000000000000000000000";
 export const short = (a) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "");
+// "1 share", "2 shares": a count (number or bigint) with the right noun.
+export const count = (n, one, many = one + "s") => `${n.toLocaleString()} ${BigInt(n) === 1n ? one : many}`;
 export const same = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
 // Whole-number display for 18-decimal amounts, with up to `places` decimals.

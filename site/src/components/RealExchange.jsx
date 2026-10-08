@@ -262,6 +262,7 @@ export default function RealExchange({ onBack }) {
           ShareAuction: {CONTRACT_ADDRESSES.ShareAuction}<br/>
           CompanyTreasury: {CONTRACT_ADDRESSES.CompanyTreasury}<br/>
           RoundAuction: {CONTRACT_ADDRESSES.RoundAuction}<br/>
+          Governance: {CONTRACT_ADDRESSES.Governance}<br/>
           OpenVerifier: {CONTRACT_ADDRESSES.OpenVerifier}
         </div>
       </div>

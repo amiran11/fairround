@@ -16,7 +16,7 @@ import {
   getEthBalance,
   normalizeAddress,
 } from "../web3.js";
-import { C, ZERO, short, same, useCountdown, useTx } from "./liveUtils.js";
+import { C, ZERO, short, same, useCountdown, useTx, count } from "./liveUtils.js";
 import { Button, Input, Notice, Muted, ErrorLine, Section } from "./ui.jsx";
 
 // Below this, an operating key probably can't pay for even one transaction.
@@ -76,12 +76,12 @@ function CandidateCard({ c, wallet, sharesIssued, showVotes, totalVotes, childre
         <div className="mono" style={{ fontSize: 11.5 }}>
           <div style={{ fontWeight: 700 }}>{short(c.address)}{same(c.address, wallet.address) && " (you)"}</div>
           <div style={{ opacity: 0.6, fontSize: 10.5, marginTop: 2 }}>
-            holds {c.stake.toLocaleString()} shares ({pct(c.stake, sharesIssued)})
+            holds {count(c.stake, "share")} ({pct(c.stake, sharesIssued)})
             {c.eliminated && " · out of the running"}
           </div>
           {showVotes && !c.eliminated && (
             <div style={{ color: C.accent, fontSize: 10.5, marginTop: 2 }}>
-              {c.votes.toLocaleString()} votes{totalVotes > 0n ? ` (${pct(c.votes, totalVotes)} of votes cast)` : ""}
+              {count(c.votes, "vote")}{totalVotes > 0n ? ` (${pct(c.votes, totalVotes)} of votes cast)` : ""}
             </div>
           )}
         </div>
@@ -112,7 +112,7 @@ function CandidacyForm({ company, wallet, source, myShares, rules, candidateCoun
   if (rules && myShares < minStake) {
     return (
       <Muted style={{ marginBottom: 10 }}>
-        To stand as a candidate you need at least {minStake.toLocaleString()} shares (0.1% of the {company.sharesIssued.toLocaleString()} issued).
+        To stand as a candidate you need at least {count(minStake, "share")} (0.1% of the {company.sharesIssued.toLocaleString()} issued).
         You hold {myShares.toLocaleString()}.
       </Muted>
     );
@@ -214,7 +214,7 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
   const sortedByVotes = [...(candidates || [])].sort((a, b) => (b.votes > a.votes ? 1 : b.votes < a.votes ? -1 : 0));
 
   return (
-    <Section icon={Landmark} title={`Governance · term ${gov.termNum.toString()}`}>
+    <Section icon={Landmark} title={gov.termNum === 0n ? "Governance · first election" : hasGovernor ? `Governance · term ${gov.termNum.toString()}` : `Governance · election for term ${(gov.termNum + 1n).toString()}`}>
       {hasGovernor ? (
         <div>
           {iAmOperatingKey && !termCountdown.passed && (
@@ -299,9 +299,9 @@ export default function CompanyGovernance({ company, wallet, source = "ShareAuct
             {source === "Governance" && " Votes count the shares each wallet held when this round opened."}
           </Muted>
           {myVoted ? (
-            <Notice color={C.ok}>You've voted in this round with {myWeight.toLocaleString()} shares.</Notice>
+            <Notice color={C.ok}>You've voted in this round with {count(myWeight, "share")}.</Notice>
           ) : myWeight > 0n ? (
-            <Notice>You can vote with {myWeight.toLocaleString()} shares. Read the programs, then vote for one candidate.</Notice>
+            <Notice>You can vote with {count(myWeight, "share")}. Read the programs, then vote for one candidate.</Notice>
           ) : myShares > 0n ? (
             <Muted style={{ marginBottom: 10 }}>You got your shares after this round opened, so you can't vote in it. You'll be able to vote in later rounds.</Muted>
           ) : null}
