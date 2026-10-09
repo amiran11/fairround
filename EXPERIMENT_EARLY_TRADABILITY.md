@@ -112,6 +112,35 @@ with its date and transaction hash):
 Any intervention during the window ends or changes the experiment and must be
 logged in §7.
 
+## 6a. Continuity commitment
+
+Participants join a live system, not a disposable test. Whatever the result:
+
+- **v8 is not retired when the window closes.** The contracts, the site and
+  every holding (INVEST, share NFTs, governor seats, treasuries) stay as they
+  are. Elections, auctions and treasury rules keep running.
+- **Admin powers will not be used against holders.** After the window, the
+  owner functions are used only to fix a bug or stop an exploit, and every use
+  is logged publicly in this file with its transaction hash.
+- **Lessons go into a new deployment, not into rewriting this one.** A future
+  version (v9) will be launched alongside v8. Moving to it is each holder's own
+  choice; nobody is forced to migrate, and v8 is not switched off to push
+  people across.
+
+### Lessons already learned (seed list for v9)
+
+1. **The tradability rule must not be triggerable by a tiny company.** Unlock
+   should require a minimum company size and a minimum number of distinct
+   shareholders, not only 51% of shares sold.
+2. **A balance check is not identity verification.** OpenVerifier's
+   "holds 0.0083 ETH" check can be passed by one person with many wallets
+   using the same ETH. v9 needs real proof of personhood or citizenship.
+3. **Tradability should be a switch the design controls, not an accident.**
+   v9 should make the phase change (privatization → capitalization) explicit
+   and visible on the site.
+4. **Test companies belong on a test network.** Single-share test listings on
+   mainnet change system-wide state.
+
 ## 7. Log
 
 | Date (Tbilisi) | Event | Reference |
