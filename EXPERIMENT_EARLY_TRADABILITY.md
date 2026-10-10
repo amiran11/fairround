@@ -91,6 +91,34 @@ shares issued, shareholder count, largest holder, governor.
 5. **Not real assets.** All companies are simulated; there is no real-world
    claim behind any share.
 
+## 5a. Amendment (10 October 2026, 23:45 Tbilisi — still zero outside claims): classifying participants
+
+Gatekeeping with a balance check cannot stop actors who have funds, so the
+experiment does not try to exclude them. Instead, every claiming wallet is
+**classified after the fact** using the rules below, fixed before any data
+exists. All measures M1–M5 are reported three ways: all wallets, wallet
+clusters, and "likely independent participants" only.
+
+**Wallets are put in the same cluster if any of these hold:**
+
+1. **Common funder:** their first incoming ETH on Arbitrum came from the same
+   address (excluding known exchange and bridge addresses).
+2. **Token links:** INVEST or share NFTs moved between them in either direction.
+3. **ETH relay:** ETH passed from one to the next within 24 hours of a claim
+   (the pattern of reusing the same 0.0083 ETH to verify many wallets).
+4. **Batch timing:** three or more wallets verified and claimed within the same
+   10-minute window, with bids of identical amounts.
+
+**A wallet counts as a "likely independent participant" if** it is in a
+cluster of one *and* at least one of these is true: it had any Arbitrum
+transaction before 9 October 2026, or it took an action beyond claiming
+(bid, candidacy, vote).
+
+**Stated limitation:** wallets funded separately from an exchange, with no
+links between them, cannot be told apart from real people. Cluster counts are
+therefore a **lower bound** on Sybil activity, and that is how they will be
+reported.
+
 ## 6. Abort conditions and allowed interventions
 
 The experiment may be stopped early, and the stop recorded, if:
