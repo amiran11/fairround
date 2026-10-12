@@ -466,6 +466,40 @@ elected, possibly never.
 
 ---
 
+### Finding 23 — A governor can sell all of a company's INVEST capital, at any price, without a vote (Critical, open in v8)
+
+**Where:** `CompanyTreasury.governorOfferInvest()`, `buyInvest()`
+
+**Found:** 12 October 2026, on mainnet, by the founder testing the governor
+tools on company 11 (1 share, founder is the only shareholder). The full
+990 INVEST of capital was moved into one market offer in a single
+transaction. No other holder's funds were affected.
+
+**Issue:** Governor withdrawals are limited to 5% per term, and anything
+larger needs a sealed-bid auction or a shareholder vote. `governorOfferInvest`
+skips all of that: the governor can put **100% of the company's INVEST
+capital** up for sale, at **any price the governor chooses**. A dishonest
+governor can offer the whole capital for a token amount (e.g. 0.000001 USDC)
+and buy it from a second wallet, draining the company in two transactions.
+`buyInvest` also does not re-check that the payment token is still
+approved, so revoking a token does not stop an existing offer.
+
+**Mitigation available now (no redeploy):** the owner can call
+`setApprovedPaymentToken(token, false)` for every token, which blocks *new*
+governor offers (and the INVEST market as a whole). Existing corporate
+offers can only be withdrawn by that company's operating key
+(`cancelInvestOffer`). In v8 today, company 11 is the only company with a
+governor, so no other company is exposed yet.
+
+**Fix (v9):** count corporate INVEST offers against the same 5%-per-term
+allowance; anything larger must go through a shareholder vote (like vendor
+payments) or the sealed-bid auction. Add a minimum price relative to the
+company's recorded capital, and re-check token approval in `buyInvest`.
+
+**Status:** open in the v8 deployment; fix planned for v9.
+
+---
+
 ### Correction: the v7 "stall breaker" leftover issue was not a real finding
 
 During the v8 work it was briefly reported that RoundAuction v7's
