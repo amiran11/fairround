@@ -96,7 +96,69 @@ The proportional round auction is kept. Required changes:
 | `auctionHouse` trap at rewiring (low) | Leave `auctionHouse` unset; written into the deploy checklist |
 | v8 contracts must stay authorized | v8 RoundAuction and CompanyTreasury stay sinks permanently |
 
-## Decisions needed from Amiran (DECIDE)
+## Decisions taken (13 October 2026)
+
+| Question | Decision |
+|---|---|
+| Reserve price | **Shareholder vote**: every sale is proposed with a reserve, approved by vote, then auctioned |
+| Stuck bids | **Partial fills**: each round gives a bid the shares that fit; nothing is ever stuck |
+| Tradability in v9 | **INVEST stays tradable**: InvestToken keeps pointing at v8 RoundAuction (unlocked); no re-lock |
+| Owner powers | **Timelock**: ownership of InvestToken and every v9 contract moves to a 48-hour timelock |
+| Candidacy period / winner quorum | default: **5 days / 20%** of shares issued at the candidacy snapshot |
+| Small expenses | default: **none** — every payment by shareholder vote |
+| Verification | default (interim): OpenVerifier v2 — normal wallets only (no contract factories), plus a daily cap on new citizens |
+| Tradability thresholds | not needed: INVEST is already tradable and stays so |
+
+### v9 rules in one place
+
+**Share auctions (RoundAuction v9)**
+- Lowest bid sets the price of one share; each bid is entitled to
+  floor(bid / lowest) shares (rounded **down**, Finding 40) and pays exactly
+  shares × lowest; the remainder is refunded.
+- **Partial fills**: highest bids first, each gets min(entitlement, shares
+  left); an unfilled remainder stays as a smaller bid for the next round.
+- **Full book**: when all 100 slots are taken, a new bid must be larger than
+  the current lowest, which is refunded and evicted (ends slot squatting,
+  Finding 31).
+- Share lock counted per share from its own issue time.
+- One listing per share, cleared whenever the share moves (Finding 39).
+- No fixed-price corporate share sales; company-held shares stay held and
+  earn dividends and votes (Finding 24).
+- `invest` requires source ≠ target (38); the governor and term are recorded
+  at `invest` time for the 1% compensation.
+- No tradability flag (not needed); company IDs limited to < 2^64.
+
+**Elections (Governance v9)**
+- Anyone opens a 5-day **candidacy period**; its snapshot (1 second before
+  it opened) fixes both candidacy stakes and all vote weights for that
+  election (Findings 27, 28, 34). Candidates can withdraw.
+- Voting opens only after the candidacy period. A winner needs 51% of votes
+  cast **and** votes ≥ 20% of shares issued at the snapshot; otherwise the
+  round fails. Two failed rounds reset to a fresh candidacy period.
+- Term end is recorded once and never overwritten (Finding 29).
+- **Recall**: shareholders can end a term early (vote ≥ 51% of cast and
+  turnout ≥ 33% of issued).
+
+**Treasury (CompanyTreasury v9)**
+- No free withdrawal, no fixed-price sales, no INVEST market (v8's market
+  stays available).
+- **Sales**: governor proposes (asset, amount, payment token, reserve) →
+  shareholder vote → sealed-bid auction in the payment token, with a deposit
+  of 10% of the reserve. Highest bid ≥ reserve wins; otherwise the asset
+  returns.
+- **Two buckets** per company and token — capital and income. Proceeds keep
+  the bucket of what was sold; only income can ever be reinvested
+  (Finding 33).
+- **Payments**: by vote only; the governor and their key cannot vote on
+  their own proposal and cannot be paid by it; quorum 20% (40% for large
+  payments); vote weights from a snapshot one day before the proposal;
+  proposals must finish within the term; a failed transfer returns the money.
+- Company-held shares vote on payments, sales and dividends through their
+  own governor.
+- Custody only for approved tokens; reentrancy guard on every external
+  function.
+
+## Decisions needed from Amiran (DECIDE) — answered above
 
 1. **Reserve price:** set by shareholder vote per auction, or a fixed rule
    (e.g. at least the price the company was bought at)?
