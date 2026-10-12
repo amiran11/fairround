@@ -1,0 +1,120 @@
+Sizes (Arbitrum limit 24,576 bytes)
+  PASS RoundAuctionV9: 22550 bytes deployed
+  PASS GovernanceV9: 12333 bytes deployed
+  PASS CompanyTreasuryV9: 20767 bytes deployed
+  PASS OpenVerifierV2: 1734 bytes deployed
+  PASS SakartveloTimelock: 5488 bytes deployed
+
+RoundAuction v9: pricing, partial fills, rounding (F30, F40)
+  PASS F40: bid of 1.9x the price gets 1 share, not 2
+  PASS F40: pays exactly shares x price (10), remainder 9 refunded
+  PASS fully filled bids close
+  PASS F30: pro-rata fill 0/8/2 of 10, company sold out
+  PASS F30: shares proportional to bids (30:9:1)
+  PASS sell-out refunds every remainder; INVEST accounting exact
+
+RoundAuction v9: partly filled bids carry over and can be withdrawn (F30)
+  PASS F30: big bid partly filled, the rest stays active
+  PASS F31: no bidding during the cooldown
+  PASS F30: the remainder can be withdrawn during the cooldown
+  PASS the price-setting 1-INVEST bid got 0 of its 1 share pro rata and stays active
+  PASS nothing to withdraw without a bid
+  PASS no withdrawal while a round is open (no last-second price games)
+  PASS INVEST accounting exact
+
+RoundAuction v9: full book eviction (F31)
+  PASS F31: full book, equal bid can't enter
+  PASS F31: higher bid evicts the lowest (latest on ties), refunded in full
+  PASS book stays at 100; accounting exact
+  PASS settlement with 100 bids and 300 shares: 26876248 gas (< 32M)
+  PASS 300 shares issued in the round, spread pro rata
+  PASS accounting exact after the big settlement
+
+RoundAuction v9: invest, listings, locks (F24, F38, F39, per-share lock)
+  PASS F24: no fixed-price corporate share sales
+  PASS share locked for 7 days from its own mint
+  PASS unlock time = own mint time + 7 days
+  PASS F38: a company can't reinvest in itself
+  PASS F39: listing deleted when the share moves
+  PASS F39: moving it back does not revive the old listing
+  PASS buyer protected by maxPrice
+  PASS listed share sells; seller paid
+  PASS company ids limited to 64 bits
+
+Governance v9: candidacy period and winner quorum (F27)
+  PASS F34: shares minted less than a day ago don't count for the snapshot
+  PASS F27: voting can't open before the 5-day candidacy period ends
+  PASS F27: sole candidate with 10% of shares voting does NOT win
+  PASS with 20% of issued shares voting, the candidate wins
+
+Governance v9: two failed rounds reset; stake snapshot (F28, F34)
+  PASS F28: no stake at the snapshot, no candidacy
+  PASS 20 candidates
+  PASS slate full; outsiders can't squat
+  PASS candidates can withdraw
+  PASS F28: after two failed rounds the election closes
+  PASS a fresh candidacy period starts with an empty slate
+
+Governance v9: term end never overwritten; recall (F29)
+  PASS F29: term 1 end survives re-election
+  PASS recall with 40% turnout and majority ends the term
+  PASS F29: recalled term's end stays recorded after the next election
+
+Treasury v9: no free exits (F23, F26)
+  PASS F23: no free withdrawal, no fixed-price INVEST sale, no market
+  PASS F26: governor can't vote on own proposal
+  PASS F26: operating key can't vote
+  PASS F23 replay: sole shareholder-governor's shares don't count toward quorum
+  PASS F23 replay: capital stays, nothing paid out
+  PASS F26: governor can't be the recipient
+
+Treasury v9: payment by vote, snapshot, quorum, failed transfer (F26, F34)
+  PASS deposit credited to capital
+  PASS 5% payment needs 20% quorum
+  PASS approved payment executed
+  PASS large payment needs 40% quorum
+  PASS blocked recipient: transfer fails, money returns to the company
+
+Treasury v9: snapshot one day before the proposal (F34)
+  PASS F34: shares bought minutes before the proposal can't vote
+
+Treasury v9: sales by vote + sealed-bid auction with reserve (F25, F33, F35)
+  PASS asset reserved while the vote runs
+  PASS F35: bid deposit is 10% of the reserve
+  PASS F25: bids below the reserve can't win
+  PASS F33: proceeds (150) + forfeited deposits (2x10) go to CAPITAL
+  PASS F33: capital never becomes reinvestable income
+  PASS winner gets the asset and the deposit back
+  PASS F25: unsold asset returns to the company
+  PASS rejected sale: asset returns
+
+Treasury v9: proposals die with the term; corporate voting
+  PASS a vote must finish inside the term
+  PASS recall voids a pending approved payment
+
+Corporate path: reinvest vote -> invest -> compensation -> corporate votes; dividends
+  PASS shareholders' reinvest vote moves 1% of capital to income
+  PASS governor recorded at invest() time
+  PASS corporate holder got 295 shares, governor 2 as 1% compensation
+  PASS compensation shares locked until term + 2
+  PASS corporate shares vote in elections through the holder's governor
+  PASS corporate shares vote on payments through the holder's governor
+  PASS dividend vote pays shareholders pro rata at the record date
+  PASS no double claim
+  PASS INVEST accounting exact across the whole corporate path
+
+OpenVerifier v2 (F32)
+  PASS F32: a contract can't verify (no claim factories)
+  PASS re-verifying doesn't use the cap
+  PASS daily counter: 199 left
+  PASS guardian can pause
+  PASS only the guardian can pause
+
+Timelock on owner powers (F36)
+  PASS F36: owner wallet can no longer act directly
+  PASS F36: can't execute before 48 hours
+  PASS runs after 48 hours, publicly scheduled
+  PASS delay can't be shortened per call
+
+86 passed, 0 failed
+EXIT 0
