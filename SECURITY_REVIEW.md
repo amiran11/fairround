@@ -500,6 +500,77 @@ company's recorded capital, and re-check token approval in `buyInvest`.
 
 ---
 
+### Value-exit review (12 October 2026)
+
+After Finding 23, every path by which value can leave a company was
+reviewed: who can trigger it, and what limits it. Results:
+
+| Path | Who triggers | Limit in v8 | Verdict |
+|---|---|---|---|
+| `withdrawToken` | governor alone | 5% per term, **to any address** | design flaw (removed in v9) |
+| `governorOfferInvest` | governor alone | none | **Finding 23** |
+| `governorListShare` | governor alone | none | **Finding 24** |
+| `openTreasuryAuction` | governor opens, anyone bids | no reserve price | **Finding 25** |
+| `proposeVendorPayment` | governor proposes, shareholders vote | 20% quorum, 51% yes | **Finding 26** |
+| end-of-term dividend | shareholder vote | 1% of capital, pro rata | safe |
+| `invest` (reinvestment) | governor alone | income only, never capital | acceptable; conflict-of-interest note below |
+| `withdrawHostFees` | host only | accrued fees only | safe |
+| `adjustCapital` | treasury contract only | — | safe |
+
+### Finding 24 — A governor can sell the company's shares in other companies at any price (Critical, open in v8, not currently reachable)
+
+**Where:** `RoundAuction.governorListShare()`, `buyShare()`
+
+**Issue:** Same pattern as Finding 23. Shares a company owns in other
+companies (from reinvestment) can be listed by its governor at any price
+of at least 1 wei, and bought by the governor's own second wallet.
+
+**Reachable today?** No: no company has reinvested yet, so no company holds
+shares in another. It becomes reachable as soon as one does.
+
+**Fix (v9):** corporate share sales only through the sealed-bid auction
+with a reserve price (Finding 25), never fixed-price listings.
+
+### Finding 25 — Treasury auctions have no reserve price (High, open in v8)
+
+**Where:** `CompanyTreasury.openTreasuryAuction()`, `settleTreasuryAuction()`
+
+**Issue:** The highest revealed bid wins, however small. In a thin market
+the governor can bid a token amount from a second wallet and be the only
+bidder, buying the asset for almost nothing — Finding 23 again, only slower.
+
+**Reachable today?** Only for tokens deposited into a treasury; company 11's
+treasury holds none, and no other company has a governor.
+
+**Fix (v9):** a reserve price; if no bid reaches it, the asset returns to
+the treasury.
+
+### Finding 26 — A governor with 20% of the shares can approve their own payment alone (High, open in v8)
+
+**Where:** `CompanyTreasury.vendorPaymentPasses()`
+
+**Issue:** A payment passes when votes cast reach 20% of issued shares and
+51% of them say yes. If nobody else votes during the 3-day window, a
+governor holding 20% can propose a payment to any address — their own
+included — and pass it with their own votes alone. Low turnout is normal in
+shareholder votes, so this is realistic.
+
+**Reachable today?** Only by a governor with deposited treasury tokens; no
+such case exists.
+
+**Fix (v9):** the proposer's own votes don't count towards quorum; a higher
+quorum for large payments; payments to the governor's own addresses
+forbidden or requiring a supermajority.
+
+### Note — reinvestment conflict of interest
+
+A governor can reinvest company A's income into company B where the same
+person is governor or majority holder, moving value into a company they
+control. Bounded (income only, never capital), but v9 should at least make
+it visible on the site, and may require a shareholder vote above a size.
+
+---
+
 ### Correction: the v7 "stall breaker" leftover issue was not a real finding
 
 During the v8 work it was briefly reported that RoundAuction v7's

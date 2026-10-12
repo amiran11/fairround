@@ -18,6 +18,14 @@ Timing: after the early-tradability experiment window closes (8 November
 2026). Pointing InvestToken at the v9 RoundAuction re-locks INVEST
 transfers for everyone, which ends the experiment.
 
+## Design principle (12 Oct 2026, after the value-exit review)
+
+**No single actor can move value out of a company.** Every exit must go
+through either competitive bidding with a reserve price, or a shareholder
+vote whose quorum the proposer cannot meet alone. This is tested as an
+invariant: for every exit path, a test plays the governor-with-a-second-
+wallet attack and must fail. (See Findings 23–26 in SECURITY_REVIEW.md.)
+
 ## Decided
 
 ### Treasury: governors sell only through sealed-bid auctions (decided 12 Oct 2026)
@@ -45,6 +53,16 @@ yet carry the rule above:
 | Only sells tokens deposited in the treasury; company INVEST capital (held in RoundAuction) cannot be auctioned | Auctions can draw on company INVEST capital |
 | Bids are always paid in INVEST (selling INVEST for INVEST is meaningless) | Bids paid in an approved payment token chosen per auction |
 | No minimum price — with no other bidders, the governor can win with a token bid from a second wallet (Finding 23 again, only slower) | **Reserve price**; if no bid reaches it, the asset returns to the treasury |
+
+### Other exit paths (from the value-exit review)
+
+- **Corporate share sales** (Finding 24): only through the sealed-bid
+  auction with a reserve price; fixed-price `governorListShare` removed.
+- **Vendor payments** (Finding 26): the proposer's own votes don't count
+  towards quorum; higher quorum for large payments; payments to the
+  governor's own addresses forbidden or supermajority-only.
+- **Reinvestment into companies the governor also controls:** shown on the
+  site; shareholder vote above a size threshold (to decide).
 
 ### RoundAuction (share sales): kept, small changes
 
