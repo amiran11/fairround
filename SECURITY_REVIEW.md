@@ -513,7 +513,7 @@ reviewed: who can trigger it, and what limits it. Results:
 | `openTreasuryAuction` | governor opens, anyone bids | no reserve price | **Finding 25** |
 | `proposeVendorPayment` | governor proposes, shareholders vote | 20% quorum, 51% yes | **Finding 26** |
 | end-of-term dividend | shareholder vote | 1% of capital, pro rata | safe |
-| `invest` (reinvestment) | governor alone | income only, never capital | acceptable; conflict-of-interest note below |
+| `invest` (reinvestment) | governor alone | income only, never capital | **not acceptable** — capital can be turned into income (Finding 33) and reinvested into the same company (Finding 38) |
 | `withdrawHostFees` | host only | accrued fees only | safe |
 | `adjustCapital` | treasury contract only | — | safe |
 
@@ -568,6 +568,59 @@ A governor can reinvest company A's income into company B where the same
 person is governor or majority holder, moving value into a company they
 control. Bounded (income only, never capital), but v9 should at least make
 it visible on the site, and may require a shareholder vote above a size.
+
+---
+
+### Independent audit of v8 (12 October 2026)
+
+Four independent reviewers, one per area (RoundAuction; Governance;
+CompanyTreasury; InvestToken, OpenVerifier and cross-contract wiring),
+audited the v8 source with Findings 1–26 as known. The RoundAuction and
+Governance reviewers reproduced their findings on a local chain; the other
+two worked from the code. Each high-impact claim below was re-checked
+against the source. All are **open in v8** and addressed in `V9_DESIGN.md`.
+
+"Live" means reachable on the deployment today; most need other users,
+which v8 does not yet have.
+
+| # | Finding | Severity | Live? |
+|---|---|---|---|
+| 27 | **Sole-candidate capture.** Opening the vote closes candidacy (`openGovernanceVote`, `declareCandidacy` L109/L124). A 0.1% holder can declare and open voting in back-to-back transactions; nobody else can then run, and with ≤2 candidates any vote count wins (L200). A sitting governor can repeat this every term. Combined with Finding 23 it hands over the company's capital. | Critical | Yes, for any company at ≥50% issued without a governor |
+| 28 | **One stake fills all 20 candidate slots.** `declareCandidacy` checks the *current* balance (L113), so one minimum stake passed between 20 wallets registers 20 candidates. If holders refuse to vote for any of them, the zero-vote reopen (L172) repeats forever: the company can never elect anyone else. Worse than Finding 10 documents. | High | Same as 27 |
+| 29 | **Finding 22 regression.** `_installGovernor` (L216–218) overwrites the term end that `startNewTerm` recorded with 0, so after every re-election the previous term's dividend vote can never open. | Medium | At company 11's first re-election |
+| 30 | **Bids can be locked indefinitely.** A bid fills only if its whole entitlement fits in the round; bids can't be cancelled and are refunded only at sellout. One wallet keeping a 1-INVEST bid in the book makes any bid above ~300× that size unfillable. It also lets later bidders set an earlier bidder's price. | High | Yes |
+| 31 | **Bid-slot squatting confirmed** (was a hypothesis in v9 notes). 99 wallets with unfillable bids plus one 1-INVEST bid hold all 100 slots; the attacker re-bids in the same transaction as settlement, so honest bidders never get in, and buys the company at 1 INVEST per share. | High | Yes |
+| 32 | **OpenVerifier's balance check is reusable in one transaction.** A factory can create wallets, lend each the same 0.0083 ETH, verify, claim and forward the INVEST — filling all 300,000 citizen slots (~300M INVEST) for an estimated 0.6–3 ETH of gas. Verifications made before OpenVerifier is switched off stay valid. Worse than the known Sybil limitation states. | High | Yes |
+| 33 | **Capital turned into reinvestable income.** Sell capital for USDC at a fair price (`governorOfferInvest`), auction the USDC for INVEST: the proceeds become reinvestable income, which `invest()` can spend — breaking "never reinvest original capital". Not fixed by a price floor alone. | Medium–High | Yes, by company 11's governor |
+| 34 | **Quorum can be rented for one second.** Whoever opens a vendor-payment vote or election round sets the snapshot at `now − 1`, so shares bought just before and sold just after still count. Extends Finding 26. | Medium | When shares trade |
+| 35 | **"Last look" in sealed-bid auctions.** The leading bid is public during reveals and an unrevealed commit only costs the fixed 10 INVEST deposit, so a bidder can commit a ladder of prices and reveal only the cheapest winning one. Extends Finding 25. | Medium | When treasuries hold tokens |
+| 36 | **Owner powers broader than documented.** The owner can freeze every INVEST transfer (pointing the tradability source at a contract that reverts — also blocking refunds and settlements), re-lock trading, and mint at will (raise `maxCitizens` and verify own wallets). | Medium (disclosure) | Owner only |
+| 37 | **Re-locking freezes trading pools and conflicts with the continuity commitment.** Pointing InvestToken at a locked source (TradabilityLock or a new v9 RoundAuction) makes every pool swap revert and can trap the paired ETH/USDC of liquidity providers. | Medium | Owner action |
+| 38 | **A company can reinvest into itself** (`invest` has no from ≠ to check): the governor earns 1% compensation on a buy-back, and Finding 24 becomes reachable without a second company. | Low | Yes |
+| 39 | **Stale share listings come back to life** when a share returns to its old owner; a past governor's corporate listing stays live after the term. | Low | Yes |
+| 40 | **Rounding up doubles shares per INVEST**: lowest bid + 1 wei is entitled to 2 shares. | Low | Yes |
+
+**Lower-severity notes (all go into v9):** a departing governor's vendor
+payments outlive the term and can't be cancelled; an approved payment to a
+blocked recipient locks the funds; deposits of hook tokens can be credited
+twice (no reentrancy guard); rebasing tokens break per-company balances;
+company-held shares count towards treasury quorums but can't vote there;
+corporate offers between terms can't be cancelled by anyone; share NFTs can
+be deposited as "tokens" and never leave; setting `auctionHouse` in v9
+rewiring would block all claims and can't be undone; company IDs ≥ 2^128
+collide; the 1% compensation can go to an expired or different governor;
+governors can't be recalled and need not keep any shares; expired keys can
+still cancel corporate listings before `startNewTerm`; `LOCK_PERIOD` runs
+only from a company's first mint; the contract's comments still say INVEST
+can't be traded.
+
+**Checked and found safe by the reviewers:** INVEST custody across every
+RoundAuction path (balance matched obligations exactly); settlement always
+progresses and stays under 32M gas, including 300-share sellouts with ~100
+refunds (22.4M); per-round vote weighting and double-vote protection; round
+ids across terms; dividend and auction accounting; separation of INVEST
+pools in the treasury; access control on every governor and treasury-only
+function; the 5% allowance can't be cheaply inflated.
 
 ---
 
