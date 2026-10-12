@@ -35,6 +35,23 @@ transfers for everyone, which ends the experiment.
 - `buyInvest`-style purchases must re-check that the payment token is still
   approved.
 
+### Treasury sealed-bid auction: required changes (found 12 Oct 2026)
+
+The v8 commit-reveal mechanism works and is reused, but v8's auction cannot
+yet carry the rule above:
+
+| v8 limitation | v9 change |
+|---|---|
+| Only sells tokens deposited in the treasury; company INVEST capital (held in RoundAuction) cannot be auctioned | Auctions can draw on company INVEST capital |
+| Bids are always paid in INVEST (selling INVEST for INVEST is meaningless) | Bids paid in an approved payment token chosen per auction |
+| No minimum price — with no other bidders, the governor can win with a token bid from a second wallet (Finding 23 again, only slower) | **Reserve price**; if no bid reaches it, the asset returns to the treasury |
+
+### RoundAuction (share sales): kept, small changes
+
+The proportional round auction worked as designed in v8 and is kept. v9
+changes: the stricter tradability rule (below), and bid-slot protection if
+the squatting hypothesis is confirmed by testing.
+
 ### Carried over from v8 (unchanged)
 
 - Governors reinvest only treasury income, never original capital.
@@ -60,5 +77,7 @@ transfers for everyone, which ends the experiment.
 - **Small expenses:** without the free 5%, every expense needs a 3-day
   vote. Option under consideration: a small allowance (e.g. 1% per term)
   payable **only to shareholder-approved addresses**. Not decided.
+- **Reserve price:** set by shareholder vote per auction, or by a fixed rule
+  (e.g. a minimum relative to recorded capital)?
 - **Verification method** for real citizens (ID-based, attestation, other).
 - **Exact tradability rule** (company size and shareholder-count thresholds).
