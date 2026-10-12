@@ -498,6 +498,13 @@ company's recorded capital, and re-check token approval in `buyInvest`.
 
 **Status:** open in the v8 deployment; fix planned for v9.
 
+**Demonstrated end to end on mainnet, 12 October 2026 (~23:40 Tbilisi):**
+the founder, as company 11's governor, offered all 990 INVEST of its
+capital for 1 USDC and bought the offer from his own wallet. The company was
+left with 1 USDC; 990 INVEST moved to a personal wallet in two
+transactions. No one else was affected (the founder is the only
+shareholder). Transaction hashes: *to be added*.
+
 ---
 
 ### Value-exit review (12 October 2026)
