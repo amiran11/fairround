@@ -429,6 +429,11 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 .ledger td { padding: var(--space-2) var(--space-3) var(--space-2) 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
 .ledger .num-cell { text-align: right; font-feature-settings: "tnum" 1; }
 .ledger th:last-child, .ledger td:last-child { padding-right: 0; }
+.only-sm { display: none; }
+@media (max-width: 600px) {
+  .hide-sm { display: none; }
+  .only-sm { display: inline; }
+}
 
 /* ------------------------------------------------------------- facts */
 

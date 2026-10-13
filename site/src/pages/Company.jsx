@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
 import { useCompanies, useCompanyName, StageStamp } from "../companies.jsx";
@@ -45,7 +46,18 @@ export default function Company() {
       </div>
     );
   }
-  const n = name(company);
+  return <CompanyView company={company} companies={companies} n={name(company)} />;
+}
+
+function CompanyView({ company, companies, n }) {
+  const { t } = useT();
+  const { hash } = useLocation();
+  // Arriving from a link to a section (for example from the portfolio).
+  useEffect(() => {
+    if (!hash) return;
+    const id = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" }), 300);
+    return () => clearTimeout(id);
+  }, [hash, company.id]);
   const g = company.gov;
 
   return (
@@ -61,16 +73,16 @@ export default function Company() {
 
       <div className="with-rail">
         <div>
-          <section className="section" aria-labelledby="s-auction">
-            <div className="section-head"><h2 id="s-auction" className="h2">{t("Share auction")}</h2></div>
+          <section className="section" id="s-auction" aria-labelledby="s-auction-h">
+            <div className="section-head"><h2 id="s-auction-h" className="h2">{t("Share auction")}</h2></div>
             <Auction company={company} />
           </section>
-          <section className="section" aria-labelledby="s-election">
-            <div className="section-head"><h2 id="s-election" className="h2">{t("Election and governor")}</h2></div>
+          <section className="section" id="s-election" aria-labelledby="s-election-h">
+            <div className="section-head"><h2 id="s-election-h" className="h2">{t("Election and governor")}</h2></div>
             <CompanyGovernance company={company} />
           </section>
-          <section className="section" aria-labelledby="s-treasury">
-            <div className="section-head"><h2 id="s-treasury" className="h2">{t("Treasury")}</h2></div>
+          <section className="section" id="s-treasury" aria-labelledby="s-treasury-h">
+            <div className="section-head"><h2 id="s-treasury-h" className="h2">{t("Treasury")}</h2></div>
             <CompanyTreasury company={company} companies={companies} />
           </section>
         </div>

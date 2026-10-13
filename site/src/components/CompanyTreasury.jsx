@@ -481,7 +481,10 @@ function GovernorTools({ company, companies, data }) {
 export default function CompanyTreasury({ company, companies }) {
   const { t } = useT();
   const { address } = useSession();
-  const [tab, setTab] = useState("holdings");
+  const [tab, setTab] = useState(() => {
+    const asked = new URLSearchParams(window.location.search).get("tab");
+    return ["holdings", "auctions", "payments", "dividends", "governor"].includes(asked) ? asked : "holdings";
+  });
   const [data, err] = useChain(async (p) => {
     const [tr, g, payTokens] = await Promise.all([getCompanyTreasury(company.id, p), getCompanyGovernance(company.id, p), getApprovedPaymentTokens(p)]);
     return { ...tr, payTokens, gov: g };

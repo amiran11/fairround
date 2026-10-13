@@ -9,6 +9,7 @@ import Market from "./pages/Market.jsx";
 import Rules from "./pages/Rules.jsx";
 import WhitePaper from "./pages/WhitePaper.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import Portfolio from "./pages/Portfolio.jsx";
 
 export default function App() {
   return (
@@ -20,6 +21,8 @@ export default function App() {
             <Route path="company/:id" element={<Company />} />
             <Route path="citizen" element={<Citizen />} />
             <Route path="market" element={<Market />} />
+            <Route path="portfolio" element={<Portfolio />} />
+            <Route path="portfolio/:address" element={<Portfolio />} />
             <Route path="rules" element={<Rules />} />
             <Route path="whitepaper" element={<WhitePaper />} />
             {/* The old live screen's address. */}

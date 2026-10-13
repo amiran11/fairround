@@ -84,6 +84,32 @@ console.log("As a visitor without a wallet");
   }
 }
 
+// ------------------------------------------------------------- portfolio
+console.log("Portfolio");
+{
+  let page = await open("/portfolio", { account: st.viewer });
+  await page.getByRole("heading", { name: "Your portfolio" }).waitFor({ timeout: 20000 });
+  await page.getByText("Vote in the election with 2 shares.").waitFor({ timeout: 30000 });
+  ok(await page.getByText("Vote on payment 0 with 2 shares.").isVisible(), "'Waiting for you' lists the open election and payment vote I can take part in");
+  ok(await page.getByText("4 shares in 2 companies").isVisible(), "summary: 4 shares in 2 companies");
+  ok((await page.locator("#p-shares").locator("xpath=ancestor::section").locator("tbody tr").count()) === 2, "both holdings are listed");
+  ok(await page.locator("section", { has: page.locator("#p-bids") }).getByText("Georgian Railway").isVisible(), "my open bid on Georgian Railway is listed");
+  await page.screenshot({ path: `${SHOTS}/05-portfolio.png`, fullPage: true });
+  await page.locator("li", { hasText: "Vote in the election" }).getByRole("link").click();
+  await page.waitForURL(/\/company\/3#s-election$/);
+  await page.getByRole("button", { name: "Vote for this candidate" }).first().waitFor({ timeout: 20000 });
+  ok(true, "the to-do item opens the company's election, ready to vote");
+  await page.close();
+
+  page = await open("/portfolio");
+  await page.getByLabel("Look up any address").fill(st.viewer);
+  await page.getByRole("button", { name: "Look up" }).click();
+  await page.waitForURL(new RegExp(`/portfolio/${st.viewer}$`));
+  await page.getByText("4 shares in 2 companies").waitFor({ timeout: 30000 });
+  ok(await page.getByRole("heading", { name: "Waiting for this address" }).isVisible(), "a visitor can look up any address and see its portfolio");
+  await page.close();
+}
+
 // ------------------------------------------------------------- new citizen
 console.log("As a brand-new wallet");
 {

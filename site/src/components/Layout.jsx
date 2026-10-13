@@ -23,7 +23,7 @@ function Account() {
     return <Button kind="secondary" small busy={connecting} onClick={connect}>{t("Connect wallet")}</Button>;
   }
   return (
-    <Link to="/citizen" className="btn btn-secondary btn-small" title={address}>
+    <Link to={account && !account.alreadyClaimed ? "/citizen" : "/portfolio"} className="btn btn-secondary btn-small" title={address}>
       <span className="addr">{short(address)}</span>
       {account && <span className="num muted">{fmt(account.invest, 18, 0)} INVEST</span>}
     </Link>
@@ -52,8 +52,9 @@ export default function Layout() {
   const { t, lang, setLang } = useT();
   const nav = [
     ["/", t("Register")],
-    ["/citizen", t("Become a citizen")],
-    ["/market", t("INVEST market")],
+    ["/portfolio", t("Portfolio")],
+    ["/citizen", t("Citizenship")],
+    ["/market", t("Market")],
     ["/rules", t("Rules")],
     ["/whitepaper", t("White paper")],
   ];
