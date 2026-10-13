@@ -108,7 +108,8 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     mapping(uint256 => mapping(address => uint256)) public activeBidSlot; // index + 1, 0 = none
     uint256 public nextBidSeq;
 
-    // tokenId => companyId (bits 192..255) | mintedAt (bits 128..191) | ordinal (bits 0..127)
+    // tokenId => companyId (bits 192..255) | compensation flag (bit 191)
+    //          | mintedAt (bits 128..190) | ordinal (bits 0..127)
     mapping(uint256 => uint256) internal shareInfo;
 
     mapping(uint256 => mapping(address => Checkpoints.Trace208)) internal holdingHistory;
@@ -126,7 +127,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     mapping(uint256 => mapping(address => address)) public corporateBidGovernor; // companyId => corporate bidder => governor
     mapping(uint256 => mapping(address => uint256)) public corporateBidFilled;
     mapping(uint256 => mapping(address => uint256)) public corporateBidCompPaid;
-    mapping(uint256 => uint256) public compensationUnlockTime; // tokenId => time
+
 
     uint256 public companiesListed;
     uint256 public companiesFinalized;
@@ -541,11 +542,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
             if (gov != address(0) && due > 0) {
                 if (due > qty) due = qty;
                 corporateBidCompPaid[companyId][to] += due;
-                uint256 first = nextTokenId;
-                _mintBatch(companyId, c, gov, due);
-                for (uint256 t = first; t < first + due; t++) {
-                    compensationUnlockTime[t] = block.timestamp + COMPENSATION_LOCK;
-                }
+                _mintBatch(companyId, c, gov, due, true);
                 qty -= due;
             }
             if (qty > 0) {
@@ -553,14 +550,14 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
                 h.push(uint48(block.timestamp), h.latest() + uint208(qty));
             }
         }
-        _mintBatch(companyId, c, to, qty);
+        _mintBatch(companyId, c, to, qty, false);
     }
 
-    function _mintBatch(uint256 companyId, Company storage c, address to, uint256 qty) internal {
+    function _mintBatch(uint256 companyId, Company storage c, address to, uint256 qty, bool compensation) internal {
         if (qty == 0) return;
         uint256 ordinal = c.sharesIssued;
         uint256 tokenId = nextTokenId;
-        uint256 head = (companyId << 192) | (block.timestamp << 128);
+        uint256 head = (companyId << 192) | (compensation ? (uint256(1) << 191) : 0) | (block.timestamp << 128);
         for (uint256 s = 0; s < qty; s++) {
             ordinal++;
             shareInfo[tokenId] = head | ordinal;
@@ -581,7 +578,13 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     }
 
     function shareMintedAt(uint256 tokenId) public view returns (uint256) {
-        return (shareInfo[tokenId] >> 128) & type(uint64).max;
+        return (shareInfo[tokenId] >> 128) & ((uint256(1) << 63) - 1);
+    }
+
+    /// @notice 0 for ordinary shares; for a governor's compensation share,
+    /// the time it unlocks (60 days after mint).
+    function compensationUnlockTime(uint256 tokenId) public view returns (uint256) {
+        return (shareInfo[tokenId] >> 191) & 1 == 1 ? shareMintedAt(tokenId) + COMPENSATION_LOCK : 0;
     }
 
     function shareOrdinal(uint256 tokenId) public view returns (uint256) {
@@ -634,7 +637,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
 
     function _checkTransferable(uint256 tokenId) internal view {
         require(block.timestamp >= shareUnlocksAt(tokenId), "RA: share still locked");
-        require(block.timestamp >= compensationUnlockTime[tokenId], "RA: comp shares locked");
+        require(block.timestamp >= compensationUnlockTime(tokenId), "RA: comp shares locked");
     }
 
     /// @dev Locks, balance history, and listing cleanup on every move.

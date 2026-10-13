@@ -73,6 +73,7 @@ contract CompanyDividendsV9 is ReentrancyGuard {
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) public policyHasVoted;
     mapping(uint256 => mapping(uint256 => uint256)) public policyDividendWeight;
     mapping(uint256 => mapping(uint256 => uint256)) public policyReinvestWeight;
+    mapping(uint256 => mapping(uint256 => uint256)) public policyCorporateVotes; // counted in the base too
     mapping(uint256 => mapping(uint256 => uint256)) public dividendPerShare; // scaled by 1e18
     mapping(uint256 => mapping(uint256 => uint256)) public dividendRemaining;
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) public claimedDividend;
@@ -115,14 +116,14 @@ contract CompanyDividendsV9 is ReentrancyGuard {
         require(block.timestamp < governance.governorTermEnd(fromCompanyId), "DV: term expired");
         address tg = governance.termGovernor(companyId, term);
         require(governance.companyGovernor(fromCompanyId) != tg && msg.sender != tg, "DV: that term's governor can't vote");
-        _votePolicy(companyId, term, roundAuction.corporateHolder(fromCompanyId), wantsDividend);
+        policyCorporateVotes[companyId][term] += _votePolicy(companyId, term, roundAuction.corporateHolder(fromCompanyId), wantsDividend);
     }
 
-    function _votePolicy(uint256 companyId, uint256 term, address voter, bool wantsDividend) internal {
+    function _votePolicy(uint256 companyId, uint256 term, address voter, bool wantsDividend) internal returns (uint256 weight) {
         uint256 voteEnd = policyVoteEnd[companyId][term];
         require(voteEnd != 0 && block.timestamp < voteEnd, "DV: voting not open");
         require(!policyHasVoted[companyId][term][voter], "DV: already voted");
-        uint256 weight = roundAuction.votingWeight(companyId, voter, policyRecordDate[companyId][term]);
+        weight = roundAuction.votingWeight(companyId, voter, policyRecordDate[companyId][term]);
         require(weight > 0, "DV: no shares at record date");
         policyHasVoted[companyId][term][voter] = true;
         if (wantsDividend) policyDividendWeight[companyId][term] += weight;
@@ -133,7 +134,7 @@ contract CompanyDividendsV9 is ReentrancyGuard {
     /// @notice Quorum base for a policy vote.
     function policyBase(uint256 companyId, uint256 term) public view returns (uint256) {
         uint256 rd = policyRecordDate[companyId][term];
-        uint256 issued = roundAuction.sharesIssuedAt(companyId, rd);
+        uint256 issued = roundAuction.sharesIssuedAt(companyId, rd) + policyCorporateVotes[companyId][term];
         uint256 excluded = roundAuction.corporateSharesAt(companyId, rd)
             + roundAuction.shareCountAt(companyId, governance.termGovernor(companyId, term), rd);
         return issued > excluded ? issued - excluded : 0;

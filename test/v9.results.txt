@@ -1,8 +1,8 @@
 Sizes (Arbitrum limit 24,576 bytes)
-  PASS RoundAuctionV9: 23470 bytes deployed
-  PASS GovernanceV9: 15375 bytes deployed
-  PASS CompanyTreasuryV9: 20602 bytes deployed
-  PASS CompanyDividendsV9: 7732 bytes deployed
+  PASS RoundAuctionV9: 23515 bytes deployed
+  PASS GovernanceV9: 15999 bytes deployed
+  PASS CompanyTreasuryV9: 20679 bytes deployed
+  PASS CompanyDividendsV9: 7857 bytes deployed
   PASS OpenVerifierV2: 1736 bytes deployed
   PASS SakartveloTimelock: 5488 bytes deployed
 
@@ -28,10 +28,10 @@ RoundAuction v9: full book eviction (F31)
   PASS F31: full book, equal bid can't enter
   PASS F31: higher bid evicts the lowest (latest on ties), refunded in full
   PASS book stays at 100; accounting exact
-  PASS worst-case settlement, 100 bids and 150 shares: 20667055 gas (< 32M with a 30% wallet buffer)
+  PASS worst-case settlement, 100 bids and 150 shares: 20670541 gas (< 32M with a 30% wallet buffer)
   PASS 150 shares issued in the round, spread pro rata
   PASS accounting exact after the big settlement
-  PASS worst-case sell-out with 100 refunds: 18645821 gas (< 32M with a 30% wallet buffer)
+  PASS worst-case sell-out with 100 refunds: 18649454 gas (< 32M with a 30% wallet buffer)
   PASS accounting exact after sell-out
 
 RoundAuction v9: invest, listings, locks (F24, F38, F39, per-share lock)
@@ -119,6 +119,8 @@ Corporate path: reinvest vote -> invest vote -> compensation -> corporate votes;
   PASS GOV-N1: nor for the holding company's governor
   PASS corporate shares vote in elections through the holder's governor
   PASS corporate shares vote on payments through the holder's governor
+  PASS R3: a holding company's governor can open and carry a recall with its shares
+  PASS R3: where companies hold shares, a stakeless candidate can stand (holding companies can then nominate)
   PASS dividend vote pays shareholders pro rata at the record date
   PASS no double claim
   PASS INVEST accounting exact across the whole corporate path
@@ -166,5 +168,5 @@ Timelock on owner powers (F36)
   PASS runs after 48 hours, publicly scheduled
   PASS delay can't be shortened per call
 
-132 passed, 0 failed
+134 passed, 0 failed
 EXIT 0

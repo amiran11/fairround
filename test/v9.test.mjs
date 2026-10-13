@@ -8,9 +8,9 @@ import fs from "fs";
 const art = (n) => JSON.parse(fs.readFileSync(`./art9/${n}.art.json`));
 const P = new ethers.JsonRpcProvider("http://127.0.0.1:8545", undefined, { cacheTimeout: -1 });
 const E = (n) => ethers.parseEther(String(n));
-// Wallet-style 30% gas buffer: balance-history writes cost more when the
+// Wallet-style 50% gas buffer: balance-history writes cost more when the
 // transaction lands in a later second than the block it was estimated on.
-{ const est = P.estimateGas.bind(P); P.estimateGas = async (tx) => ((await est(tx)) * 13n) / 10n; }
+{ const est = P.estimateGas.bind(P); P.estimateGas = async (tx) => ((await est(tx)) * 15n) / 10n; }
 const DAY = 86400, HOUR = 3600;
 let pass = 0, fail = 0;
 const ok = (c, m) => { console.log((c ? "  PASS " : "  FAIL ") + m); c ? pass++ : fail++; };
@@ -459,6 +459,15 @@ console.log("\nCorporate path: reinvest vote -> invest vote -> compensation -> c
   await w(CT.connect(cits[35]).voteAsCorporation(0, pid, true));
   await warp(EXEC); await w(CT.executePayment(pid));
   ok((await CT.proposals(pid)).status === 2n, "corporate shares vote on payments through the holder's governor");
+  // round 3: a holding company can field a stakeless candidate and recall a governor
+  await w(GOV.connect(cits[35]).openRecallAsCorporation(0, 1));
+  await w(GOV.connect(cits[35]).voteRecallAsCorporation(0, 1, true));
+  await warp(3 * DAY + 1); await w(GOV.resolveRecall(1));
+  ok(!(await GOV.governorActive(1)), "R3: a holding company's governor can open and carry a recall with its shares");
+  await warp(DAY + 1);
+  await w(GOV.openCandidacy(1));
+  await w(GOV.connect(cits[39]).declareCandidacy(1, "nominee of the holding company"));
+  ok((await GOV.candidates(1, 2, cits[39].address)).registered, "R3: where companies hold shares, a stakeless candidate can stand (holding companies can then nominate)");
   // dividends for company 0, term 3
   await warp(30 * DAY);
   await w(DV.openPolicyVote(0, 3));

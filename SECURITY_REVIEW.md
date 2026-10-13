@@ -631,6 +631,66 @@ function; the 5% allowance can't be cheaply inflated.
 
 ---
 
+### Independent audits of v9 (13 October 2026)
+
+The v9 contracts (`RoundAuctionV9`, `GovernanceV9`, `CompanyTreasuryV9`,
+`CompanyDividendsV9`, `OpenVerifierV2`, `SakartveloTimelock`) were written
+against Findings 23–40, then audited three times by reviewers who had not
+written the code. Each round worked on a local chain with Arbitrum's limits
+(32M gas per transaction, 24,576-byte contracts) and wrote proof-of-concept
+attacks; every confirmed finding below was fixed and now has a test that
+plays the attack and must fail (`test/v9.test.mjs`, 134 tests, all
+passing — results in `test/v9.results.txt`). v9 is **not deployed**; it
+goes live alongside v8 after the experiment window (8 November 2026).
+
+**Round 1 — three reviewers (share auction; governance; treasury and verifier).**
+
+| ID | Finding | Severity | Fix in v9 |
+|---|---|---|---|
+| RA-1 | A 1-INVEST "anchor" bid that never fills pins the price of every share at 1 INVEST; a late buyer takes 99.7% of a company and its capital | High | Price is the clearing price when a round is oversubscribed; the lowest bid only sets the price when every bid fits |
+| GOV-1 / CT-6 | Whoever opens a vote picks the snapshot second; shares borrowed for one second count in full (elections, recalls, payments) | High | Vote weight = min(shares at snapshot, shares now) |
+| CT-1 | Tunnelling: an insider moves value from company A to a company they control via a quorum-less "reinvest" vote and a governor-alone `invest()` | High | Investing is a shareholder-voted proposal with a max price per share; the end-of-term vote needs 20% and excludes that term's governor |
+| CT-2 | The insider exclusion only covers the governor's own two wallets | High | Structural limits: 20% of a bucket per term, cumulative "large" quorum, an execution delay so a recall can intervene |
+| GOV-2 | One whale fills all 20 candidate slots with puppets; the majority can never field a candidate | Medium | The ballot is the 20 candidates with the most nomination weight |
+| GOV-3 | A 1-share ally blocks recalls by opening empty ones (cooldown) | Medium | Opening needs 1%; only a recall that reached turnout starts the cooldown |
+| CT-3 | Splitting a payment dodges the 40% "large" quorum | Medium | "Large" and the cap are counted cumulatively per term |
+| CT-4 | "No" votes counted towards quorum, so opposing could make a proposal pass | Medium | Yes votes alone must reach the quorum |
+| CT-5 | The governor silences a voter by naming them operating key mid-vote | Medium | Two-step operating key (the key must accept); proposer identities frozen on the proposal |
+| RA-2 | Bids had no price limit; a carried-over bid could only be withdrawn in a 1-hour window | Medium | Every bid carries a max price per share |
+| RA-3 | Shares can be gifted to a company's own address: it votes its own shares; dividends become income | Low | No share can be sent to a company address |
+| RA-4 / GOV-5 | Compensation rounded per settlement (usually 0); self-recall shortened its two-term lock | Low | Counted cumulatively; locked 60 days by time |
+| GOV-4/6/7/8 | Split votes couldn't reach a runoff; governor-less corporate holders could freeze quorums; a lone candidate couldn't be opposed; ties by list position | Low | Runoff on total turnout; company-held shares out of the denominators unless they vote; "against all"; ties to the earlier declaration |
+| CT-8 | One balance could take a whole day's verifications at midnight | Low | At most 10 new citizens per hour |
+
+**Round 2 — two reviewers, on the revised code.**
+
+| ID | Finding | Severity | Fix in v9 |
+|---|---|---|---|
+| RA-N1 | With per-bid price caps, 100 bids that can never buy could squat the full book for free and freeze a company's sale | High | Eviction and the price floor use the effective price min(budget, max price): at the floor every bid buys |
+| CT-M1 | The 3-day execution delay equalled the 3-day recall vote, so a governor could execute before the recall resolved | Medium | 5-day delay; an action due while an earlier-opened recall is pending waits for it |
+| CT-M2 | Sales escaped the per-term cap and cumulative quorum; proceeds got a fresh cap in the other token | Medium | Sales count towards the cap and quorum; proceeds can't be paid out in the same term |
+| GOV-N1 | A governor could vote another company's shares for themself and on their own recall | Medium | Forbidden; company votes cast also count in the denominators |
+| RA-N2, RA-N3, GOV-N2, GOV-N3, CT-L1–L4 | A capped bid setting a price it won't pay; gifting shares to a not-yet-listed company; a decoy withdrawing with others' nominations; fully company-owned companies unable to elect; failed payments using up the cap; anyone cancelling an approved investment; recipients voting for their own payment | Low | Fixed as listed in the round-2 commit (`f084921`) |
+
+**Round 3 — one reviewer, final verification.** Confirmed every round-2
+fix and found two more, both fixed:
+
+| ID | Finding | Severity | Fix in v9 |
+|---|---|---|---|
+| R3-1 | A holding company's governor could take a subsidiary's governorship with his 1% compensation shares and could never be removed (only individuals could stand or open a recall) | Medium | Where companies hold shares anyone may stand without a stake; holding companies can open and vote recalls (not against their own governor) |
+| R3-2 | A 1% holder could void a payment approved late in a term with an empty recall | Low–Medium | Proposals must leave room for the vote, the delay and a full recall before the term ends (about day 19 of 30) |
+| R3-3 | Compensation minting made the worst-case settlement ~26.9M gas | Low | Compensation flag stored inside the share record (no extra storage write); rounds capped at 150 shares; worst case measured 20.7M |
+
+**What the v9 audits did not change — stated plainly.** No on-chain rule
+can tell two wallets of one person apart. A person who really holds a
+majority of a company's shares (in however many wallets) controls it; v9
+limits how fast anyone can move value out (20% of a bucket per term, a
+5-day delay, recall) but does not pretend to stop a genuine majority.
+OpenVerifierV2 is still a balance check, not proof of personhood. A paid
+external audit is still recommended before v9 holds real value.
+
+---
+
 ### Correction: the v7 "stall breaker" leftover issue was not a real finding
 
 During the v8 work it was briefly reported that RoundAuction v7's

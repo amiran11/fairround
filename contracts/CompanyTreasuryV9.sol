@@ -86,6 +86,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     uint256 public constant VOTE_WINDOW = 3 days;
     uint256 public constant SNAPSHOT_LAG = 1 days;
     uint256 public constant EXECUTION_DELAY = 5 days; // > the 3-day recall vote (v9 audit CT-M1)
+    uint256 public constant RECALL_WINDOW = 3 days;   // GovernanceV9.RECALL_WINDOW
     uint256 public constant MAJORITY_BPS = 5100;
     uint256 public constant QUORUM_BPS = 2000;        // yes >= 20% of the base
     uint256 public constant LARGE_QUORUM_BPS = 4000;  // 40% when large
@@ -266,7 +267,10 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
         require(_held(token), "CT: token not approved");
         require(amount > 0, "CT: amount must be > 0");
         uint256 voteEnd = block.timestamp + VOTE_WINDOW;
-        require(voteEnd + EXECUTION_DELAY < governance.governorTermEnd(companyId), "CT: would outlast the term");
+        // Room for the vote, the delay and a full recall vote before the term
+        // ends, so a last-minute empty recall can't run out the clock
+        // (v9 audit round 3).
+        require(voteEnd + EXECUTION_DELAY + RECALL_WINDOW < governance.governorTermEnd(companyId), "CT: would outlast the term");
         uint256 term = governance.termNumber(companyId);
         uint256 bal = balanceOf(companyId, token, bucket);
         // Payments, investments and sales together: at most 20% of a bucket
@@ -398,7 +402,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     /// anyone can call it to return the income.
     function executeInvest(uint256 id) external nonReentrant {
         Proposal storage q = proposals[id];
-        require(!_termLive(q) || msg.sender == governance.governorOperatingKey(q.companyId), "CT: not operating key");
+        require(!_termLive(q) || !passes(id) || msg.sender == governance.governorOperatingKey(q.companyId), "CT: not operating key");
         (Proposal storage p, bool ok) = _decide(id, Kind.Invest);
         if (!ok) return;
         roundAuction.placeCorporateBid(p.companyId, p.target, p.amount, p.reserve, p.governor);

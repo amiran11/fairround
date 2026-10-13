@@ -1,17 +1,23 @@
 # v9 design note
 
 Started 12 October 2026; updated the same day after an independent audit of
-all five v8 contracts (Findings 23–40 in `SECURITY_REVIEW.md`). v9 will be
+all five v8 contracts (Findings 23–40 in `SECURITY_REVIEW.md`). Contracts
+written and audited three times on 13 October 2026; the final rules are in
+"v9 rules in one place" below. v9 will be
 deployed **alongside** v8 (see the continuity commitment in
 `EXPERIMENT_EARLY_TRADABILITY.md`), not instead of it.
 
 ## Process: audit → redesign → audit again → deploy
 
 1. **Done:** value-exit review and independent audit of v8 (Findings 23–40).
-2. **Next:** decisions below (marked **DECIDE**), then the v9 specification.
-3. Write v9; every finding gets a test that plays the attack and must fail.
-4. Independent audit of the v9 code by reviewers who did not write it.
-5. Full rehearsal deploy on a local chain, then on a testnet.
+2. **Done (13 Oct):** decisions below, then the v9 specification.
+3. **Done (13 Oct):** v9 written; every finding has a test that plays the
+   attack and must fail (`test/v9.test.mjs`, 134 tests passing).
+4. **Done (13 Oct):** three rounds of independent audit of the v9 code;
+   every confirmed finding fixed and tested (see `SECURITY_REVIEW.md`,
+   "Independent audits of v9").
+5. **Next:** full rehearsal deploy on a local chain, then on a testnet
+   (`DEPLOY_V9.md`); site support for v9.
 6. Mainnet deploy after the experiment window closes (8 November 2026).
 
 ## What gets redeployed
@@ -21,6 +27,8 @@ deployed **alongside** v8 (see the continuity commitment in
 | RoundAuction | new | Findings 30, 31, 38–40; set-once wiring; tradability rule |
 | Governance | new | Findings 27–29, 34; bound to one RoundAuction |
 | CompanyTreasury | new | Findings 23–26, 33, 35 and the treasury rules below |
+| CompanyDividends | new | End-of-term dividend/reinvest vote, split out of the treasury to stay under the size limit |
+| SakartveloTimelock | new | 48-hour delay on every owner power (Finding 36) |
 | InvestToken | **kept** (DECIDE) | same address and balances; but its owner powers (Finding 36) can only be limited, not removed, without a new token |
 | OpenVerifier | **replaced** | Finding 32 |
 
@@ -109,56 +117,85 @@ The proportional round auction is kept. Required changes:
 | Verification | default (interim): OpenVerifier v2 — normal wallets only (no contract factories), plus a daily cap on new citizens |
 | Tradability thresholds | not needed: INVEST is already tradable and stays so |
 
-### v9 rules in one place
+### v9 rules in one place (final, after three audit rounds)
 
-**Share auctions (RoundAuction v9)**
-- Lowest bid sets the price of one share; each bid is entitled to
-  floor(bid / lowest) shares (rounded **down**, Finding 40) and pays exactly
-  shares × lowest; the remainder is refunded.
-- **Partial fills**: highest bids first, each gets min(entitlement, shares
-  left); an unfilled remainder stays as a smaller bid for the next round.
-- **Full book**: when all 100 slots are taken, a new bid must be larger than
-  the current lowest, which is refunded and evicted (ends slot squatting,
-  Finding 31).
-- Share lock counted per share from its own issue time.
-- One listing per share, cleared whenever the share moves (Finding 39).
-- No fixed-price corporate share sales; company-held shares stay held and
-  earn dividends and votes (Finding 24).
-- `invest` requires source ≠ target (38); the governor and term are recorded
-  at `invest` time for the 1% compensation.
-- No tradability flag (not needed); company IDs limited to < 2^64.
+**Share auctions (RoundAuctionV9)**
+- A bid is a budget of INVEST plus a **max price per share**. Its
+  effective price is the smaller of the two.
+- Price of a share in a round: if every bid fits at the lowest effective
+  price, that is the price (the paper's rule: the lowest bid buys a
+  share). If the round is oversubscribed, the price is the **clearing
+  price** — the highest price at which demand still covers the shares on
+  offer. A tiny bid can never pin the price.
+- Shares are rounded **down** and a bid pays exactly shares × price.
+  Oversubscribed rounds are filled **pro rata**; a partly filled bid stays
+  active for the next round.
+- At most **150 shares per round** and 100 active bids (worst-case
+  settlement 20.7M gas of Arbitrum's 32M). When the book is full, a new
+  bid must have a higher effective price than the lowest, which is
+  refunded and evicted.
+- After each settlement a **1-hour cooldown**: no bidding; any active bid
+  can be withdrawn.
+- Each share is locked for 7 days from its own mint. One listing per
+  share, deleted whenever it moves. No share can be sent to a company.
+- **Company bids** come only from the treasury after a shareholder vote.
+  The governor at that moment earns 1% of what the bid fills, counted
+  cumulatively, locked 60 days.
+- 1% host fee on every share sale.
 
-**Elections (Governance v9)**
-- Anyone opens a 5-day **candidacy period**; its snapshot (1 second before
-  it opened) fixes both candidacy stakes and all vote weights for that
-  election (Findings 27, 28, 34). Candidates can withdraw.
-- Voting opens only after the candidacy period. A winner needs 51% of votes
-  cast **and** votes ≥ 20% of shares issued at the snapshot; otherwise the
-  round fails. Two failed rounds reset to a fresh candidacy period.
-- Term end is recorded once and never overwritten (Finding 29).
-- **Recall**: shareholders can end a term early (vote ≥ 51% of cast and
-  turnout ≥ 33% of issued).
+**Elections and recall (GovernanceV9)**
+- Vote weight everywhere = the **smaller** of shares held at the snapshot
+  (one day before the vote opened) and shares held now.
+- Anyone opens a 5-day candidacy period once 50% of shares are issued.
+  Holders of 0.1% declare with a program; every holder **nominates** one
+  candidate; the ballot is the 20 with the most nomination weight.
+  Candidates others have nominated can't withdraw. Where companies hold
+  shares, anyone may stand without a stake.
+- Voting opens after the candidacy period; voters may vote **against
+  all**. A winner needs 20% of the voting base and 51% of votes cast (or,
+  with two or fewer left, strictly more than the runner-up and than
+  "against all"). Otherwise a runoff (if turnout reached 20%) or a failed
+  round; two failed rounds close the election.
+- Company-held shares vote through their governor, never for that
+  governor, and count in the base only when they vote.
+- 30-day terms; the end of each term is recorded once. Operating keys are
+  two-step (named by the governor, accepted by the key).
+- **Recall**: opened by a 1% holder or a holding company; passes with 51%
+  of votes and 33% turnout; only a recall that reached turnout starts a
+  7-day cooldown.
 
-**Treasury (CompanyTreasury v9)**
-- No free withdrawal, no fixed-price sales, no INVEST market (v8's market
-  stays available).
-- **Sales**: governor proposes (asset, amount, payment token, reserve) →
-  shareholder vote → sealed-bid auction in the payment token, with a deposit
-  of 10% of the reserve. Highest bid ≥ reserve wins; otherwise the asset
-  returns.
-- **Two buckets** per company and token — capital and income. Proceeds keep
-  the bucket of what was sold; only income can ever be reinvested
-  (Finding 33).
-- **Payments**: by vote only; the governor and their key cannot vote on
-  their own proposal and cannot be paid by it; quorum 20% (40% for large
-  payments); vote weights from a snapshot one day before the proposal;
-  proposals must finish within the term; a failed transfer returns the money.
-- Company-held shares vote on payments, sales and dividends through their
-  own governor.
-- Custody only for approved tokens; reentrancy guard on every external
-  function.
+**Treasury (CompanyTreasuryV9)**
+- No free withdrawal, no fixed-price sales, no INVEST market.
+- Two buckets per company and token: **capital** and **income**. Sale
+  proceeds keep the bucket of what was sold.
+- Every exit is a proposal by the governor, decided by shareholders:
+  **payment**, **sale** (sealed-bid auction with a reserve; deposit 10% of
+  the reserve; 1% host fee from the winning bid), or **investment** in
+  another company (with a max price per share).
+- The governor, the operating key and the recipient can't vote; their
+  shares are out of the quorum base. Yes votes must reach 20% of the base
+  (40% once the term's total passes 5% of the bucket) and 51% of votes
+  cast.
+- Payments, sales and investments together: at most **20% of a bucket per
+  term**; sale proceeds can't be paid out in the same term.
+- After the vote, a **5-day delay** before execution; an earlier-opened
+  recall holds it back; a recall or the end of the term voids it.
+  Proposals must leave room for all of this before the term ends.
+- A failed transfer returns the money. Withdrawing a token's approval
+  stops new deposits but never freezes balances.
 
-## Decisions needed from Amiran (DECIDE) — answered above
+**End-of-term vote (CompanyDividendsV9)**
+- After each term, shareholders at the term's end vote **dividend** (1%
+  of INVEST capital paid pro rata) or **reinvest** (1% moves to income).
+  The winning side needs 20%; that term's governor can't vote.
+
+**Verification and owner powers**
+- OpenVerifierV2: ordinary wallets only, 0.0083 ETH balance check, at most
+  10 new citizens per hour; a guardian can only pause.
+- InvestToken and every v9 contract are owned by a **48-hour timelock**.
+  INVEST stays tradable: InvestToken keeps pointing at v8's RoundAuction.
+
+## Decisions needed from Amiran (DECIDE) — answered above (kept for the record)
 
 1. **Reserve price:** set by shareholder vote per auction, or a fixed rule
    (e.g. at least the price the company was bought at)?

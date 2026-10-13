@@ -33,7 +33,9 @@ interface IShareRegistryV9 {
 ///   2. Any holder of at least 0.1% of the electorate declares candidacy
 ///      with a program. Every holder can NOMINATE one candidate with their
 ///      weight (declaring nominates yourself). Once others have nominated
-///      you, you can't withdraw. The ballot is the 20
+///      you, you can't withdraw.
+///      Where other companies hold shares, anyone may stand without a
+///      stake, so holding companies can field candidates. The ballot is the 20
 ///      candidates with the most nomination weight, so a majority can always
 ///      put its candidate on it however many puppets a whale registers.
 ///   3. Voting opens only after the candidacy period. A voter may vote for a
@@ -54,8 +56,9 @@ interface IShareRegistryV9 {
 /// action that falls due while an earlier-opened recall is pending waits
 /// for the recall to be resolved.
 ///
-/// A governor can never vote another company's shares for themself, nor on
-/// their own recall.
+/// A holding company's governor can open and vote a recall with its
+/// shares. A governor can never vote another company's shares for
+/// themself, nor on their own recall.
 ///
 /// FICTIONAL SIMULATION. Not a real financial product, security, or claim
 /// on any real-world asset.
@@ -207,10 +210,11 @@ contract GovernanceV9 {
         require(!me.registered && me.seq == 0, "GOV: already declared");
         uint256 stake = shares.votingWeight(companyId, msg.sender, e.snapshot);
         uint256 base = electorate(companyId, e.snapshot);
-        // A company owned entirely by other companies has no individual
-        // electorate: anyone may stand, and the owners' governors nominate
-        // and vote (v9 audit GOV-N3).
-        if (base > 0) {
+        // Where other companies hold shares, anyone may stand without a
+        // stake: the holding companies' governors can then nominate and vote
+        // for them, so a few individual holders can't monopolise the ballot
+        // (v9 audit GOV-N3, round 3).
+        if (shares.corporateSharesAt(companyId, e.snapshot) == 0) {
             require(stake > 0, "GOV: no shares at snapshot");
             require(stake * 10_000 >= base * MIN_CANDIDATE_STAKE_BPS, "GOV: stake below 0.1%");
         }
@@ -497,6 +501,25 @@ contract GovernanceV9 {
     }
 
     function openRecall(uint256 companyId) external returns (uint256 recallId) {
+        uint256 snapshot = block.timestamp - SNAPSHOT_LAG;
+        uint256 weight = shares.votingWeight(companyId, msg.sender, snapshot);
+        require(weight > 0 && weight * 10_000 >= electorate(companyId, snapshot) * RECALL_OPEN_BPS, "GOV: need 1% to open a recall");
+        recallId = _openRecall(companyId, snapshot);
+    }
+
+    /// @notice A holding company's governor opens a recall in a company it
+    /// holds shares in (not against themself).
+    function openRecallAsCorporation(uint256 fromCompanyId, uint256 toCompanyId) external returns (uint256 recallId) {
+        _requireCorporateVoter(fromCompanyId, toCompanyId);
+        address subject = companyGovernor[toCompanyId];
+        require(subject != companyGovernor[fromCompanyId] && subject != msg.sender, "GOV: can't recall yourself");
+        uint256 snapshot = block.timestamp - SNAPSHOT_LAG;
+        uint256 weight = shares.votingWeight(toCompanyId, shares.corporateHolder(fromCompanyId), snapshot);
+        require(weight > 0 && weight * 10_000 >= (electorate(toCompanyId, snapshot) + weight) * RECALL_OPEN_BPS, "GOV: need 1% to open a recall");
+        recallId = _openRecall(toCompanyId, snapshot);
+    }
+
+    function _openRecall(uint256 companyId, uint256 snapshot) internal returns (uint256 recallId) {
         require(governorActive(companyId), "GOV: no governor in office");
         uint256 term = termNumber[companyId];
         uint256 last = lastRecallId[companyId];
@@ -509,9 +532,6 @@ contract GovernanceV9 {
                 }
             }
         }
-        uint256 snapshot = block.timestamp - SNAPSHOT_LAG;
-        uint256 weight = shares.votingWeight(companyId, msg.sender, snapshot);
-        require(weight > 0 && weight * 10_000 >= electorate(companyId, snapshot) * RECALL_OPEN_BPS, "GOV: need 1% to open a recall");
         recallId = ++lastRecallId[companyId];
         recalls[companyId][recallId] = Recall(term, snapshot, block.timestamp + RECALL_WINDOW, 0, 0, 0, false);
         emit RecallOpened(companyId, recallId, term, block.timestamp + RECALL_WINDOW);
