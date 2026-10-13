@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
-import { ACTIVE_NETWORK, getClaimEligibility, getVerifySelfEligibility, verifySelfReal, claimReal, getPublicStats } from "../web3.js";
+import { ACTIVE_NETWORK, getClaimEligibility, claimReal, getPublicStats, V9_LIVE, getVerifySelfEligibility, verifySelfReal } from "../web3.js";
+import { getVerifier, verifySelf } from "../v9/chain.js";
 import { fmt, int, useChain, useTx } from "../components/liveUtils.js";
 import { Button, ErrorLine, Muted, Notice } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
@@ -17,6 +18,11 @@ export default function Citizen() {
   const [stats] = useChain(getPublicStats, []);
   const [elig] = useChain((p) => (connected ? getClaimEligibility(address, p) : Promise.resolve(null)), [address, connected]);
   const [ethCheck] = useChain((p) => (connected ? getVerifySelfEligibility(address, p) : Promise.resolve(null)), [address, connected]);
+  // Version 9 verifies through OpenVerifierV2: at most 10 new citizens an
+  // hour, and a guardian can pause it.
+  const [v2] = useChain((p) => (V9_LIVE ? getVerifier(p) : Promise.resolve(null)), []);
+  const verifyTx = (s) => (V9_LIVE ? verifySelf(s) : verifySelfReal(s));
+  const verifyOpen = v2 ? !v2.paused : (stats?.verifyOpen ?? true);
   const verify = useTx();
   const claim = useTx();
   const [claimTx, setClaimTx] = useState(null);
@@ -56,15 +62,18 @@ export default function Citizen() {
             <p className="small">
               {t("Verification checks that the wallet holds at least {min} ETH on {network}. Nothing is taken: the ETH stays in your wallet, and you only pay gas.", { min: ethCheck ? eth(ethCheck.minBalance) : "0.0083", network: ACTIVE_NETWORK.label })}
             </p>
-            <Muted small>{t("This is a balance check, not proof that you are one person: someone can verify several wallets. A real privatization would need real identity checks; this simulation says so openly.")}</Muted>
-            {connected && !verified && stats && !stats.verifyOpen && (
+            <Muted small>{t("This is a balance check, not proof that you are one person: someone can verify several wallets. To slow that down, only ordinary wallets can verify and at most 10 an hour. A real privatization would need real identity checks; this simulation says so openly.")}</Muted>
+            {connected && !verified && !verifyOpen && (
               <Notice tone="plain">{t("Self-verification is switched off at the moment, so new wallets can't verify.")}</Notice>
+            )}
+            {connected && !verified && verifyOpen && v2 && v2.left === 0n && (
+              <Notice tone="plain">{t("The 10 verifications for this hour are used up. Try again at the start of the next hour.")}</Notice>
             )}
             {connected && !verified && ethCheck && !ethCheck.eligible && (
               <Notice tone="danger">{t("This wallet holds {have} ETH; it needs at least {min}. Add some ETH on {network}, then come back.", { have: eth(ethCheck.currentBalance), min: eth(ethCheck.minBalance), network: ACTIVE_NETWORK.label })}</Notice>
             )}
-            {connected && !verified && ethCheck?.eligible && (stats?.verifyOpen ?? true) && (
-              <div><Button busy={verify.busy} onClick={() => verify.run(() => verifySelfReal(signer))}>{t("Verify this wallet")}</Button></div>
+            {connected && !verified && ethCheck?.eligible && verifyOpen && !(v2 && v2.left === 0n) && (
+              <div><Button busy={verify.busy} onClick={() => verify.run(() => verifyTx(signer))}>{t("Verify this wallet")}</Button></div>
             )}
             <ErrorLine error={verify.error} />
             {verified && <p className="small">{t("Verified.")}</p>}

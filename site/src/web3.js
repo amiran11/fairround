@@ -25,6 +25,12 @@ export const NETWORKS = {
       RoundAuction: "0x9739e5dCcc76BD424BcD12e7f1ce56143e77b796",
       Governance: "0x5668F72F3dB11c4DA6aF682604d1184763bB971d",
       CompanyTreasury: "0xaD50c4726E78a8e8a18a1A188bd60E7ef0A501e8",
+      // v9, deployed alongside v8 (DEPLOY_V9.md). Filled in after deployment.
+      RoundAuctionV9: "",
+      GovernanceV9: "",
+      CompanyTreasuryV9: "",
+      CompanyDividendsV9: "",
+      OpenVerifierV2: "",
     },
   },
 };
@@ -78,6 +84,11 @@ import CompanyTreasuryABI from "./contracts/CompanyTreasury.json";
 import RoundAuctionABI from "./contracts/RoundAuction.json";
 import OpenVerifierABI from "./contracts/OpenVerifier.json";
 import GovernanceABI from "./contracts/Governance.json";
+import RoundAuctionV9ABI from "./contracts/RoundAuctionV9.json";
+import GovernanceV9ABI from "./contracts/GovernanceV9.json";
+import CompanyTreasuryV9ABI from "./contracts/CompanyTreasuryV9.json";
+import CompanyDividendsV9ABI from "./contracts/CompanyDividendsV9.json";
+import OpenVerifierV2ABI from "./contracts/OpenVerifierV2.json";
 
 export const ABIS = {
   InvestToken: InvestTokenABI,
@@ -85,7 +96,15 @@ export const ABIS = {
   RoundAuction: RoundAuctionABI,
   OpenVerifier: OpenVerifierABI,
   Governance: GovernanceABI,
+  RoundAuctionV9: RoundAuctionV9ABI,
+  GovernanceV9: GovernanceV9ABI,
+  CompanyTreasuryV9: CompanyTreasuryV9ABI,
+  CompanyDividendsV9: CompanyDividendsV9ABI,
+  OpenVerifierV2: OpenVerifierV2ABI,
 };
+
+// True once the v9 contracts are deployed and their addresses filled in.
+export const V9_LIVE = !!CONTRACT_ADDRESSES.RoundAuctionV9;
 
 // Just the ERC-20 functions the treasury screens need, for any token a
 // company holds (not only INVEST).
@@ -99,7 +118,7 @@ const ERC20_ABI = [
 
 // Lazily imports ethers only when actually needed — keeps it out of the
 // main bundle for visitors who never connect a real wallet at all.
-async function getEthers() {
+export async function getEthers() {
   return await import("ethers");
 }
 
@@ -211,7 +230,7 @@ export async function getContract(name, signerOrProvider) {
 // refunded, so the margin costs nothing extra in practice.
 const GAS_CAP = 32_000_000n;
 
-async function sendTx(contract, method, ...args) {
+export async function sendTx(contract, method, ...args) {
   const estimate = await contract[method].estimateGas(...args);
   let gasLimit = (estimate * 125n) / 100n + 100_000n;
   if (gasLimit > GAS_CAP) gasLimit = GAS_CAP;
@@ -444,7 +463,7 @@ function topicMatches(wanted, actual) {
 
 // Drop-in replacement for the old chunked queryFilter: same filter in,
 // same { args } events out, but served from the shared cached scan.
-async function queryFilterChunked(contract, filter) {
+export async function queryFilterChunked(contract, filter) {
   const provider = contract.runner.provider;
   const address = await contract.getAddress();
   const topics = await filter.getTopicFilter();
@@ -659,7 +678,7 @@ export async function parseAmount(text, decimals = 18) {
 // signer. INVEST gets a one-time unlimited approval, the same pattern as
 // bidding (INVEST has no value outside this closed system). Any other
 // token is approved for exactly what this transaction needs.
-async function ensureAllowance(signer, tokenAddress, spender, needed) {
+export async function ensureAllowance(signer, tokenAddress, spender, needed) {
   const { Contract, MaxUint256 } = await getEthers();
   const owner = await signer.getAddress();
   const t = new Contract(tokenAddress, ERC20_ABI, signer);

@@ -2,19 +2,19 @@ import { useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
-import { useCompanies, useCompanyName, StageStamp } from "../companies.jsx";
-import { getMyShareCount } from "../web3.js";
+import { useCompanies, useCompanyName, StageStamp } from "../v9/companies.jsx";
+import { ZERO, getShareCount } from "../v9/chain.js";
 import { fmt, int, pct, useChain } from "../components/liveUtils.js";
 import { Address, ErrorLine, Loading } from "../components/ui.jsx";
-import Auction from "../components/Auction.jsx";
-import CompanyGovernance from "../components/CompanyGovernance.jsx";
-import CompanyTreasury from "../components/CompanyTreasury.jsx";
+import Auction from "../v9/Auction.jsx";
+import Election from "../v9/Election.jsx";
+import Treasury from "../v9/Treasury.jsx";
 import { usePageTitle } from "../meta.js";
 
 function YourPosition({ company }) {
   const { t, tn } = useT();
   const { connected, me, account } = useSession();
-  const [shares] = useChain((p) => (connected ? getMyShareCount(company.id, me, p) : Promise.resolve(null)), [company.id, me, connected]);
+  const [shares] = useChain((p) => (connected ? getShareCount(company.id, me, p) : Promise.resolve(null)), [company.id, me, connected]);
   if (!connected) return null;
   return (
     <div className="stack-sm">
@@ -29,30 +29,9 @@ function YourPosition({ company }) {
   );
 }
 
-export default function Company() {
-  const { id } = useParams();
-  const { t } = useT();
-  const [companies, error] = useCompanies();
-  const name = useCompanyName();
-  const company = companies?.find((c) => String(c.id) === id);
-  usePageTitle(company ? company.name : null, company ? t("{name}: auction, election and treasury, read live from Arbitrum One.", { name: company.name }) : undefined);
-
-  if (!companies) return <div className="page" style={{ paddingTop: 48 }}>{error ? <ErrorLine error={error} /> : <Loading />}</div>;
-  if (!company) {
-    return (
-      <div className="page stack" style={{ paddingTop: 48 }}>
-        <h1 className="h2">{t("No company with this number")}</h1>
-        <p><Link to="/">{t("Back to the register")}</Link></p>
-      </div>
-    );
-  }
-  return <CompanyView company={company} companies={companies} n={name(company)} />;
-}
-
 function CompanyView({ company, companies, n }) {
   const { t } = useT();
   const { hash } = useLocation();
-  // Arriving from a link to a section (for example from the portfolio).
   useEffect(() => {
     if (!hash) return;
     const id = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" }), 300);
@@ -79,11 +58,11 @@ function CompanyView({ company, companies, n }) {
           </section>
           <section className="section" id="s-election" aria-labelledby="s-election-h">
             <div className="section-head"><h2 id="s-election-h" className="h2">{t("Election and governor")}</h2></div>
-            <CompanyGovernance company={company} />
+            <Election company={company} />
           </section>
           <section className="section" id="s-treasury" aria-labelledby="s-treasury-h">
             <div className="section-head"><h2 id="s-treasury-h" className="h2">{t("Treasury")}</h2></div>
-            <CompanyTreasury company={company} companies={companies} />
+            <Treasury company={company} companies={companies} />
           </section>
         </div>
 
@@ -95,8 +74,10 @@ function CompanyView({ company, companies, n }) {
               <dd>{t("{a} of {b}", { a: int(company.sharesIssued), b: int(company.totalShares) })} ({pct(company.sharesIssued, company.totalShares)})</dd>
               <dt>{t("Capital")}</dt>
               <dd>{fmt(company.capital)} INVEST</dd>
+              <dt>{t("Income")}</dt>
+              <dd>{fmt(company.income)} INVEST</dd>
               <dt>{t("Governor")}</dt>
-              <dd>{g && g.governor !== "0x0000000000000000000000000000000000000000" ? <Address value={g.governor} /> : t("None yet")}</dd>
+              <dd>{g.active && g.governor !== ZERO ? <Address value={g.governor} /> : t("None yet")}</dd>
               <dt>{t("Round length")}</dt>
               <dd>{t("{n} min", { n: int(company.roundDuration / 60n) })}</dd>
             </dl>
@@ -106,4 +87,24 @@ function CompanyView({ company, companies, n }) {
       </div>
     </div>
   );
+}
+
+export default function Company() {
+  const { id } = useParams();
+  const { t } = useT();
+  const [companies, error] = useCompanies();
+  const name = useCompanyName();
+  const company = companies?.find((c) => String(c.id) === id);
+  usePageTitle(company ? company.name : null, company ? t("{name}: auction, election and treasury, read live from Arbitrum One.", { name: company.name }) : undefined);
+
+  if (!companies) return <div className="page" style={{ paddingTop: 48 }}>{error ? <ErrorLine error={error} /> : <Loading />}</div>;
+  if (!company) {
+    return (
+      <div className="page stack" style={{ paddingTop: 48 }}>
+        <h1 className="h2">{t("No company with this number")}</h1>
+        <p><Link to="/">{t("Back to the register")}</Link></p>
+      </div>
+    );
+  }
+  return <CompanyView company={company} companies={companies} n={name(company)} />;
 }

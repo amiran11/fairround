@@ -102,20 +102,28 @@ export default function Layout() {
               <a href={LINKS.repo} target="_blank" rel="noreferrer">{t("Source code")}</a>
               <a href={LINKS.security} target="_blank" rel="noreferrer">{t("Security review")}</a>
               <a href={LINKS.paper} target="_blank" rel="noreferrer">{t("Research paper (SSRN)")}</a>
+              <Link to="/v8">{t("Version 8 (archive)")}</Link>
             </p>
           </div>
           <div>
-            <p className="strong" style={{ color: "var(--ink)", marginBottom: 8 }}>{t("Contracts on {network}", { network: ACTIVE_NETWORK.label })}</p>
-            <ul className="contracts">
-              {Object.entries(CONTRACT_ADDRESSES).map(([name, addr]) => (
-                <li key={name}>
-                  <span>{name}</span>
-                  {explorer ? (
-                    <a className="addr" href={`${explorer}/address/${addr}#code`} target="_blank" rel="noreferrer">{short(addr)}</a>
-                  ) : <span className="addr">{short(addr)}</span>}
-                </li>
-              ))}
-            </ul>
+            {[
+              [t("Version 9 contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2"]],
+              [t("Version 8 contracts"), ["RoundAuction", "Governance", "CompanyTreasury", "OpenVerifier"]],
+            ].map(([title, names]) => (
+              <div key={title} style={{ marginBottom: 16 }}>
+                <p className="strong" style={{ color: "var(--ink)", marginBottom: 8 }}>{title}</p>
+                <ul className="contracts">
+                  {names.filter((n) => CONTRACT_ADDRESSES[n]).map((name) => (
+                    <li key={name}>
+                      <span>{name}</span>
+                      {explorer ? (
+                        <a className="addr" href={`${explorer}/address/${CONTRACT_ADDRESSES[name]}#code`} target="_blank" rel="noreferrer">{short(CONTRACT_ADDRESSES[name])}</a>
+                      ) : <span className="addr">{short(CONTRACT_ADDRESSES[name])}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       </footer>

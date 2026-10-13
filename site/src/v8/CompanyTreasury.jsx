@@ -12,10 +12,10 @@ import {
   claimDividendAsCorporationReal, getCorporateHoldings, investReal, voteAsCorporationReal,
   getApprovedPaymentTokens, governorOfferInvestReal,
 } from "../web3.js";
-import { ZERO, same, fmt, int, fmtDate, useChain, useCountdown, useTx } from "./liveUtils.js";
+import { ZERO, same, fmt, int, fmtDate, useChain, useCountdown, useTx } from "../components/liveUtils.js";
 import {
   Act, Address, AmountInput, Button, ConnectToAct, ErrorLine, Field, Input, Loading, Muted, Notice, Select, Tabs,
-} from "./ui.jsx";
+} from "../components/ui.jsx";
 
 function Remaining({ to, label }) {
   const { t } = useT();

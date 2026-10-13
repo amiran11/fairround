@@ -580,7 +580,7 @@ it visible on the site, and may require a shareholder vote above a size.
 
 ### Independent audit of v8 (12 October 2026)
 
-Four independent reviewers, one per area (RoundAuction; Governance;
+Four independent AI reviewers (separate Claude agents that had not seen the code before), one per area (RoundAuction; Governance;
 CompanyTreasury; InvestToken, OpenVerifier and cross-contract wiring),
 audited the v8 source with Findings 1–26 as known. The RoundAuction and
 Governance reviewers reproduced their findings on a local chain; the other
@@ -635,8 +635,8 @@ function; the 5% allowance can't be cheaply inflated.
 
 The v9 contracts (`RoundAuctionV9`, `GovernanceV9`, `CompanyTreasuryV9`,
 `CompanyDividendsV9`, `OpenVerifierV2`, `SakartveloTimelock`) were written
-against Findings 23–40, then audited three times by reviewers who had not
-written the code. Each round worked on a local chain with Arbitrum's limits
+against Findings 23–40, then audited three times by AI reviewers
+(separate Claude agents) that had not written the code. Each round worked on a local chain with Arbitrum's limits
 (32M gas per transaction, 24,576-byte contracts) and wrote proof-of-concept
 attacks; every confirmed finding below was fixed and now has a test that
 plays the attack and must fail (`test/v9.test.mjs`, 134 tests, all

@@ -6,7 +6,7 @@ import {
   getInvestBalance, getClaimEligibility, getRoundBids, getMyShareCount, getRoundAuctionRules,
   getCandidates, getMyVoteWeight, hasVotedThisRound, getDividendTerms, getTreasuryAuctions,
   getVendorPayments, getInvestOffers,
-} from "./web3.js";
+} from "../web3.js";
 import { loadCompanies } from "./companies.jsx";
 
 const same = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();

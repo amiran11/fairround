@@ -502,3 +502,9 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
+
+/* ------------------------------------------------------------- v8 archive */
+
+.archive-bar { background: var(--paper-sunk); border-bottom: 1px solid var(--rule); padding: var(--space-3) 0; }
+.archive-bar .row { gap: var(--space-2) var(--space-4); }
+.archive-bar .stamp { transform: none; }

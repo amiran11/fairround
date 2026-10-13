@@ -6,8 +6,8 @@ import {
   getRoundBids, getRoundAuctionRules, getRoundInvestAllowance,
   approveInvestForRound, placeRoundBid, settleRoundReal, parseAmount,
 } from "../web3.js";
-import { fmt, int, same, useChain, useCountdown, useTx } from "./liveUtils.js";
-import { Act, Address, AmountInput, Button, ConnectToAct, ErrorLine, Field, Loading, Muted } from "./ui.jsx";
+import { fmt, int, same, useChain, useCountdown, useTx } from "../components/liveUtils.js";
+import { Act, Address, AmountInput, Button, ConnectToAct, ErrorLine, Field, Loading, Muted } from "../components/ui.jsx";
 
 // Shares a bid would get if the round settled now: the lowest bid is one
 // share, every other bid is its amount divided by that, rounded up.

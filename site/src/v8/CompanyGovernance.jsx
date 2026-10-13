@@ -6,8 +6,8 @@ import {
   declareCandidacyReal, openGovernanceVoteReal, voteReal, tallyRoundReal, setOperatingKeyReal, startNewTermReal,
   getEthBalance, normalizeAddress,
 } from "../web3.js";
-import { ZERO, same, int, pct, useChain, useCountdown, useTx } from "./liveUtils.js";
-import { Act, Address, Button, ConnectToAct, ErrorLine, Field, Input, Loading, Muted, Notice, Textarea } from "./ui.jsx";
+import { ZERO, same, int, pct, useChain, useCountdown, useTx } from "../components/liveUtils.js";
+import { Act, Address, Button, ConnectToAct, ErrorLine, Field, Input, Loading, Muted, Notice, Textarea } from "../components/ui.jsx";
 
 const LOW_GAS_WEI = 200000000000000n; // 0.0002 ETH: about enough for a few transactions
 const MAX_PROGRAM_BYTES = 4500;

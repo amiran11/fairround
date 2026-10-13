@@ -3,8 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
 import { ACTIVE_NETWORK, normalizeAddress } from "../web3.js";
-import { loadPortfolio } from "../portfolio.js";
-import { useCompanyName, StageStamp } from "../companies.jsx";
+import { loadPortfolio } from "../v9/portfolio.js";
+import { useCompanyName, StageStamp } from "../v9/companies.jsx";
 import { fmt, fmtDate, int, pct, same, short, useChain, useCountdown } from "../components/liveUtils.js";
 import { Button, ErrorLine, Input, Loading, Muted } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
@@ -16,12 +16,15 @@ function CompanyLink({ company, to = "" }) {
 }
 
 const WHERE = {
-  reveal: "?tab=auctions#s-treasury",
+  acceptKey: "#s-election",
+  reveal: "?tab=proposals#s-treasury",
+  recall: "#s-election",
   elect: "#s-election",
-  payment: "?tab=payments#s-treasury",
+  nominate: "#s-election",
+  proposal: "?tab=proposals#s-treasury",
   dividendVote: "?tab=dividends#s-treasury",
   dividend: "?tab=dividends#s-treasury",
-  auctionClaim: "?tab=auctions#s-treasury",
+  auctionClaim: "?tab=proposals#s-treasury",
 };
 
 function Closes({ until }) {
@@ -34,12 +37,15 @@ function TodoItem({ item }) {
   const { t, tn } = useT();
   const n = item.weight ?? 0n;
   const text = {
-    reveal: t("Reveal your sealed bid in auction {id}. An unrevealed bid loses its deposit.", { id: item.auction?.toString() }),
+    acceptKey: t("The governor named this wallet as the operating key. Accept it to act for the company."),
+    reveal: t("Reveal your sealed bid on proposal {id}. An unrevealed bid loses its deposit.", { id: item.proposal?.toString() }),
+    recall: tn("Vote on recalling the governor with {n} share.", "Vote on recalling the governor with {n} shares.", n),
     elect: tn("Vote in the election with {n} share.", "Vote in the election with {n} shares.", n),
-    payment: tn("Vote on payment {id} with {n} share.", "Vote on payment {id} with {n} shares.", n, { id: item.payment?.toString() }),
+    nominate: tn("Back a candidate in the election with {n} share.", "Back a candidate in the election with {n} shares.", n),
+    proposal: tn("Vote on proposal {id} with {n} share.", "Vote on proposal {id} with {n} shares.", n, { id: item.proposal?.toString() }),
     dividendVote: tn("Vote on the dividend for term {term} with {n} share.", "Vote on the dividend for term {term} with {n} shares.", n, { term: item.term }),
     dividend: t("Claim a {amount} INVEST dividend for term {term}.", { amount: fmt(item.amount ?? 0n, 18, 4), term: item.term }),
-    auctionClaim: item.won ? t("Claim what you won in auction {id}.", { id: item.auction?.toString() }) : t("Claim back your bid and deposit from auction {id}.", { id: item.auction?.toString() }),
+    auctionClaim: item.won ? t("Claim what you won on proposal {id}.", { id: item.proposal?.toString() }) : t("Claim back your bid and deposit from proposal {id}.", { id: item.proposal?.toString() }),
   }[item.kind];
   return (
     <li className="stack-sm">
@@ -87,20 +93,23 @@ function CopyLink({ path }) {
   );
 }
 
-function Lock({ until }) {
+function Lock({ free, next }) {
   const { t, lang } = useT();
-  return until ? <span className="muted">{t("From {date}", { date: fmtDate(until, lang) })}</span> : <span>{t("Now")}</span>;
+  if (!next) return <span>{t("All of them")}</span>;
+  return <span className="muted">{free > 0 ? t("{n} now, more from {date}", { n: free, date: fmtDate(next, lang) }) : t("From {date}", { date: fmtDate(next, lang) })}</span>;
 }
+
 
 function BidRow({ b }) {
   const { t } = useT();
-  const { passed, label } = useCountdown(b.roundEnd);
+  const cool = Date.now() / 1000 < Number(b.roundStart);
+  const { passed, label } = useCountdown(cool ? b.roundStart : b.roundEnd);
   return (
     <tr>
-      <td><CompanyLink company={b.company} /></td>
+      <td><CompanyLink company={b.company} to="#s-auction" /></td>
       <td className="num-cell">{fmt(b.amount)}</td>
-      <td className="num-cell">{int(b.worth)}</td>
-      <td className="muted">{passed ? t("Ready to settle") : label}</td>
+      <td className="num-cell">{b.maxPrice >= b.amount ? t("no limit") : fmt(b.maxPrice)}</td>
+      <td className="muted">{cool ? t("Next round in {time}; you can withdraw now", { time: label }) : passed ? t("Ready to settle") : label}</td>
     </tr>
   );
 }
@@ -180,7 +189,7 @@ export default function Portfolio() {
                     <th scope="col" className="num-cell">{t("Shares")}</th>
                     <th scope="col" className="num-cell">{t("Of the company")}</th>
                     <th scope="col" className="hide-sm">{t("Stage")}</th>
-                    <th scope="col">{t("Can be moved")}</th>
+                    <th scope="col">{t("Can be sold or moved")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -190,7 +199,7 @@ export default function Portfolio() {
                       <td className="num-cell">{int(h.shares)}</td>
                       <td className="num-cell">{pct(h.shares, h.company.sharesIssued)}</td>
                       <td className="hide-sm"><StageStamp company={h.company} /></td>
-                      <td><Lock until={h.lockedUntil} /></td>
+                      <td><Lock free={h.free} next={h.nextUnlock} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -205,20 +214,20 @@ export default function Portfolio() {
                 <thead>
                   <tr>
                     <th scope="col">{t("Company")}</th>
-                    <th scope="col" className="num-cell">{t("Bid, INVEST")}</th>
-                    <th scope="col" className="num-cell">{t("Shares if settled now")}</th>
+                    <th scope="col" className="num-cell">{t("Committed, INVEST")}</th>
+                    <th scope="col" className="num-cell">{t("Up to, per share")}</th>
                     <th scope="col">{t("Round closes")}</th>
                   </tr>
                 </thead>
                 <tbody>{data.bids.map((b) => <BidRow key={b.company.id} b={b} />)}</tbody>
               </table>
             )}
-            {data.bids.length > 0 && <Muted small>{t("A bid can't be withdrawn. It stays in each round until it wins, or is refunded if the company sells out first.")}</Muted>}
+            {data.bids.length > 0 && <Muted small>{t("A bid stays in each round until it has bought what it can; you can withdraw it in the hour between rounds.")}</Muted>}
           </section>
 
-          {(data.roles.length > 0 || data.offers.length > 0) && (
+          {(data.roles.length > 0 || data.listed.length > 0) && (
             <section className="section" aria-labelledby="p-roles">
-              <div className="section-head"><h2 id="p-roles" className="h2">{t("Roles and offers")}</h2></div>
+              <div className="section-head"><h2 id="p-roles" className="h2">{t("Roles and shares for sale")}</h2></div>
               <ul className="list">
                 {data.roles.map((r, i) => (
                   <li key={`r${i}`} className="spread">
@@ -231,10 +240,10 @@ export default function Portfolio() {
                     </span>
                   </li>
                 ))}
-                {data.offers.map((o) => (
-                  <li key={`o${o.id}`}>
-                    {t("Offering {n} INVEST for {price} {symbol} on the market.", { n: fmt(o.investAmount), price: fmt(o.paymentAmount, o.token.decimals, 4), symbol: o.token.symbol })}{" "}
-                    <Link to="/market">{t("INVEST market")}</Link>
+                {data.listed.map((x) => (
+                  <li key={`l${x.tokenId}`} className="spread">
+                    <CompanyLink company={data.companies.find((c) => c.id === x.companyId) ?? { id: x.companyId, name: `#${x.companyId}` }} />
+                    <span>{t("Share #{id} offered for {price} INVEST.", { id: x.tokenId.toString(), price: fmt(x.listedAt) })} <Link to="/market">{t("Share market")}</Link></span>
                   </li>
                 ))}
               </ul>
@@ -242,6 +251,7 @@ export default function Portfolio() {
           )}
 
           <section className="section" aria-label={t("Look up any address")}>
+            <p className="small muted" style={{ marginBottom: 16 }}>{t("Holdings in the first version of the contracts are listed separately.")} <Link to={params.address ? `/v8/portfolio/${target}` : "/v8/portfolio"}>{t("Open the version 8 portfolio")}</Link></p>
             <Lookup />
           </section>
         </>

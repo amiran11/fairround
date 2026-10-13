@@ -2,25 +2,13 @@
 // is named. The chain stores only an English name, so Georgian names for
 // the known companies live here.
 import { useEffect, useRef, useState } from "react";
-import { getListedRoundCompanies, getCompanyGovernance } from "./web3.js";
-import { useChain, ZERO } from "./components/liveUtils.js";
-import { useT } from "./i18n.jsx";
-import { Stamp } from "./components/ui.jsx";
+import { getListedRoundCompanies, getCompanyGovernance } from "../web3.js";
+import { useChain, ZERO } from "../components/liveUtils.js";
+import { useT } from "../i18n.jsx";
+import { Stamp } from "../components/ui.jsx";
 
-const KA_NAMES = {
-  "Sakartvelo Land Fund": "საქართველოს მიწის ფონდი",
-  "Bolnisi Gold Mines": "ბოლნისის ოქროს მაღაროები",
-  "Tkibuli Coal Basin": "ტყიბულის ქვანახშირის აუზი",
-  "Racha Marble Works": "რაჭის მარმარილოს კომბინატი",
-  "National Forest Fund": "ეროვნული ტყის ფონდი",
-  "Georgian Railway": "საქართველოს რკინიგზა",
-  "Chiatura Manganese Concern": "ჭიათურის მანგანუმის კონცერნი",
-  "Zestafoni Ferroalloys Plant": "ზესტაფონის ფეროშენადნობთა ქარხანა",
-  "Enguri Hydropower Plant": "ენგურის ჰესი",
-  "Batumi Sea Port": "ბათუმის საზღვაო პორტი",
-  "Anaklia Deep Sea Port": "ანაკლიის ღრმაწყლოვანი პორტი",
-  "Georgian Stock Exchange": "საქართველოს საფონდო ბირჟა",
-};
+import { KA_NAMES } from "../names.js";
+
 
 export function kaName(name) {
   return KA_NAMES[name] || null;
