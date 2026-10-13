@@ -27,7 +27,7 @@ const deploy = async (n, ...a) => { const c = await new ethers.ContractFactory(a
 const has = (c, fn) => c.interface.fragments.some((f) => f.name === fn);
 const MAX = ethers.MaxUint256;
 const setKey = async (GOV, id, gov, key) => { await w(GOV.connect(gov).setOperatingKey(id, key.address)); await w(GOV.connect(key).acceptOperatingKey(id)); };
-const EXEC = 6 * DAY + 1; // 3-day vote + 3-day execution delay
+const EXEC = 8 * DAY + 1; // 3-day vote + 5-day execution delay
 
 async function system(nCitizens = 40) {
   const IT = await deploy("InvestToken", 1000);
@@ -110,9 +110,9 @@ console.log("\nRoundAuction v9: clearing price, carry-over and cooldown withdraw
   const { IT, RA, cits } = await system(5);
   const [a, b, c] = cits;
   await w(RA.listCompany(0, "Big", 1000, HOUR));
-  // offer 200; a bids 1, b bids 500, c bids 50 but accepts at most 1 INVEST/share
+  // offer 150; a bids 1, b bids 500, c bids 50 but accepts at most 1 INVEST/share
   await round(RA, 0, [[a, 1], [b, 500], [c, 50, E(1)]], { skipCooldown: false });
-  ok((await RA.companyShareCount(0, b.address)) === 200n, "oversubscribed: clearing price, the big bid takes the 200 shares on offer");
+  ok((await RA.companyShareCount(0, b.address)) === 150n, "oversubscribed: clearing price, the big bid takes the 150 shares on offer");
   ok((await RA.activeBidSlot(0, a.address)) !== 0n && (await RA.companyShareCount(0, a.address)) === 0n, "RA-1: the 1-INVEST bid didn't set the price; it waits, unfilled");
   ok((await RA.activeBidSlot(0, c.address)) !== 0n && (await RA.companyShareCount(0, c.address)) === 0n, "RA-2: a bid whose max price is below the clearing price waits, unfilled");
   ok(await reverts(async () => RA.connect(cits[3]).placeBid(0, E(5), MAX), "cooldown"), "F31: no bidding during the cooldown");
@@ -143,9 +143,17 @@ console.log("\nRoundAuction v9: full book eviction (F31)");
   await w(RA.connect(cits[99]).placeBid(1, E(2), MAX));
   const c = await RA.companies(1); await warp(Number(c.roundEnd) - (await now()) + 1);
   const r = await w(RA.settleRound(1, { gasLimit: 32_000_000 }));
-  ok(r.gasUsed * 13n / 10n < 32_000_000n, `worst-case settlement, 100 bids and 200 shares: ${r.gasUsed} gas (< 32M with a 30% wallet buffer)`);
-  ok((await RA.companies(1)).sharesIssued === 200n, "200 shares issued in the round, spread pro rata");
+  ok(r.gasUsed * 13n / 10n < 32_000_000n, `worst-case settlement, 100 bids and 150 shares: ${r.gasUsed} gas (< 32M with a 30% wallet buffer)`);
+  ok((await RA.companies(1)).sharesIssued === 150n, "150 shares issued in the round, spread pro rata");
   ok(await raInvariant(IT, RA, [0, 1]), "accounting exact after the big settlement");
+  // worst case 2: sell-out — 150 shares to 100 new holders, then 100 refunds
+  await w(RA.listCompany(2, "Sellout", 150, HOUR));
+  for (let i = 0; i < 99; i++) await w(RA.connect(cits[i]).placeBid(2, E(5 + i), MAX));
+  await w(RA.connect(cits[101]).placeBid(2, E(2), MAX));
+  const c2 = await RA.companies(2); await warp(Number(c2.roundEnd) - (await now()) + 1);
+  const r2 = await w(RA.settleRound(2, { gasLimit: 32_000_000 }));
+  ok((await RA.companies(2)).finalized && r2.gasUsed * 13n / 10n < 32_000_000n, `worst-case sell-out with 100 refunds: ${r2.gasUsed} gas (< 32M with a 30% wallet buffer)`);
+  ok(await raInvariant(IT, RA, [0, 1, 2]), "accounting exact after sell-out");
 }
 
 console.log("\nRoundAuction v9: invest, listings, locks (F24, F38, F39, per-share lock)");
@@ -280,8 +288,8 @@ console.log("\nTreasury v9: payment by vote, snapshot, quorum, failed transfer (
   ok((await CT.proposals(pid)).quorumBps === 2000n, "5% payment needs 20% quorum");
   await w(CT.connect(cits[1]).vote(pid, true)); await w(CT.connect(cits[2]).vote(pid, true));
   await warp(3 * DAY + 1);
-  ok(await reverts(async () => CT.executePayment(pid), "execution delay"), "approved payment waits 3 days (time to recall)");
-  await warp(3 * DAY);
+  ok(await reverts(async () => CT.executePayment(pid), "execution delay"), "approved payment waits 5 days (longer than a recall vote)");
+  await warp(5 * DAY);
   await w(CT.executePayment(pid));
   ok((await usdc.balanceOf(cits[11].address)) === 50n, "approved payment executed after the delay");
   // second payment: cumulative 5% + 10% = 15% of the term's base -> large (40%); then a blocked recipient
@@ -327,7 +335,12 @@ console.log("\nTreasury v9: sales by vote + sealed-bid auction with reserve (F25
   let pid = await CT.nextProposalId();
   await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(10), u, 1000n));
   ok((await RA.companies(0)).capital === cap0 - E(10), "asset reserved while the vote runs");
-  for (let i = 1; i < 5; i++) await w(CT.connect(cits[i]).vote(pid, true));
+  const pidB = pid + 1n, pidC = pid + 2n;   // proposed now: one will go unsold, one rejected
+  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(4), u, 100n));
+  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(4), u, 100n));
+  ok(await reverts(async () => CT.connect(cits[10]).proposeSale(0, inv, 0, E(2), u, 100n), "over 20%"), "CT-M2: sales count toward the 20%-per-term cap");
+  ok((await CT.proposals(pidB)).quorumBps === 4000n, "CT-M2: sales count cumulatively for the 40% quorum");
+  for (let i = 1; i < 5; i++) { await w(CT.connect(cits[i]).vote(pid, true)); await w(CT.connect(cits[i]).vote(pidB, true)); }
   await warp(EXEC); await w(CT.startAuction(pid));
   const a = await CT.auctions(pid);
   ok(a.deposit === 100n, "F35: bid deposit is 10% of the reserve");
@@ -351,17 +364,12 @@ console.log("\nTreasury v9: sales by vote + sealed-bid auction with reserve (F25
   await w(CT.withdrawHostFees(u));
   ok((await usdc.balanceOf(owner.address)) === 15n, "host collected the 15");
   // unsold: no valid bid -> asset returns
-  pid = await CT.nextProposalId();
-  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(5), u, 100n));
-  for (let i = 1; i < 5; i++) await w(CT.connect(cits[i]).vote(pid, true));
-  await warp(EXEC); await w(CT.startAuction(pid));
-  await warp(3 * DAY + 1); await w(CT.settleAuction(pid));
-  ok((await RA.companies(0)).capital === cap0 - E(10), "F25: unsold asset returns to the company");
+  await w(CT.startAuction(pidB));
+  await warp(3 * DAY + 1); await w(CT.settleAuction(pidB));
+  ok((await RA.companies(0)).capital === cap0 - E(10) - E(4), "F25: unsold asset returns to the company");
   // rejected sale returns too
-  pid = await CT.nextProposalId();
-  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(5), u, 100n));
-  await warp(EXEC); await w(CT.startAuction(pid));
-  ok((await CT.proposals(pid)).status === 1n && (await RA.companies(0)).capital === cap0 - E(10), "rejected sale: asset returns");
+  await w(CT.startAuction(pidC));
+  ok((await CT.proposals(pidC)).status === 1n && (await RA.companies(0)).capital === cap0 - E(10), "rejected sale: asset returns");
 }
 
 console.log("\nTreasury v9: proposals die with the term; corporate voting");
@@ -439,6 +447,8 @@ console.log("\nCorporate path: reinvest vote -> invest vote -> compensation -> c
   await w(GOV.openCandidacy(1));
   await w(GOV.connect(cits[36]).declareCandidacy(1, "p"));
   await warp(5 * DAY + 1); await w(GOV.openVoting(1));
+  ok(await reverts(async () => GOV.connect(cits[35]).voteAsCorporation(0, 1, cits[35].address), "for yourself"), "GOV-N1: a governor's key can't vote company shares for itself");
+  ok(await reverts(async () => GOV.connect(cits[35]).voteAsCorporation(0, 1, cits[2].address), "for yourself"), "GOV-N1: nor for the holding company's governor");
   await w(GOV.connect(cits[35]).voteAsCorporation(0, 1, cits[36].address));
   await warp(3 * DAY + 1); await w(GOV.tallyRound(1));
   ok((await GOV.companyGovernor(1)) === cits[36].address, "corporate shares vote in elections through the holder's governor");
@@ -505,13 +515,25 @@ console.log("\nIndependent v9 audit: attacks that must fail");
   const ev = r.logs.map((l) => { try { return RA.interface.parseLog(l); } catch { return null; } }).find((x) => x?.name === "RoundSettled");
   ok(ev.args.price > E(6), `RA-1: oversubscribed round clears at ${ethers.formatEther(ev.args.price).slice(0, 6)} INVEST/share, not the anchor's 1`);
   ok((await RA.companyShareCount(0, anchor.address)) === 0n, "RA-1: the anchor buys nothing");
-  ok((await RA.companyShareCount(0, att.address)) + (await RA.companyShareCount(0, att2.address)) <= 200n, "RA-1: attacker gets at most the 200 shares on offer this round, at the clearing price");
+  ok((await RA.companyShareCount(0, att.address)) + (await RA.companyShareCount(0, att2.address)) <= 150n, "RA-1: attacker gets at most the 150 shares on offer this round, at the clearing price");
 }
 { // RA-2: per-share price limit
   const { RA, cits } = await system(3);
   await w(RA.listCompany(0, "Co", 1000, HOUR));
-  await round(RA, 0, [[cits[0], 5], [cits[1], 500, E(2)]]); // undersubscribed: price 5 > cits[1]'s max 2
-  ok((await RA.companyShareCount(0, cits[1].address)) === 0n && (await RA.activeBidSlot(0, cits[1].address)) !== 0n, "RA-2: a bid never pays more per share than its maxPrice");
+  const r = await round(RA, 0, [[cits[0], 5], [cits[1], 500, E(2)]]);
+  const ev = r.logs.map((l) => { try { return RA.interface.parseLog(l); } catch { return null; } }).find((x) => x?.name === "RoundSettled");
+  ok(ev.args.price <= E(2) && (await RA.companyShareCount(0, cits[1].address)) > 0n, `RA-2/RA-N2: a capped bid sets the floor at its own cap and buys (price ${ethers.formatEther(ev.args.price)})`);
+}
+{ // RA-N1: squatting the full book with bids that never buy is no longer free
+  const { IT, RA, cits } = await system(102);
+  await w(RA.listCompany(0, "Co", 100000, HOUR));
+  for (let i = 0; i < 100; i++) await w(RA.connect(cits[i]).placeBid(0, E(1000), E(1)));
+  await w(RA.connect(cits[100]).placeBid(0, E(2), E(2)));
+  ok((await RA.activeBidCount(0)) === 100n && (await RA.activeBidSlot(0, cits[100].address)) !== 0n, "RA-N1: a 2-INVEST bid evicts a 1000-INVEST bid capped at 1/share (eviction by effective price)");
+  const c = await RA.companies(0); await warp(Number(c.roundEnd) - (await now()) + 1);
+  await w(RA.settleRound(0, { gasLimit: 32_000_000 }));
+  ok((await RA.companies(0)).sharesIssued === 150n, "RA-N1: squat bids are eligible at the floor and buy (150 shares issued, none blocked)");
+  ok(await raInvariant(IT, RA, [0]), "accounting exact");
 }
 { // GOV-1: shares lent for one second at the snapshot weigh nothing
   const { RA, GOV, cits } = await system(12);
@@ -544,6 +566,9 @@ console.log("\nIndependent v9 audit: attacks that must fail");
   ok(!(await GOV.candidates(0, 1, cits[20].address)).onBallot, "full ballot: a newcomer with equal support waits");
   for (let i = 21; i < 24; i++) await w(GOV.connect(cits[i]).nominate(0, cits[20].address));
   ok((await GOV.candidates(0, 1, cits[20].address)).onBallot, "GOV-2: three nominations put the honest candidate on the ballot, displacing a puppet");
+  ok(await reverts(async () => GOV.connect(cits[20]).withdrawCandidacy(0), "others nominated you"), "GOV-N2: a candidate others nominated can't withdraw and waste their nominations");
+  await w(GOV.connect(cits[0]).withdrawCandidacy(0));
+  ok(!(await GOV.candidates(0, 1, cits[0].address)).registered, "a candidate nobody else backed can still withdraw");
 }
 { // GOV-7: against all
   const { RA, GOV, cits } = await system(12);
@@ -572,6 +597,25 @@ console.log("\nIndependent v9 audit: attacks that must fail");
   await w(GOV.connect(cits[0]).setOperatingKey(0, cits[3].address)); // try to silence holder 3
   await w(CT.connect(cits[3]).vote(pid, false));
   ok((await CT.proposals(pid)).no === 1n && (await GOV.governorOperatingKey(0)) === cits[10].address, "CT-5: naming a shareholder as key doesn't silence them (key needs acceptance)");
+}
+{ // CT-M1: a recall opened after the vote closes still stops the payment; recipient can't vote
+  const { RA, GOV, CT, IT, cits } = await system(12);
+  await soldCompany(RA, 0, cits.slice(0, 10), 1);
+  await warp(DAY + 1);
+  await elect(GOV, 0, cits[0], cits.slice(0, 5));
+  await setKey(GOV, 0, cits[0], cits[10]);
+  const pid = await CT.nextProposalId();
+  await w(CT.connect(cits[10]).proposePayment(0, await IT.getAddress(), 0, cits[9].address, E(1)));
+  ok(await reverts(async () => CT.connect(cits[9]).vote(pid, true), "recipient can't vote"), "CT-L4: the recipient can't vote on their own payment");
+  for (let i = 1; i < 4; i++) await w(CT.connect(cits[i]).vote(pid, true));
+  await warp(3 * DAY + 1);
+  await w(GOV.connect(cits[4]).openRecall(0));            // opened only after the vote closed
+  for (let i = 4; i < 9; i++) await w(GOV.connect(cits[i]).voteRecall(0, true));
+  await warp(5 * DAY);                                      // execution falls due; recall closed but unresolved
+  ok(await reverts(async () => CT.executePayment(pid), "recall pending"), "CT-M1: the governor can't race an unresolved recall");
+  await w(GOV.resolveRecall(0));
+  await w(CT.executePayment(pid));
+  ok((await CT.proposals(pid)).status === 1n && (await IT.balanceOf(cits[9].address)) === E(999), "CT-M1: after the recall the payment is void, money back");
 }
 { // CT-4: a 'no' vote never helps; CT-6: one-second loans don't count in the treasury
   const { RA, GOV, CT, IT, cits } = await system(22);

@@ -113,7 +113,8 @@ contract CompanyDividendsV9 is ReentrancyGuard {
         require(fromCompanyId != companyId, "DV: same company");
         require(msg.sender == governance.governorOperatingKey(fromCompanyId), "DV: not operating key");
         require(block.timestamp < governance.governorTermEnd(fromCompanyId), "DV: term expired");
-        require(governance.companyGovernor(fromCompanyId) != governance.termGovernor(companyId, term), "DV: that term's governor can't vote");
+        address tg = governance.termGovernor(companyId, term);
+        require(governance.companyGovernor(fromCompanyId) != tg && msg.sender != tg, "DV: that term's governor can't vote");
         _votePolicy(companyId, term, roundAuction.corporateHolder(fromCompanyId), wantsDividend);
     }
 

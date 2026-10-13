@@ -26,9 +26,10 @@ interface IGovernanceV9Read {
 ///   - Bidding opens at `roundStart` and closes at `roundEnd`. A bid is a
 ///     budget (INVEST locked) plus a per-share price limit (`maxPrice`).
 ///   - Price of one share in a round:
-///       * if every bid fits at the LOWEST bid's amount (demand at that
-///         price <= shares on offer), the lowest bid sets the price, as in
-///         the paper: the lowest bid buys exactly one share;
+///       * a bid's effective price is min(budget, maxPrice). If every bid
+///         fits at the LOWEST effective price (demand there <= shares on
+///         offer), that is the price, as in the paper: the lowest bid buys
+///         at least one share;
 ///       * if the round is oversubscribed, the price is the CLEARING
 ///         price: the highest price at which demand still covers the
 ///         offer. A tiny bid can therefore never pin the price
@@ -47,8 +48,9 @@ interface IGovernanceV9Read {
 ///     During the cooldown nobody can bid, and anyone whose bid is still
 ///     active may withdraw it.
 ///   - The book holds at most 100 active bids. When it is full, a new bid
-///     must be larger than the current lowest, which is refunded and
-///     evicted (Finding 31: nobody can squat the slots).
+///     must have a higher effective price than the lowest, which is
+///     refunded and evicted (Finding 31, RA-N1: nobody can squat the slots
+///     with bids that never buy).
 ///
 /// Shares:
 ///   - Each share is locked for 7 days from its OWN mint time.
@@ -71,7 +73,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     uint256 public constant HOST_FEE_BPS = 100; // 1%
     uint256 public constant MIN_BID = 1 * 10 ** 18; // 1 whole INVEST
     uint256 public constant MAX_ACTIVE_BIDS = 100;
-    uint256 public constant MAX_SHARES_PER_ROUND = 200;
+    uint256 public constant MAX_SHARES_PER_ROUND = 150;
     uint256 public constant MAX_COMPANY_ID = type(uint64).max;
 
     address public host;
@@ -114,7 +116,9 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     mapping(uint256 => Checkpoints.Trace208) internal corporateHistory; // shares held by companies
 
     mapping(uint256 => uint256) public reinvestableIncome;
-    mapping(address => uint256) public corporateHolderToCompanyPlusOne;
+    /// @dev Company addresses: a fixed 96-bit prefix + the 64-bit company id,
+    /// so any company address — listed yet or not — is recognisable.
+    uint160 internal constant CORP_PREFIX = 0x0ab48f255a5f26189f2c25fb; // first 12 bytes of keccak("SAKARTVELO_CORPORATE_HOLDER_V9")
 
     // Governor compensation for corporate bids: the governor is fixed when
     // the bid is placed; 1% of everything the bid fills, counted cumulatively.
@@ -240,7 +244,6 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         companies[companyId] = Company(name, totalShares, 0, 1, block.timestamp + roundDuration, roundDuration, false, 0, 0);
         roundStart[companyId] = block.timestamp;
         companiesListed++;
-        corporateHolderToCompanyPlusOne[corporateHolder(companyId)] = companyId + 1;
         emit CompanyListed(companyId, name, totalShares, companies[companyId].roundEnd);
     }
 
@@ -285,15 +288,19 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
             list.push(Bid(bidder, amount, maxPrice, seq));
             activeBidSlot[companyId][bidder] = list.length;
         } else {
-            // Full book: evict the lowest bid (latest one on ties).
+            // Full book: evict the bid with the lowest effective price
+            // min(amount, maxPrice) — latest one on ties (v9 audit RA-N1).
             uint256 lowIdx = 0;
+            uint256 lowEff = _eff(list[0]);
             for (uint256 i = 1; i < list.length; i++) {
-                if (list[i].amount < list[lowIdx].amount || (list[i].amount == list[lowIdx].amount && list[i].seq > list[lowIdx].seq)) {
+                uint256 e = _eff(list[i]);
+                if (e < lowEff || (e == lowEff && list[i].seq > list[lowIdx].seq)) {
                     lowIdx = i;
+                    lowEff = e;
                 }
             }
             Bid memory out = list[lowIdx];
-            require(amount > out.amount, "RA: book full, bid must beat the lowest");
+            require((amount < maxPrice ? amount : maxPrice) > lowEff, "RA: book full, bid must beat the lowest");
             delete activeBidSlot[companyId][out.bidder];
             list[lowIdx] = Bid(bidder, amount, maxPrice, seq);
             activeBidSlot[companyId][bidder] = lowIdx + 1;
@@ -425,6 +432,11 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         }
     }
 
+    /// @dev The highest price per share a bid can actually pay.
+    function _eff(Bid memory b) internal pure returns (uint256) {
+        return b.amount < b.maxPrice ? b.amount : b.maxPrice;
+    }
+
     /// @dev Entitlement of a bid at price p: floor(amount / p) if both its
     /// budget and its maxPrice reach p, else 0.
     function _ent(Bid memory b, uint256 p) internal pure returns (uint256) {
@@ -435,13 +447,21 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         for (uint256 k = 0; k < bs.length; k++) d += _ent(bs[k], p);
     }
 
-    /// @dev The lowest bid's amount if demand there fits the offer;
-    /// otherwise the highest price whose demand still covers the offer
-    /// (binary search: demand only falls as the price rises).
+    /// @dev Floor = the lowest effective price min(amount, maxPrice): at
+    /// the floor EVERY bid is eligible, so a bid can't set a price it
+    /// refuses to pay (v9 audit RA-N1/N2). If demand at the floor fits the
+    /// offer, that is the price; otherwise the highest price whose demand
+    /// still covers the offer (binary search: demand only falls as the
+    /// price rises).
     function _clearingPrice(Bid[] memory bs, uint256 offer) internal pure returns (uint256) {
-        uint256 lo = bs[bs.length - 1].amount; // sorted: last is lowest
+        uint256 lo = type(uint256).max;
+        uint256 hi = 0;
+        for (uint256 k = 0; k < bs.length; k++) {
+            uint256 e = _eff(bs[k]);
+            if (e < lo) lo = e;
+            if (e > hi) hi = e; // demand above the highest effective price is 0
+        }
         if (_demand(bs, lo) <= offer) return lo;
-        uint256 hi = bs[0].amount; // demand above the highest budget is 0
         while (lo < hi) {
             uint256 mid = lo + (hi - lo + 1) / 2;
             if (_demand(bs, mid) >= offer) lo = mid; else hi = mid - 1;
@@ -500,7 +520,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     /// @dev Citizen refunds are paid in INVEST; a company's bid goes back to
     /// that company's reinvestable income (the tokens stay here).
     function _refund(uint256 companyId, address bidder, uint256 amount) internal {
-        uint256 originPlusOne = corporateHolderToCompanyPlusOne[bidder];
+        uint256 originPlusOne = corporateCompanyPlusOne(bidder);
         if (originPlusOne != 0) {
             reinvestableIncome[originPlusOne - 1] += amount;
         } else {
@@ -513,7 +533,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     /// 1% of all shares the bid has filled so far (counted cumulatively, so
     /// small fills add up), locked for COMPENSATION_LOCK from mint.
     function _mintShares(uint256 companyId, Company storage c, address to, uint256 qty) internal {
-        if (corporateHolderToCompanyPlusOne[to] != 0) {
+        if (corporateCompanyPlusOne(to) != 0) {
             address gov = corporateBidGovernor[companyId][to];
             uint256 filled = corporateBidFilled[companyId][to] + qty;
             corporateBidFilled[companyId][to] = filled;
@@ -622,7 +642,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         address from = _ownerOf(tokenId);
         if (from != address(0) && to != address(0)) {
             _checkTransferable(tokenId);
-            require(corporateHolderToCompanyPlusOne[to] == 0, "RA: can't send shares to a company");
+            require(corporateCompanyPlusOne(to) == 0, "RA: can't send shares to a company");
             uint256 companyId = shareCompany(tokenId);
             _subHolding(companyId, from, 1);
             _addHolding(companyId, to, 1);
@@ -676,9 +696,17 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     }
 
     /// @dev Synthetic, keyless address standing for a company as a
-    /// shareholder in another company. Its shares can never move.
+    /// shareholder in another company. Its shares can never move, and no
+    /// share can ever be sent to one.
     function corporateHolder(uint256 companyId) public pure returns (address) {
-        return address(uint160(uint256(keccak256(abi.encodePacked("SOVEREIGN_LOTS_CORP_ROUND_V9", companyId)))));
+        require(companyId <= MAX_COMPANY_ID, "RA: company id too large");
+        return address((CORP_PREFIX << 64) | uint160(companyId));
+    }
+
+    /// @notice companyId + 1 if `a` is a company address, else 0.
+    function corporateCompanyPlusOne(address a) public pure returns (uint256) {
+        uint160 v = uint160(a);
+        return (v >> 64) == CORP_PREFIX ? uint256(uint64(v)) + 1 : 0;
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {

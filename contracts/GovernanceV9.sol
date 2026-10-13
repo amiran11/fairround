@@ -32,23 +32,30 @@ interface IShareRegistryV9 {
 ///      sitting governor, anyone opens a 5-day CANDIDACY PERIOD.
 ///   2. Any holder of at least 0.1% of the electorate declares candidacy
 ///      with a program. Every holder can NOMINATE one candidate with their
-///      weight (declaring nominates yourself). The ballot is the 20
+///      weight (declaring nominates yourself). Once others have nominated
+///      you, you can't withdraw. The ballot is the 20
 ///      candidates with the most nomination weight, so a majority can always
 ///      put its candidate on it however many puppets a whale registers.
 ///   3. Voting opens only after the candidacy period. A voter may vote for a
 ///      candidate or AGAINST ALL (candidate = address(0)).
 ///   4. A winner needs 20% of the electorate AND either 51% of votes cast,
-///      or (two or fewer candidates left) more votes than the runner-up and
-///      more than "against all". With more candidates, no 51%, and turnout
-///      of at least 20%, the top two go to a runoff. Ties go to the earlier
-///      declaration.
+///      or (two or fewer candidates left) strictly more votes than the
+///      runner-up and than "against all" (a tie fails the round). With more
+///      candidates, no 51%, and turnout of at least 20%, the top two go to a
+///      runoff; ties for the runoff places go to the earlier declaration.
+///      Company-held votes cast count in the 20% base as well.
 ///   5. A round with no winner and no runoff fails. Two failed rounds close
 ///      the election; anyone can open a fresh candidacy period.
 ///
 /// A term lasts 30 days. Its end is recorded once, never overwritten.
 /// RECALL: a holder of at least 1% of the electorate opens it; it passes
 /// with 51% of votes cast and turnout of 33% of the electorate. Only a
-/// recall that reached turnout starts the 7-day cooldown.
+/// recall that reached turnout starts the 7-day cooldown. A treasury
+/// action that falls due while an earlier-opened recall is pending waits
+/// for the recall to be resolved.
+///
+/// A governor can never vote another company's shares for themself, nor on
+/// their own recall.
 ///
 /// FICTIONAL SIMULATION. Not a real financial product, security, or claim
 /// on any real-world asset.
@@ -87,6 +94,7 @@ contract GovernanceV9 {
 
     struct Candidate {
         string program;
+        uint256 stake;     // own weight at declaration
         uint256 support;   // nomination weight
         uint256 seq;       // declaration order, for tie-breaks
         bool registered;
@@ -100,6 +108,7 @@ contract GovernanceV9 {
     mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public roundVotes; // address(0) = against all
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) public roundHasVoted;
     mapping(uint256 => mapping(uint256 => uint256)) public roundTotalVotesCast;
+    mapping(uint256 => mapping(uint256 => uint256)) public roundCorporateVotes; // counted in the denominator too
 
     mapping(uint256 => address) public companyGovernor;
     mapping(uint256 => uint256) public governorTermEnd;
@@ -115,6 +124,7 @@ contract GovernanceV9 {
         uint256 voteEnd;
         uint256 yes;
         uint256 no;
+        uint256 corpCast;
         bool resolved;
     }
     mapping(uint256 => uint256) public lastRecallId;
@@ -196,9 +206,16 @@ contract GovernanceV9 {
         Candidate storage me = candidates[companyId][e.id][msg.sender];
         require(!me.registered && me.seq == 0, "GOV: already declared");
         uint256 stake = shares.votingWeight(companyId, msg.sender, e.snapshot);
-        require(stake > 0, "GOV: no shares at snapshot");
-        require(stake * 10_000 >= electorate(companyId, e.snapshot) * MIN_CANDIDATE_STAKE_BPS, "GOV: stake below 0.1%");
+        uint256 base = electorate(companyId, e.snapshot);
+        // A company owned entirely by other companies has no individual
+        // electorate: anyone may stand, and the owners' governors nominate
+        // and vote (v9 audit GOV-N3).
+        if (base > 0) {
+            require(stake > 0, "GOV: no shares at snapshot");
+            require(stake * 10_000 >= base * MIN_CANDIDATE_STAKE_BPS, "GOV: stake below 0.1%");
+        }
         require(!hasNominated[companyId][e.id][msg.sender], "GOV: already nominated someone");
+        me.stake = stake;
         me.program = program;
         me.registered = true;
         me.seq = ++nextDeclarationSeq;
@@ -217,6 +234,7 @@ contract GovernanceV9 {
 
     function nominateAsCorporation(uint256 fromCompanyId, uint256 toCompanyId, address candidate) external {
         _requireCorporateVoter(fromCompanyId, toCompanyId);
+        _requireNotSelf(fromCompanyId, candidate);
         Election storage e = election[toCompanyId];
         _candidacyOpen(e);
         address corp = shares.corporateHolder(fromCompanyId);
@@ -261,6 +279,8 @@ contract GovernanceV9 {
         _candidacyOpen(e);
         Candidate storage me = candidates[companyId][e.id][msg.sender];
         require(me.registered, "GOV: not a candidate");
+        // Others' nominations can't be thrown away by a decoy (GOV-N2).
+        require(me.support == me.stake, "GOV: others nominated you; you can't withdraw");
         me.registered = false;
         if (me.onBallot) {
             me.onBallot = false;
@@ -312,7 +332,16 @@ contract GovernanceV9 {
 
     function voteAsCorporation(uint256 fromCompanyId, uint256 toCompanyId, address candidate) external {
         _requireCorporateVoter(fromCompanyId, toCompanyId);
-        _castVote(toCompanyId, shares.corporateHolder(fromCompanyId), candidate);
+        _requireNotSelf(fromCompanyId, candidate);
+        uint256 weight = _castVote(toCompanyId, shares.corporateHolder(fromCompanyId), candidate);
+        roundCorporateVotes[toCompanyId][election[toCompanyId].round] += weight;
+    }
+
+    /// @dev A governor can't use another company's shares for themself
+    /// (v9 audit GOV-N1).
+    function _requireNotSelf(uint256 fromCompanyId, address candidate) internal view {
+        require(candidate == address(0) || (candidate != companyGovernor[fromCompanyId] && candidate != msg.sender),
+            "GOV: can't vote company shares for yourself");
     }
 
     function _requireCorporateVoter(uint256 fromCompanyId, uint256 toCompanyId) internal view {
@@ -321,7 +350,7 @@ contract GovernanceV9 {
         require(block.timestamp < governorTermEnd[fromCompanyId], "GOV: term expired");
     }
 
-    function _castVote(uint256 companyId, address voter, address candidate) internal {
+    function _castVote(uint256 companyId, address voter, address candidate) internal returns (uint256 weight) {
         Election storage e = election[companyId];
         uint256 round = e.round;
         require(e.id != 0 && round != 0, "GOV: voting not open");
@@ -331,7 +360,7 @@ contract GovernanceV9 {
             require(cand.onBallot && !cand.eliminated, "GOV: not on the ballot");
         }
         require(!roundHasVoted[companyId][round][voter], "GOV: already voted");
-        uint256 weight = shares.votingWeight(companyId, voter, e.snapshot);
+        weight = shares.votingWeight(companyId, voter, e.snapshot);
         require(weight > 0, "GOV: no shares at snapshot");
         roundHasVoted[companyId][round][voter] = true;
         roundVotes[companyId][round][candidate] += weight;
@@ -368,7 +397,7 @@ contract GovernanceV9 {
 
         uint256 totalCast = roundTotalVotesCast[companyId][round];
         uint256 against = roundVotes[companyId][round][address(0)];
-        uint256 quorumVotes = electorate(companyId, e.snapshot) * WIN_QUORUM_BPS;
+        uint256 quorumVotes = (electorate(companyId, e.snapshot) + roundCorporateVotes[companyId][round]) * WIN_QUORUM_BPS;
         bool winnerQuorum = firstVotes > 0 && firstVotes * 10_000 >= quorumVotes;
         bool majority = firstVotes * 10_000 >= totalCast * MAJORITY_BPS;
         bool plurality = remaining <= 2 && firstVotes > secondVotes && firstVotes > against;
@@ -456,6 +485,17 @@ contract GovernanceV9 {
     // Recall
     // ---------------------------------------------------------------------
 
+    /// @notice When the current term's pending recall (open, or closed but
+    /// not yet resolved) was opened; 0 if there is none. The treasury holds
+    /// back executions that fall due while such a recall is pending.
+    function pendingRecallOpenedAt(uint256 companyId) external view returns (uint256) {
+        uint256 id = lastRecallId[companyId];
+        if (id == 0) return 0;
+        Recall storage r = recalls[companyId][id];
+        if (r.resolved || r.term != termNumber[companyId]) return 0;
+        return r.voteEnd - RECALL_WINDOW;
+    }
+
     function openRecall(uint256 companyId) external returns (uint256 recallId) {
         require(governorActive(companyId), "GOV: no governor in office");
         uint256 term = termNumber[companyId];
@@ -473,7 +513,7 @@ contract GovernanceV9 {
         uint256 weight = shares.votingWeight(companyId, msg.sender, snapshot);
         require(weight > 0 && weight * 10_000 >= electorate(companyId, snapshot) * RECALL_OPEN_BPS, "GOV: need 1% to open a recall");
         recallId = ++lastRecallId[companyId];
-        recalls[companyId][recallId] = Recall(term, snapshot, block.timestamp + RECALL_WINDOW, 0, 0, false);
+        recalls[companyId][recallId] = Recall(term, snapshot, block.timestamp + RECALL_WINDOW, 0, 0, 0, false);
         emit RecallOpened(companyId, recallId, term, block.timestamp + RECALL_WINDOW);
     }
 
@@ -483,15 +523,18 @@ contract GovernanceV9 {
 
     function voteRecallAsCorporation(uint256 fromCompanyId, uint256 toCompanyId, bool remove) external {
         _requireCorporateVoter(fromCompanyId, toCompanyId);
-        _castRecall(toCompanyId, shares.corporateHolder(fromCompanyId), remove);
+        address subject = companyGovernor[toCompanyId];
+        require(subject != companyGovernor[fromCompanyId] && subject != msg.sender, "GOV: can't vote company shares on your own recall");
+        uint256 id = lastRecallId[toCompanyId];
+        recalls[toCompanyId][id].corpCast += _castRecall(toCompanyId, shares.corporateHolder(fromCompanyId), remove);
     }
 
-    function _castRecall(uint256 companyId, address voter, bool remove) internal {
+    function _castRecall(uint256 companyId, address voter, bool remove) internal returns (uint256 weight) {
         uint256 id = lastRecallId[companyId];
         Recall storage r = recalls[companyId][id];
         require(id != 0 && !r.resolved && block.timestamp < r.voteEnd, "GOV: no recall open");
         require(!recallHasVoted[companyId][id][voter], "GOV: already voted");
-        uint256 weight = shares.votingWeight(companyId, voter, r.snapshot);
+        weight = shares.votingWeight(companyId, voter, r.snapshot);
         require(weight > 0, "GOV: no shares at snapshot");
         recallHasVoted[companyId][id][voter] = true;
         if (remove) r.yes += weight; else r.no += weight;
@@ -500,7 +543,7 @@ contract GovernanceV9 {
 
     function _turnoutReached(uint256 companyId, Recall storage r) internal view returns (bool) {
         uint256 cast = r.yes + r.no;
-        return cast > 0 && cast * 10_000 >= electorate(companyId, r.snapshot) * RECALL_TURNOUT_BPS;
+        return cast > 0 && cast * 10_000 >= (electorate(companyId, r.snapshot) + r.corpCast) * RECALL_TURNOUT_BPS;
     }
 
     function recallPasses(uint256 companyId, uint256 recallId) public view returns (bool) {

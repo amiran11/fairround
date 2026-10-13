@@ -23,6 +23,7 @@ interface ILedgerV9 {
     function takeIncome(uint256 companyId, uint256 amount) external;
     function placeCorporateBid(uint256 fromCompanyId, uint256 toCompanyId, uint256 amount, uint256 maxPrice, address governor) external;
     function host() external view returns (address);
+    function dividends() external view returns (address);
 }
 
 /// @notice The parts of GovernanceV9 the treasury uses.
@@ -31,6 +32,7 @@ interface IGovernanceV9 {
     function governorOperatingKey(uint256 companyId) external view returns (address);
     function governorTermEnd(uint256 companyId) external view returns (uint256);
     function termNumber(uint256 companyId) external view returns (uint256);
+    function pendingRecallOpenedAt(uint256 companyId) external view returns (uint256);
 }
 
 /// @title CompanyTreasuryV9
@@ -56,11 +58,14 @@ interface IGovernanceV9 {
 ///     base; so are company-held shares (they vote via their governor).
 ///   - Passing needs YES votes of at least 20% of that base (40% if, with
 ///     everything already proposed this term, the bucket's outflow passes 5%)
-///     and 51% of votes cast. Payments and investments together may not take
-///     more than 20% of a bucket per term.
-///   - After a vote passes, 3 days must pass before execution, so
-///     shareholders can recall the governor; a recall, or the end of the
-///     term, voids anything not yet executed.
+///     and 51% of votes cast. Payments, investments and sales together may
+///     not take more than 20% of a bucket per term; sale proceeds can't be
+///     paid out again in the same term. The recipient of a payment can't
+///     vote on it, directly or through a company they govern.
+///   - After a vote passes, 5 days must pass before execution (longer than
+///     a recall vote), a recall opened before it falls due holds it back
+///     until resolved, and a
+///     recall or the end of the term voids anything not yet executed.
 ///   - A failed payment transfer returns the money to the company.
 ///   - Custody only for tokens the owner (48-hour timelock) approved;
 ///     withdrawing approval stops new deposits but never freezes balances.
@@ -80,12 +85,12 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
 
     uint256 public constant VOTE_WINDOW = 3 days;
     uint256 public constant SNAPSHOT_LAG = 1 days;
-    uint256 public constant EXECUTION_DELAY = 3 days;
+    uint256 public constant EXECUTION_DELAY = 5 days; // > the 3-day recall vote (v9 audit CT-M1)
     uint256 public constant MAJORITY_BPS = 5100;
     uint256 public constant QUORUM_BPS = 2000;        // yes >= 20% of the base
     uint256 public constant LARGE_QUORUM_BPS = 4000;  // 40% when large
     uint256 public constant LARGE_AMOUNT_BPS = 500;   // large = over 5% of the bucket this term
-    uint256 public constant TERM_CAP_BPS = 2000;      // payments + investments <= 20% of a bucket per term
+    uint256 public constant TERM_CAP_BPS = 2000;      // payments + investments + sales <= 20% of a bucket per term
     uint256 public constant COMMIT_WINDOW = 2 days;
     uint256 public constant REVEAL_WINDOW = 1 days;
     uint256 public constant DEPOSIT_BPS = 1000;       // bid deposit = 10% of reserve
@@ -100,7 +105,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     mapping(address => bool) public approvedToken;   // may be deposited
     mapping(address => bool) public everApproved;    // may still be paid out or sold
     mapping(uint256 => mapping(address => uint256[2])) internal _bal; // non-INVEST buckets
-    // company => term => token => bucket => amount proposed for payment/investment
+    // company => term => token => bucket => amount proposed for payment, investment or sale
     mapping(uint256 => mapping(uint256 => mapping(address => uint256[2]))) public outflowThisTerm;
 
     event TokenApprovalSet(address indexed token, bool approved);
@@ -226,9 +231,9 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
         external onlyGovernor(companyId) nonReentrant returns (uint256 id)
     {
         require(to != address(0) && to != governance.companyGovernor(companyId) && to != msg.sender, "CT: recipient not allowed");
-        require(to != address(this) && to != address(roundAuction) && to != address(governance), "CT: recipient not allowed");
+        require(to != address(this) && to != address(roundAuction) && to != address(governance) && to != roundAuction.dividends(), "CT: recipient not allowed");
         require(to != roundAuction.corporateHolder(companyId), "CT: recipient not allowed");
-        id = _propose(companyId, Kind.Payment, token, bucket, amount, true);
+        id = _propose(companyId, Kind.Payment, token, bucket, amount);
         proposals[id].to = to;
         emit PaymentProposed(id, companyId, token, bucket, to, amount, proposals[id].voteEnd);
     }
@@ -238,7 +243,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     {
         require(_held(payToken) && payToken != token, "CT: bad payment token");
         require((reserve * DEPOSIT_BPS) / 10_000 > 0, "CT: reserve too small");
-        id = _propose(companyId, Kind.Sale, token, bucket, amount, false);
+        id = _propose(companyId, Kind.Sale, token, bucket, amount);
         proposals[id].payToken = payToken;
         proposals[id].reserve = reserve;
         emit SaleProposed(id, companyId, token, bucket, amount, payToken, reserve, proposals[id].voteEnd);
@@ -251,29 +256,27 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     {
         require(targetCompanyId != companyId, "CT: can't invest in itself");
         require(maxPrice > 0, "CT: max price required");
-        id = _propose(companyId, Kind.Invest, address(investToken), INCOME, amount, true);
+        id = _propose(companyId, Kind.Invest, address(investToken), INCOME, amount);
         proposals[id].target = targetCompanyId;
         proposals[id].reserve = maxPrice;
         emit InvestProposed(id, companyId, targetCompanyId, amount, maxPrice, proposals[id].voteEnd);
     }
 
-    function _propose(uint256 companyId, Kind kind, address token, uint8 bucket, uint256 amount, bool capped) internal returns (uint256 id) {
+    function _propose(uint256 companyId, Kind kind, address token, uint8 bucket, uint256 amount) internal returns (uint256 id) {
         require(_held(token), "CT: token not approved");
         require(amount > 0, "CT: amount must be > 0");
         uint256 voteEnd = block.timestamp + VOTE_WINDOW;
         require(voteEnd + EXECUTION_DELAY < governance.governorTermEnd(companyId), "CT: would outlast the term");
         uint256 term = governance.termNumber(companyId);
         uint256 bal = balanceOf(companyId, token, bucket);
-        bool large;
-        if (capped) {
-            uint256 already = outflowThisTerm[companyId][term][token][bucket];
-            uint256 base = bal + already; // the bucket as it was before this term's proposals
-            require((already + amount) * 10_000 <= base * TERM_CAP_BPS, "CT: over 20% of the bucket this term");
-            large = (already + amount) * 10_000 > base * LARGE_AMOUNT_BPS;
-            outflowThisTerm[companyId][term][token][bucket] = already + amount;
-        } else {
-            large = amount * 10_000 > bal * LARGE_AMOUNT_BPS;
-        }
+        // Payments, investments and sales together: at most 20% of a bucket
+        // per term, and "large" (40% quorum) once the term's total passes 5%
+        // (v9 audit CT-3, CT-M2).
+        uint256 already = outflowThisTerm[companyId][term][token][bucket];
+        uint256 base = bal + already; // the bucket as it was before this term's proposals
+        require((already + amount) * 10_000 <= base * TERM_CAP_BPS, "CT: over 20% of the bucket this term");
+        bool large = (already + amount) * 10_000 > base * LARGE_AMOUNT_BPS;
+        outflowThisTerm[companyId][term][token][bucket] = already + amount;
         _debit(companyId, token, bucket, amount); // reserved until decided
         id = nextProposalId++;
         Proposal storage p = proposals[id];
@@ -293,6 +296,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     function vote(uint256 id, bool approve) external {
         Proposal storage p = proposals[id];
         require(msg.sender != p.governor && msg.sender != p.opKey, "CT: proposer can't vote");
+        require(msg.sender != p.to, "CT: recipient can't vote");
         _castVote(id, p, msg.sender, approve);
     }
 
@@ -305,6 +309,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
         require(fromCompanyId != p.companyId, "CT: same company");
         address fromGov = governance.companyGovernor(fromCompanyId);
         require(fromGov != p.governor && fromGov != p.opKey && msg.sender != p.opKey && msg.sender != p.governor, "CT: proposer can't vote");
+        require(p.to == address(0) || (fromGov != p.to && msg.sender != p.to), "CT: recipient can't vote");
         p.corpCast += _castVote(id, p, roundAuction.corporateHolder(fromCompanyId), approve);
     }
 
@@ -352,7 +357,14 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
         p = proposals[id];
         require(p.voteEnd != 0 && p.kind == kind, "CT: unknown proposal");
         require(p.status == Status.Voting, "CT: already decided");
-        require(block.timestamp >= p.voteEnd + EXECUTION_DELAY || !_termLive(p), "CT: execution delay");
+        bool live = _termLive(p);
+        require(block.timestamp >= p.voteEnd + EXECUTION_DELAY || !live, "CT: execution delay");
+        // A recall opened before this proposal fell due holds it back until
+        // resolved; a recall opened later can't be used to stall it again.
+        if (live) {
+            uint256 openedAt = governance.pendingRecallOpenedAt(p.companyId);
+            require(openedAt == 0 || openedAt > p.voteEnd + EXECUTION_DELAY, "CT: recall pending");
+        }
         ok = passes(id) && _termLive(p);
         if (!ok) {
             p.status = Status.Rejected;
@@ -362,10 +374,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     }
 
     function _refundProposal(Proposal storage p) internal {
-        if (p.kind != Kind.Sale) {
-            uint256[2] storage out = outflowThisTerm[p.companyId][p.term][p.token];
-            out[p.bucket] -= p.amount;
-        }
+        outflowThisTerm[p.companyId][p.term][p.token][p.bucket] -= p.amount;
         _credit(p.companyId, p.token, p.bucket, p.amount);
     }
 
@@ -378,28 +387,24 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
             p.status = Status.Paid;
         } else {
             p.status = Status.PaymentFailed;
-            _credit(p.companyId, p.token, p.bucket, p.amount);
+            _refundProposal(p); // also frees the term's allowance (v9 audit CT-L1)
         }
         emit PaymentExecuted(id, sent);
     }
 
     /// @notice The governor's operating key chooses when to place the
-    /// approved bid (the target round must be open). If the bid can't be
-    /// placed, the income goes back.
+    /// approved bid (the target round must be open). If it can't be placed
+    /// right now the call reverts and can be retried; once the term is over,
+    /// anyone can call it to return the income.
     function executeInvest(uint256 id) external nonReentrant {
         Proposal storage q = proposals[id];
         require(!_termLive(q) || msg.sender == governance.governorOperatingKey(q.companyId), "CT: not operating key");
         (Proposal storage p, bool ok) = _decide(id, Kind.Invest);
         if (!ok) return;
-        try roundAuction.placeCorporateBid(p.companyId, p.target, p.amount, p.reserve, p.governor) {
-            investToken.safeTransfer(address(roundAuction), p.amount);
-            p.status = Status.Invested;
-            emit InvestExecuted(id, true);
-        } catch {
-            p.status = Status.Rejected;
-            _refundProposal(p);
-            emit InvestExecuted(id, false);
-        }
+        roundAuction.placeCorporateBid(p.companyId, p.target, p.amount, p.reserve, p.governor);
+        investToken.safeTransfer(address(roundAuction), p.amount);
+        p.status = Status.Invested;
+        emit InvestExecuted(id, true);
     }
 
     function _tryTransfer(address token, address to, uint256 amount) internal returns (bool) {
@@ -522,8 +527,11 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
             uint256 fee = (a.leadingAmount * HOST_FEE_BPS) / 10_000;
             hostFeeAccrued[p.payToken] += fee;
             _credit(p.companyId, p.payToken, p.bucket, a.leadingAmount - fee);
+            // Proceeds can't be paid straight out again in the same term
+            // through the other token's fresh allowance (v9 audit CT-M2).
+            outflowThisTerm[p.companyId][p.term][p.payToken][p.bucket] += a.leadingAmount - fee;
         } else {
-            _credit(p.companyId, p.token, p.bucket, p.amount);
+            _refundProposal(p);
         }
         emit AuctionSettled(id, a.leader, a.leadingAmount);
     }
