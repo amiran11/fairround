@@ -15,7 +15,7 @@ interface IInvestTokenVerify {
 ///   - ordinary wallets only: a contract can't verify (no factory that
 ///     verifies and claims for thousands of addresses in one transaction);
 ///   - the wallet must hold at least 0.0083 ETH (checked, not spent);
-///   - at most HOURLY_CAP new citizens per hour (240 a day), so a farm is
+///   - at most HOURLY_CAP new citizens per hour (1,200 a day), so a farm is
 ///     slow and visible on-chain while it happens, and can't grab a whole
 ///     day's places at midnight (v9 audit CT-8);
 ///   - a wallet already verified or already claimed doesn't use up the cap.
@@ -30,7 +30,7 @@ contract OpenVerifierV2 {
     address public immutable guardian;
 
     uint256 public constant MIN_BALANCE = 0.0083 ether;
-    uint256 public constant HOURLY_CAP = 10;
+    uint256 public constant HOURLY_CAP = 50;
 
     bool public paused;
     mapping(uint256 => uint256) public verifiedInHour; // hour number => count

@@ -11,7 +11,7 @@ switched off: same INVEST token, same balances, v8 companies keep running
 | 2 | GovernanceV9 | new | Elections, terms, operating keys, recall |
 | 3 | CompanyTreasuryV9 | new | Payments, sales and investments, all by shareholder vote |
 | 4 | CompanyDividendsV9 | new | End-of-term dividend / reinvest vote |
-| 5 | OpenVerifierV2 | new (replaces OpenVerifier) | Self-verification: normal wallets, 10 per hour |
+| 5 | OpenVerifierV2 | new (replaces OpenVerifier) | Self-verification: normal wallets, 50 per hour |
 | 6 | SakartveloTimelock | new | Owner of everything, 48-hour delay |
 
 **Rehearsed:** this exact sequence, with the same read-back checks, runs

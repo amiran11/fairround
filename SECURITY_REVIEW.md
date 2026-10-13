@@ -660,7 +660,7 @@ goes live alongside v8 after the experiment window (8 November 2026).
 | RA-3 | Shares can be gifted to a company's own address: it votes its own shares; dividends become income | Low | No share can be sent to a company address |
 | RA-4 / GOV-5 | Compensation rounded per settlement (usually 0); self-recall shortened its two-term lock | Low | Counted cumulatively; locked 60 days by time |
 | GOV-4/6/7/8 | Split votes couldn't reach a runoff; governor-less corporate holders could freeze quorums; a lone candidate couldn't be opposed; ties by list position | Low | Runoff on total turnout; company-held shares out of the denominators unless they vote; "against all"; ties to the earlier declaration |
-| CT-8 | One balance could take a whole day's verifications at midnight | Low | At most 10 new citizens per hour |
+| CT-8 | One balance could take a whole day's verifications at midnight | Low | At most 10 new citizens per hour (raised to 50 before launch, 13 Oct 2026; same mechanism) |
 
 **Round 2 — two reviewers, on the revised code.**
 

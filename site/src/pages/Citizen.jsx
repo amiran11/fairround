@@ -18,7 +18,7 @@ export default function Citizen() {
   const [stats] = useChain(getPublicStats, []);
   const [elig] = useChain((p) => (connected ? getClaimEligibility(address, p) : Promise.resolve(null)), [address, connected]);
   const [ethCheck] = useChain((p) => (connected ? getVerifySelfEligibility(address, p) : Promise.resolve(null)), [address, connected]);
-  // Version 9 verifies through OpenVerifierV2: at most 10 new citizens an
+  // Version 9 verifies through OpenVerifierV2: at most 50 new citizens an
   // hour, and a guardian can pause it.
   const [v2] = useChain((p) => (V9_LIVE ? getVerifier(p) : Promise.resolve(null)), []);
   const verifyTx = (s) => (V9_LIVE ? verifySelf(s) : verifySelfReal(s));
@@ -62,7 +62,7 @@ export default function Citizen() {
             <p className="small">
               {t("Verification checks that the wallet holds at least {min} ETH on {network}. Nothing is taken: the ETH stays in your wallet, and you only pay gas.", { min: ethCheck ? eth(ethCheck.minBalance) : "0.0083", network: ACTIVE_NETWORK.label })}
             </p>
-            <Muted small>{t("This is a balance check, not proof that you are one person: someone can verify several wallets. To slow that down, only ordinary wallets can verify and at most 10 an hour. A real privatization would need real identity checks; this simulation says so openly.")}</Muted>
+            <Muted small>{t("This is a balance check, not proof that you are one person: someone can verify several wallets. To slow that down, only ordinary wallets can verify and at most 50 an hour. A real privatization would need real identity checks; this simulation says so openly.")}</Muted>
             {connected && !verified && !verifyOpen && (
               <Notice tone="plain">{t("Self-verification is switched off at the moment, so new wallets can't verify.")}</Notice>
             )}

@@ -191,7 +191,7 @@ The proportional round auction is kept. Required changes:
 
 **Verification and owner powers**
 - OpenVerifierV2: ordinary wallets only, 0.0083 ETH balance check, at most
-  10 new citizens per hour; a guardian can only pause.
+  50 new citizens per hour (10 in the audited draft, raised 13 Oct for launch); a guardian can only pause.
 - InvestToken and every v9 contract are owned by a **48-hour timelock**.
   INVEST stays tradable: InvestToken keeps pointing at v8's RoundAuction.
 

@@ -34,7 +34,7 @@ export default function Rules() {
         </ol>
 
         <h2 className="h2">{t("Citizens and INVEST")}</h2>
-        <p>{t("A wallet becomes a citizen by verifying itself: only ordinary wallets can, the contract checks that it holds at least 0.0083 ETH on {network} (nothing is taken), and at most 10 wallets an hour can verify. Each citizen then claims 1,000 INVEST, once. There are {max} citizen places.", { network: ACTIVE_NETWORK.label, max: maxCit })}</p>
+        <p>{t("A wallet becomes a citizen by verifying itself: only ordinary wallets can, the contract checks that it holds at least 0.0083 ETH on {network} (nothing is taken), and at most 50 wallets an hour can verify. Each citizen then claims 1,000 INVEST, once. There are {max} citizen places.", { network: ACTIVE_NETWORK.label, max: maxCit })}</p>
         <p>{t("This makes creating wallets cost something, but one person can still verify several. Telling people apart needs real identity checks, which this simulation doesn't have.")}</p>
         <p>{t("INVEST can be sent between wallets. That was unlocked on 9 October 2026, in an experiment with version 8 whose plan and results are published.")} <a href={LINKS.experiment} target="_blank" rel="noreferrer">{t("Read about the experiment")}</a></p>
 
