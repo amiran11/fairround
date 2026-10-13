@@ -84,6 +84,9 @@ After each: copy the address from **Deployed Contracts**, write it in the
 table, and open it — check the function list shows the new functions
 (e.g. RA9 has **placeCorporateBid**, **corporateCompanyPlusOne**; CT9 has
 **proposeInvest**). That proves Remix didn't deploy stale code.
+On OV2, click **HOURLY_CAP**: it must say **50** (the limit was raised
+from 10 on 13 October; if it says 10, re-upload `OpenVerifierV2.sol`
+from the repo and deploy it again).
 
 ## Part 3 — Wire it up (while you still own everything)
 
