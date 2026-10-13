@@ -23,15 +23,23 @@ interface IGovernanceV9Read {
 /// 38, 39, 40 and the lower-severity notes).
 ///
 /// How a round works:
-///   - Bidding opens at `roundStart` and closes at `roundEnd`.
-///   - At settlement the LOWEST active bid sets the price of one share.
-///     Each bid is entitled to floor(bid / price) shares (rounded DOWN,
-///     Finding 40) and pays exactly shares x price.
-///   - If every entitlement fits in the shares on offer, every bid is
-///     filled in full. Otherwise each bid gets the same fraction of its
-///     entitlement (pro rata, rounded down), and the few shares left by
-///     rounding go one each to the highest bids. Nothing is all-or-nothing,
-///     so no bid is ever stuck (Finding 30).
+///   - Bidding opens at `roundStart` and closes at `roundEnd`. A bid is a
+///     budget (INVEST locked) plus a per-share price limit (`maxPrice`).
+///   - Price of one share in a round:
+///       * if every bid fits at the LOWEST bid's amount (demand at that
+///         price <= shares on offer), the lowest bid sets the price, as in
+///         the paper: the lowest bid buys exactly one share;
+///       * if the round is oversubscribed, the price is the CLEARING
+///         price: the highest price at which demand still covers the
+///         offer. A tiny bid can therefore never pin the price
+///         (v9 audit RA-1).
+///     Demand at price p = sum of floor(budget / p) over bids whose budget
+///     and maxPrice are both >= p. Shares are rounded DOWN (Finding 40);
+///     a bid pays exactly shares x price.
+///   - If demand exceeds the offer, each eligible bid gets the same
+///     fraction of its entitlement (pro rata, rounded down) and the few
+///     shares left by rounding go one each to the highest bids. Nothing is
+///     all-or-nothing (Finding 30).
 ///   - A bid that got its full entitlement is closed and the remainder
 ///     (less than one share's price) refunded. A partly filled bid stays
 ///     active, smaller, for the next round.
@@ -45,7 +53,9 @@ interface IGovernanceV9Read {
 /// Shares:
 ///   - Each share is locked for 7 days from its OWN mint time.
 ///   - One listing per share, deleted whenever the share moves (Finding 39).
-///   - Company-held shares can't be listed or moved (Finding 24).
+///   - Company-held shares can't be listed or moved, and nobody can send
+///     shares to a company (Finding 24, v9 audit RA-3). Corporate bids are
+///     placed only by the treasury after a shareholder vote.
 ///
 /// FICTIONAL SIMULATION. Not a real financial product, security, or claim
 /// on any real-world asset.
@@ -61,12 +71,13 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     uint256 public constant HOST_FEE_BPS = 100; // 1%
     uint256 public constant MIN_BID = 1 * 10 ** 18; // 1 whole INVEST
     uint256 public constant MAX_ACTIVE_BIDS = 100;
-    uint256 public constant MAX_SHARES_PER_ROUND = 300;
+    uint256 public constant MAX_SHARES_PER_ROUND = 200;
     uint256 public constant MAX_COMPANY_ID = type(uint64).max;
 
     address public host;
     uint256 public hostFeeAccrued;
     address public treasury;
+    address public dividends; // CompanyDividendsV9: may also use the treasury hooks
     IGovernanceV9Read public governance;
 
     // Same field order as v8, so readers of companies() decode it unchanged.
@@ -84,8 +95,9 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
 
     struct Bid {
         address bidder;
-        uint256 amount;
-        uint256 seq; // global placement order, for earliest-first tie-breaks
+        uint256 amount;   // remaining budget (INVEST locked here)
+        uint256 maxPrice; // highest price per share this bid accepts
+        uint256 seq;      // global placement order, for earliest-first tie-breaks
     }
 
     mapping(uint256 => Company) public companies;
@@ -99,21 +111,24 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
 
     mapping(uint256 => mapping(address => Checkpoints.Trace208)) internal holdingHistory;
     mapping(uint256 => Checkpoints.Trace208) internal issuedHistory;
+    mapping(uint256 => Checkpoints.Trace208) internal corporateHistory; // shares held by companies
 
     mapping(uint256 => uint256) public reinvestableIncome;
     mapping(address => uint256) public corporateHolderToCompanyPlusOne;
 
-    // Governor compensation for corporate bids, fixed when invest() is called.
+    // Governor compensation for corporate bids: the governor is fixed when
+    // the bid is placed; 1% of everything the bid fills, counted cumulatively.
+    uint256 public constant COMPENSATION_LOCK = 60 days; // two 30-day terms
     mapping(uint256 => mapping(address => address)) public corporateBidGovernor; // companyId => corporate bidder => governor
-    mapping(uint256 => mapping(address => uint256)) public corporateBidUnlockTerm;
-    mapping(uint256 => uint256) public compensationOriginCompany;
-    mapping(uint256 => uint256) public compensationUnlockTerm;
+    mapping(uint256 => mapping(address => uint256)) public corporateBidFilled;
+    mapping(uint256 => mapping(address => uint256)) public corporateBidCompPaid;
+    mapping(uint256 => uint256) public compensationUnlockTime; // tokenId => time
 
     uint256 public companiesListed;
     uint256 public companiesFinalized;
 
     event CompanyListed(uint256 indexed companyId, string name, uint256 totalShares, uint256 roundEnd);
-    event BidPlaced(uint256 indexed companyId, address indexed bidder, uint256 amount, uint256 bidIndex);
+    event BidPlaced(uint256 indexed companyId, address indexed bidder, uint256 amount, uint256 maxPrice, uint256 bidIndex);
     event BidEvicted(uint256 indexed companyId, address indexed bidder, uint256 amount);
     event BidWithdrawn(uint256 indexed companyId, address indexed bidder, uint256 amount);
     event BidFilled(uint256 indexed companyId, address indexed bidder, uint256 shares, uint256 paid);
@@ -124,6 +139,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     event HostFeesWithdrawn(address indexed host, uint256 amount);
     event HostSet(address indexed host);
     event TreasurySet(address indexed treasury);
+    event DividendsSet(address indexed dividends);
     event GovernanceSet(address indexed governance);
     event CorporateInvestment(uint256 indexed fromCompanyId, uint256 indexed toCompanyId, uint256 amount);
     event ShareListed(uint256 indexed tokenId, address indexed seller, uint256 price);
@@ -153,6 +169,13 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         emit TreasurySet(_treasury);
     }
 
+    function setDividends(address _dividends) external onlyOwner {
+        require(dividends == address(0), "RA: dividends already set");
+        require(_dividends != address(0), "RA: zero address");
+        dividends = _dividends;
+        emit DividendsSet(_dividends);
+    }
+
     function setGovernance(address _governance) external onlyOwner {
         require(address(governance) == address(0), "RA: governance already set");
         require(_governance != address(0), "RA: zero address");
@@ -170,7 +193,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     }
 
     modifier onlyTreasury() {
-        require(msg.sender == treasury, "RA: not treasury");
+        require(msg.sender == treasury || (msg.sender == dividends && msg.sender != address(0)), "RA: not treasury");
         _;
     }
 
@@ -225,37 +248,41 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     // Bidding
     // ---------------------------------------------------------------------
 
-    function placeBid(uint256 companyId, uint256 amount) external nonReentrant {
+    /// @param maxPrice highest price per share you accept (in INVEST wei).
+    function placeBid(uint256 companyId, uint256 amount, uint256 maxPrice) external nonReentrant {
         require(investToken.transferFrom(msg.sender, address(this), amount), "RA: transfer failed");
-        _addBid(companyId, msg.sender, amount);
+        _addBid(companyId, msg.sender, amount, maxPrice);
     }
 
-    /// @notice A governor commits this company's reinvestable income (never
-    /// its capital) as a bid in ANOTHER company's open round (Finding 38).
-    /// The governor and term are recorded now, for the 1% compensation.
-    function invest(uint256 fromCompanyId, uint256 toCompanyId, uint256 amount) external onlyGovernor(fromCompanyId) nonReentrant {
+    /// @notice The treasury places a company's bid in ANOTHER company, after
+    /// the shareholders of `fromCompanyId` voted for it. The INVEST (from
+    /// that company's income) has already been sent here.
+    function placeCorporateBid(uint256 fromCompanyId, uint256 toCompanyId, uint256 amount, uint256 maxPrice, address governor)
+        external onlyTreasury nonReentrant
+    {
         require(fromCompanyId != toCompanyId, "RA: can't invest in itself");
-        require(reinvestableIncome[fromCompanyId] >= amount, "RA: no reinvest income");
-        reinvestableIncome[fromCompanyId] -= amount;
+        require(companies[fromCompanyId].totalShares > 0, "RA: unknown company");
         address corp = corporateHolder(fromCompanyId);
-        _addBid(toCompanyId, corp, amount);
-        corporateBidGovernor[toCompanyId][corp] = governance.companyGovernor(fromCompanyId);
-        corporateBidUnlockTerm[toCompanyId][corp] = governance.termNumber(fromCompanyId) + 2;
+        _addBid(toCompanyId, corp, amount, maxPrice);
+        corporateBidGovernor[toCompanyId][corp] = governor;
+        corporateBidFilled[toCompanyId][corp] = 0;
+        corporateBidCompPaid[toCompanyId][corp] = 0;
         emit CorporateInvestment(fromCompanyId, toCompanyId, amount);
     }
 
-    function _addBid(uint256 companyId, address bidder, uint256 amount) internal {
+    function _addBid(uint256 companyId, address bidder, uint256 amount, uint256 maxPrice) internal {
         Company storage c = companies[companyId];
         require(c.totalShares > 0, "RA: unknown company");
         require(!c.finalized, "RA: sold out");
         require(block.timestamp >= roundStart[companyId], "RA: cooldown, round not open yet");
         require(block.timestamp < c.roundEnd, "RA: round closed");
         require(amount >= MIN_BID, "RA: bid below 1 INVEST");
+        require(maxPrice >= MIN_BID, "RA: max price below 1 INVEST");
         require(activeBidSlot[companyId][bidder] == 0, "RA: already have active bid");
         Bid[] storage list = activeBids[companyId];
         uint256 seq = nextBidSeq++;
         if (list.length < MAX_ACTIVE_BIDS) {
-            list.push(Bid(bidder, amount, seq));
+            list.push(Bid(bidder, amount, maxPrice, seq));
             activeBidSlot[companyId][bidder] = list.length;
         } else {
             // Full book: evict the lowest bid (latest one on ties).
@@ -268,12 +295,12 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
             Bid memory out = list[lowIdx];
             require(amount > out.amount, "RA: book full, bid must beat the lowest");
             delete activeBidSlot[companyId][out.bidder];
-            list[lowIdx] = Bid(bidder, amount, seq);
+            list[lowIdx] = Bid(bidder, amount, maxPrice, seq);
             activeBidSlot[companyId][bidder] = lowIdx + 1;
             emit BidEvicted(companyId, out.bidder, out.amount);
             _refund(companyId, out.bidder, out.amount);
         }
-        emit BidPlaced(companyId, bidder, amount, seq);
+        emit BidPlaced(companyId, bidder, amount, maxPrice, seq);
     }
 
     /// @notice During the cooldown after a settlement, withdraw your
@@ -332,15 +359,12 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         }
 
         Bid[] memory bs = new Bid[](n);
-        uint256 price = type(uint256).max;
-        for (uint256 i = 0; i < n; i++) {
-            bs[i] = list[i];
-            if (bs[i].amount < price) price = bs[i].amount;
-        }
+        for (uint256 i = 0; i < n; i++) bs[i] = list[i];
         _sortDesc(bs);
 
         uint256 remaining = c.totalShares - c.sharesIssued;
         uint256 offer = remaining > MAX_SHARES_PER_ROUND ? MAX_SHARES_PER_ROUND : remaining;
+        uint256 price = _clearingPrice(bs, offer);
         uint256[] memory alloc = _allocate(bs, price, offer);
 
         uint256 issued = 0;
@@ -401,18 +425,41 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         }
     }
 
-    /// @dev Entitlement floor(amount / price) for each bid (>= 1, since the
-    /// lowest bid IS the price). If they all fit, everyone gets theirs.
-    /// Otherwise pro rata, rounded down, then the shares left by rounding
-    /// (fewer than the number of bids) go one each to the highest bids.
-    /// Every bid's pro-rata share is strictly below its entitlement in that
-    /// case, so the +1 never exceeds an entitlement.
+    /// @dev Entitlement of a bid at price p: floor(amount / p) if both its
+    /// budget and its maxPrice reach p, else 0.
+    function _ent(Bid memory b, uint256 p) internal pure returns (uint256) {
+        return (b.amount >= p && b.maxPrice >= p) ? b.amount / p : 0;
+    }
+
+    function _demand(Bid[] memory bs, uint256 p) internal pure returns (uint256 d) {
+        for (uint256 k = 0; k < bs.length; k++) d += _ent(bs[k], p);
+    }
+
+    /// @dev The lowest bid's amount if demand there fits the offer;
+    /// otherwise the highest price whose demand still covers the offer
+    /// (binary search: demand only falls as the price rises).
+    function _clearingPrice(Bid[] memory bs, uint256 offer) internal pure returns (uint256) {
+        uint256 lo = bs[bs.length - 1].amount; // sorted: last is lowest
+        if (_demand(bs, lo) <= offer) return lo;
+        uint256 hi = bs[0].amount; // demand above the highest budget is 0
+        while (lo < hi) {
+            uint256 mid = lo + (hi - lo + 1) / 2;
+            if (_demand(bs, mid) >= offer) lo = mid; else hi = mid - 1;
+        }
+        return lo;
+    }
+
+    /// @dev If entitlements fit, everyone gets theirs. Otherwise pro rata,
+    /// rounded down, and the shares left by rounding (fewer than the number
+    /// of eligible bids) go one each to the highest eligible bids. Each
+    /// eligible bid's pro-rata share is then strictly below its entitlement,
+    /// so the +1 never exceeds it.
     function _allocate(Bid[] memory bs, uint256 price, uint256 offer) internal pure returns (uint256[] memory alloc) {
         uint256 n = bs.length;
         alloc = new uint256[](n);
         uint256 totalEnt = 0;
         for (uint256 k = 0; k < n; k++) {
-            alloc[k] = bs[k].amount / price;
+            alloc[k] = _ent(bs[k], price);
             totalEnt += alloc[k];
         }
         if (totalEnt <= offer) return alloc;
@@ -423,6 +470,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         }
         uint256 extra = offer - given;
         for (uint256 k = 0; k < n && extra > 0; k++) {
+            if (_ent(bs[k], price) == 0) continue;
             alloc[k] += 1;
             extra--;
         }
@@ -461,23 +509,28 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         emit BidRefunded(companyId, bidder, amount);
     }
 
-    /// @dev For a corporate win, 1% (rounded down) goes to the governor
-    /// recorded at invest() time, locked until the origin company reaches
-    /// that term + 2.
+    /// @dev For a corporate win, the governor recorded with the bid earns
+    /// 1% of all shares the bid has filled so far (counted cumulatively, so
+    /// small fills add up), locked for COMPENSATION_LOCK from mint.
     function _mintShares(uint256 companyId, Company storage c, address to, uint256 qty) internal {
-        uint256 originPlusOne = corporateHolderToCompanyPlusOne[to];
-        if (originPlusOne != 0) {
+        if (corporateHolderToCompanyPlusOne[to] != 0) {
             address gov = corporateBidGovernor[companyId][to];
-            uint256 govCut = gov != address(0) ? qty / 100 : 0;
-            if (govCut > 0) {
-                uint256 unlockTerm = corporateBidUnlockTerm[companyId][to];
+            uint256 filled = corporateBidFilled[companyId][to] + qty;
+            corporateBidFilled[companyId][to] = filled;
+            uint256 due = filled / 100 - corporateBidCompPaid[companyId][to];
+            if (gov != address(0) && due > 0) {
+                if (due > qty) due = qty;
+                corporateBidCompPaid[companyId][to] += due;
                 uint256 first = nextTokenId;
-                _mintBatch(companyId, c, gov, govCut);
-                for (uint256 t = first; t < first + govCut; t++) {
-                    compensationOriginCompany[t] = originPlusOne - 1;
-                    compensationUnlockTerm[t] = unlockTerm;
+                _mintBatch(companyId, c, gov, due);
+                for (uint256 t = first; t < first + due; t++) {
+                    compensationUnlockTime[t] = block.timestamp + COMPENSATION_LOCK;
                 }
-                qty -= govCut;
+                qty -= due;
+            }
+            if (qty > 0) {
+                Checkpoints.Trace208 storage h = corporateHistory[companyId];
+                h.push(uint48(block.timestamp), h.latest() + uint208(qty));
             }
         }
         _mintBatch(companyId, c, to, qty);
@@ -529,6 +582,21 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         return holdingHistory[companyId][holder].upperLookupRecent(uint48(ts));
     }
 
+    /// @notice Shares of `companyId` held by companies (which vote only
+    /// through their governor) as of the end of second `ts`.
+    function corporateSharesAt(uint256 companyId, uint256 ts) external view returns (uint256) {
+        return corporateHistory[companyId].upperLookupRecent(uint48(ts));
+    }
+
+    /// @notice Vote weight: the smaller of the shares held at the snapshot
+    /// and the shares held now. Shares borrowed for the snapshot moment and
+    /// returned count for nothing (v9 audit GOV-1); shares can't vote twice.
+    function votingWeight(uint256 companyId, address holder, uint256 snapshot) external view returns (uint256) {
+        uint256 atSnap = holdingHistory[companyId][holder].upperLookupRecent(uint48(snapshot));
+        uint256 current = holdingHistory[companyId][holder].latest();
+        return atSnap < current ? atSnap : current;
+    }
+
     /// @notice Shares of `companyId` issued as of the end of second `ts`.
     function sharesIssuedAt(uint256 companyId, uint256 ts) external view returns (uint256) {
         return issuedHistory[companyId].upperLookupRecent(uint48(ts));
@@ -546,10 +614,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
 
     function _checkTransferable(uint256 tokenId) internal view {
         require(block.timestamp >= shareUnlocksAt(tokenId), "RA: share still locked");
-        uint256 requiredTerm = compensationUnlockTerm[tokenId];
-        if (requiredTerm > 0) {
-            require(governance.termNumber(compensationOriginCompany[tokenId]) >= requiredTerm, "RA: comp shares locked");
-        }
+        require(block.timestamp >= compensationUnlockTime[tokenId], "RA: comp shares locked");
     }
 
     /// @dev Locks, balance history, and listing cleanup on every move.
@@ -557,6 +622,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         address from = _ownerOf(tokenId);
         if (from != address(0) && to != address(0)) {
             _checkTransferable(tokenId);
+            require(corporateHolderToCompanyPlusOne[to] == 0, "RA: can't send shares to a company");
             uint256 companyId = shareCompany(tokenId);
             _subHolding(companyId, from, 1);
             _addHolding(companyId, to, 1);
