@@ -1,0 +1,37 @@
+Stand-ins for the live v8 system
+Part 2 — deploy
+  PASS 2: RoundAuctionV9 deployed, 23515 bytes
+  PASS 2: GovernanceV9 deployed, 15999 bytes
+  PASS 2: CompanyTreasuryV9 deployed, 20679 bytes
+  PASS 2: CompanyDividendsV9 deployed, 7857 bytes
+  PASS 2: OpenVerifierV2 deployed, 1736 bytes
+  PASS 2: SakartveloTimelock deployed, 5488 bytes
+  PASS 2: new functions present (not stale code)
+Part 3 — wiring
+  PASS 3.1 governance = GOV9
+  PASS 3.2 treasury = CT9
+  PASS 3.3 dividends = DV9
+  PASS 3.1-3.3 can't be set twice
+  PASS 3.4 company 100 listed
+  PASS 3.5 RA9 sink
+  PASS 3.6 CT9 sink
+  PASS 3.7 DV9 sink
+  PASS 3.8 OV2 verifier
+  PASS 3.9 old OpenVerifier off
+  PASS do-not-touch: tradability still on v8, auctionHouse unset
+  PASS do-not-touch: v8 sink kept
+Part 4 — timelock
+  PASS 4.1 RA9 owner = TL
+  PASS 4.2 CT9 owner = TL
+  PASS 4.3 InvestToken owner = TL
+  PASS 4: your wallet can no longer list directly
+Part 5 — list a company through the timelock
+  PASS 5: can't execute before 48 hours
+  PASS 5: listed after 48 hours
+Smoke test — a new citizen uses v9
+  PASS citizen verified with OV2 and claimed 1,000 INVEST
+  PASS bid settled: the citizen holds a v9 share
+  PASS share NFT minted to the citizen
+
+28 passed, 0 failed
+EXIT 0

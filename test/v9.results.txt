@@ -1,0 +1,172 @@
+Sizes (Arbitrum limit 24,576 bytes)
+  PASS RoundAuctionV9: 23515 bytes deployed
+  PASS GovernanceV9: 15999 bytes deployed
+  PASS CompanyTreasuryV9: 20679 bytes deployed
+  PASS CompanyDividendsV9: 7857 bytes deployed
+  PASS OpenVerifierV2: 1736 bytes deployed
+  PASS SakartveloTimelock: 5488 bytes deployed
+
+RoundAuction v9: pricing, partial fills, rounding (F30, F40)
+  PASS F40: bid of 1.9x the price gets 1 share, not 2
+  PASS F40: pays exactly shares x price (10), remainder 9 refunded
+  PASS fully filled bids close
+  PASS F30: pro-rata fill 0/8/2 of 10, company sold out
+  PASS F30: shares proportional to bids (30:9:1)
+  PASS sell-out refunds every remainder; INVEST accounting exact
+
+RoundAuction v9: clearing price, carry-over and cooldown withdrawal (F30, RA-1)
+  PASS oversubscribed: clearing price, the big bid takes the 150 shares on offer
+  PASS RA-1: the 1-INVEST bid didn't set the price; it waits, unfilled
+  PASS RA-2: a bid whose max price is below the clearing price waits, unfilled
+  PASS F31: no bidding during the cooldown
+  PASS F30: an unfilled bid can be withdrawn in full during the cooldown
+  PASS nothing to withdraw without a bid
+  PASS no withdrawal while a round is open (no last-second price games)
+  PASS INVEST accounting exact
+
+RoundAuction v9: full book eviction (F31)
+  PASS F31: full book, equal bid can't enter
+  PASS F31: higher bid evicts the lowest (latest on ties), refunded in full
+  PASS book stays at 100; accounting exact
+  PASS worst-case settlement, 100 bids and 150 shares: 20670541 gas (< 32M with a 30% wallet buffer)
+  PASS 150 shares issued in the round, spread pro rata
+  PASS accounting exact after the big settlement
+  PASS worst-case sell-out with 100 refunds: 18649454 gas (< 32M with a 30% wallet buffer)
+  PASS accounting exact after sell-out
+
+RoundAuction v9: invest, listings, locks (F24, F38, F39, per-share lock)
+  PASS F24: no fixed-price corporate share sales
+  PASS share locked for 7 days from its own mint
+  PASS unlock time = own mint time + 7 days
+  PASS CT-1: no governor-alone investment (only the treasury after a vote)
+  PASS F38: a company can't reinvest in itself
+  PASS F39: listing deleted when the share moves
+  PASS F39: moving it back does not revive the old listing
+  PASS buyer protected by maxPrice
+  PASS listed share sells; seller paid
+  PASS company ids limited to 64 bits
+  PASS RA-3: nobody can gift shares to a company (own-share voting, quorum griefing)
+
+Governance v9: candidacy period and winner quorum (F27)
+  PASS F34: shares minted less than a day ago don't count for the snapshot
+  PASS F27: voting can't open before the 5-day candidacy period ends
+  PASS F27: sole candidate with 10% of shares voting does NOT win
+  PASS with 20% of issued shares voting, the candidate wins
+
+Governance v9: two failed rounds reset; stake snapshot (F28, F34)
+  PASS F28: no stake at the snapshot, no candidacy
+  PASS 20 candidates on the ballot
+  PASS candidates can withdraw
+  PASS F28: after two failed rounds the election closes
+  PASS a fresh candidacy period starts with an empty slate
+
+Governance v9: term end never overwritten; recall (F29)
+  PASS F29: term 1 end survives re-election
+  PASS recall with 40% turnout and majority ends the term
+  PASS F29: recalled term's end stays recorded after the next election
+
+Treasury v9: no free exits (F23, F26)
+  PASS F23: no free withdrawal, no fixed-price INVEST sale, no market
+  PASS CT-3: no proposal can take more than 20% of a bucket per term
+  PASS F26: governor can't vote on own proposal
+  PASS F26: operating key can't vote
+  PASS F23 replay: sole shareholder-governor's shares don't count toward quorum
+  PASS F23 replay: capital stays, nothing paid out
+  PASS F26: governor can't be the recipient
+
+Treasury v9: payment by vote, snapshot, quorum, failed transfer (F26, F34)
+  PASS deposit credited to capital
+  PASS 5% payment needs 20% quorum
+  PASS approved payment waits 5 days (longer than a recall vote)
+  PASS approved payment executed after the delay
+  PASS CT-3: splitting doesn't dodge the 40% quorum (counted cumulatively per term)
+  PASS CT-3: per-term cap of 20% of the bucket
+  PASS blocked recipient: transfer fails, money returns to the company
+
+Treasury v9: snapshot one day before the proposal (F34)
+  PASS F34: shares bought minutes before the proposal can't vote
+  PASS and the seller who no longer holds them can't vote either
+
+Treasury v9: sales by vote + sealed-bid auction with reserve (F25, F33, F35)
+  PASS asset reserved while the vote runs
+  PASS CT-M2: sales count toward the 20%-per-term cap
+  PASS CT-M2: sales count cumulatively for the 40% quorum
+  PASS F35: bid deposit is 10% of the reserve
+  PASS F25: bids below the reserve can't win
+  PASS 1% host fee taken from the winning bid (15 of 1,500)
+  PASS F33: proceeds after fee (1,485) + forfeited deposits (2x100) go to CAPITAL
+  PASS F33: capital never becomes reinvestable income
+  PASS winner gets the asset and the deposit back
+  PASS only the host collects the fee
+  PASS host collected the 15
+  PASS F25: unsold asset returns to the company
+  PASS rejected sale: asset returns
+
+Treasury v9: proposals die with the term; corporate voting
+  PASS a vote must finish inside the term
+  PASS recall voids a pending approved payment
+
+Corporate path: reinvest vote -> invest vote -> compensation -> corporate votes; dividends
+  PASS CT-1: the term's governor can't vote on its policy
+  PASS CT-1: one shareholder (3%) can't move capital to income — 20% quorum
+  PASS shareholders' reinvest vote (7 of 29) moves 1% of capital to income
+  PASS investing is capped at 20% of income per term too
+  PASS a 20%-of-income investment is 'large': 40% quorum
+  PASS only the operating key picks when to place the approved bid
+  PASS approved investment placed; governor recorded with the bid
+  PASS corporate bid filled: 59 shares at 1 INVEST each (+0 compensation)
+  PASS GOV-N1: a governor's key can't vote company shares for itself
+  PASS GOV-N1: nor for the holding company's governor
+  PASS corporate shares vote in elections through the holder's governor
+  PASS corporate shares vote on payments through the holder's governor
+  PASS R3: a holding company's governor can open and carry a recall with its shares
+  PASS R3: where companies hold shares, a stakeless candidate can stand (holding companies can then nominate)
+  PASS dividend vote pays shareholders pro rata at the record date
+  PASS no double claim
+  PASS INVEST accounting exact across the whole corporate path
+
+Governor compensation: cumulative 1%, time lock (RA-4, GOV-5)
+  PASS RA-4: 1% compensation counted on the cumulative fill (150 shares -> 1)
+  PASS GOV-5: compensation locked for 60 days by time (recalls can't shorten it)
+  PASS unlocked after 60 days
+  PASS only the treasury can place corporate bids
+
+Independent v9 audit: attacks that must fail
+  PASS RA-1: oversubscribed round clears at 13.333 INVEST/share, not the anchor's 1
+  PASS RA-1: the anchor buys nothing
+  PASS RA-1: attacker gets at most the 150 shares on offer this round, at the clearing price
+  PASS RA-2/RA-N2: a capped bid sets the floor at its own cap and buys (price 2.0)
+  PASS RA-N1: a 2-INVEST bid evicts a 1000-INVEST bid capped at 1/share (eviction by effective price)
+  PASS RA-N1: squat bids are eligible at the floor and buy (150 shares issued, none blocked)
+  PASS accounting exact
+  PASS GOV-1: borrower held 3 at the snapshot second but weighs 0
+  PASS GOV-1: borrower can't stand (or vote)
+  PASS full ballot: a newcomer with equal support waits
+  PASS GOV-2: three nominations put the honest candidate on the ballot, displacing a puppet
+  PASS GOV-N2: a candidate others nominated can't withdraw and waste their nominations
+  PASS a candidate nobody else backed can still withdraw
+  PASS GOV-7: a lone candidate loses to 'against all'
+  PASS GOV-3: a recall that never reached turnout doesn't start a cooldown
+  PASS CT-5: naming a shareholder as key doesn't silence them (key needs acceptance)
+  PASS CT-L4: the recipient can't vote on their own payment
+  PASS CT-M1: the governor can't race an unresolved recall
+  PASS CT-M1: after the recall the payment is void, money back
+  PASS CT-4: 3 yes / 1 no of 19 fails — opponents voting no can't push it over quorum
+  PASS CT-1: corporate investment needs a shareholder vote, with a max price per share
+
+OpenVerifier v2 (F32)
+  PASS F32: a contract can't verify (no claim factories)
+  PASS re-verifying doesn't use the cap
+  PASS hourly counter: 9 left
+  PASS CT-8: at most 10 new citizens an hour
+  PASS guardian can pause
+  PASS only the guardian can pause
+
+Timelock on owner powers (F36)
+  PASS F36: owner wallet can no longer act directly
+  PASS F36: can't execute before 48 hours
+  PASS runs after 48 hours, publicly scheduled
+  PASS delay can't be shortened per call
+
+134 passed, 0 failed
+EXIT 0
