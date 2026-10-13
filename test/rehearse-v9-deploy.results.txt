@@ -12,7 +12,7 @@ Part 3 — wiring
   PASS 3.2 treasury = CT9
   PASS 3.3 dividends = DV9
   PASS 3.1-3.3 can't be set twice
-  PASS 3.4 company 100 listed
+  PASS 3.4 all 12 companies listed with their tiers (DEPLOY_V9.md table)
   PASS 3.5 RA9 sink
   PASS 3.6 CT9 sink
   PASS 3.7 DV9 sink

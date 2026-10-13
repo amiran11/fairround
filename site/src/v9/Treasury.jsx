@@ -12,7 +12,7 @@ import {
 import { fmt, fmtDate, int, pct, same, useChain, useCountdown, useTx } from "../components/liveUtils.js";
 import { Act, Address, AmountInput, Button, ErrorLine, Field, Input, Loading, Muted, Notice, Select, Tabs } from "../components/ui.jsx";
 
-const bucketName = (t, b) => (b === CAPITAL ? t("capital") : t("income"));
+const fromBucket = (t, b) => (b === CAPITAL ? t("from capital") : t("from income"));
 
 function Left({ to, label }) {
   const { t } = useT();
@@ -82,10 +82,10 @@ function ProposalTitle({ p, companies }) {
   const { t } = useT();
   const target = companies?.find((c) => BigInt(c.id) === p.target);
   if (p.kind === "Payment") {
-    return <>{t("Pay {amount} {symbol} from {bucket} to", { amount: fmt(p.amount, p.token.decimals, 4), symbol: p.token.symbol, bucket: bucketName(t, p.bucket) })} <Address value={p.to} /></>;
+    return <>{t("Pay {amount} {symbol} {from} to", { amount: fmt(p.amount, p.token.decimals, 4), symbol: p.token.symbol, from: fromBucket(t, p.bucket) })} <Address value={p.to} /></>;
   }
   if (p.kind === "Sale") {
-    return <>{t("Sell {amount} {symbol} from {bucket} for {pay}, at least {reserve} {pay}", { amount: fmt(p.amount, p.token.decimals, 4), symbol: p.token.symbol, bucket: bucketName(t, p.bucket), pay: p.payToken?.symbol, reserve: fmt(p.reserve, p.payToken?.decimals ?? 18, 4) })}</>;
+    return <>{t("Sell {amount} {symbol} {from} for {pay}, at least {reserve} {pay}", { amount: fmt(p.amount, p.token.decimals, 4), symbol: p.token.symbol, from: fromBucket(t, p.bucket), pay: p.payToken?.symbol, reserve: fmt(p.reserve, p.payToken?.decimals ?? 18, 4) })}</>;
   }
   return <>{t("Bid {amount} INVEST of income in {company}, at most {max} INVEST a share", { amount: fmt(p.amount), company: target ? target.name : `#${p.target}`, max: fmt(p.reserve) })}</>;
 }
