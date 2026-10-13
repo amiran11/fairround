@@ -1,35 +1,12 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1B2622"/>
-      <stop offset="100%" stop-color="#141B18"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <circle cx="256" cy="256" r="176" fill="none" stroke="#C98A3E" stroke-width="10"/>
-
-  <!-- 9 flowing, asymmetric borjgali-style wings, tapering to a sharp
-       point instead of a rounded tip. Leading edge bulges (curved,
-       giving the rotational "flow" look), trailing edge pulls tighter
-       back to center. Tips reach r=168, just inside the r=176 ring. -->
-  <g fill="#C98A3E">
-    <g id="wing">
-      <path d="M 256 256
-               C 222 224, 204 168, 224 104
-               C 236 86, 250 86, 256 96
-               C 266 140, 268 200, 256 256
-               Z"/>
-    </g>
-    <use href="#wing" transform="rotate(0 256 256)"/>
-    <use href="#wing" transform="rotate(40 256 256)"/>
-    <use href="#wing" transform="rotate(80 256 256)"/>
-    <use href="#wing" transform="rotate(120 256 256)"/>
-    <use href="#wing" transform="rotate(160 256 256)"/>
-    <use href="#wing" transform="rotate(200 256 256)"/>
-    <use href="#wing" transform="rotate(240 256 256)"/>
-    <use href="#wing" transform="rotate(280 256 256)"/>
-    <use href="#wing" transform="rotate(320 256 256)"/>
+  <rect width="512" height="512" rx="112" fill="#3B3A9F"/>
+  <g transform="translate(256 256) scale(0.86) translate(-256 -256)" fill="#FBFBF9">
+    <circle cx="256" cy="256" r="232" fill="none" stroke="#FBFBF9" stroke-width="22"/>
+    <g id="w"><path d="M 256 256 C 222 224, 204 168, 224 104 C 236 86, 250 86, 256 96 C 266 140, 268 200, 256 256 Z"/></g>
+    <use href="#w" transform="rotate(40 256 256)"/><use href="#w" transform="rotate(80 256 256)"/>
+    <use href="#w" transform="rotate(120 256 256)"/><use href="#w" transform="rotate(160 256 256)"/>
+    <use href="#w" transform="rotate(200 256 256)"/><use href="#w" transform="rotate(240 256 256)"/>
+    <use href="#w" transform="rotate(280 256 256)"/><use href="#w" transform="rotate(320 256 256)"/>
+    <circle cx="256" cy="256" r="24" fill="#3B3A9F" stroke="#FBFBF9" stroke-width="10"/>
   </g>
-
-  <circle cx="256" cy="256" r="20" fill="#141B18" stroke="#EDE6D6" stroke-width="3"/>
 </svg>

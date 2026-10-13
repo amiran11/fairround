@@ -1,387 +1,338 @@
-import { useState, useEffect, useCallback } from "react";
-import { Vault, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { useState } from "react";
+import { Copy } from "lucide-react";
+import { useT } from "../i18n.jsx";
+import { useSession } from "../session.jsx";
 import {
-  CONTRACT_ADDRESSES,
-  getCompanyGovernance,
-  getCompanyTreasury,
-  getTokenInfo,
-  normalizeAddress,
-  parseAmount,
-  depositTokenReal,
-  getFreeAllowanceLeft,
-  withdrawTokenReal,
-  getTreasuryAuctions,
-  openTreasuryAuctionReal,
-  commitTreasuryBidReal,
-  revealTreasuryBidReal,
-  settleTreasuryAuctionReal,
-  claimTreasuryAuctionReal,
-  getSavedBid,
-  makeRevealCode,
-  parseRevealCode,
-  getVendorPayments,
-  proposeVendorPaymentReal,
-  voteVendorPaymentReal,
-  executeVendorPaymentReal,
-  getDividendTerms,
-  openPolicyVoteReal,
-  votePolicyReal,
-  resolvePolicyVoteReal,
-  claimDividendReal,
-  claimDividendAsCorporationReal,
-  getCorporateHoldings,
-  investReal,
-  voteAsCorporationReal,
-  getApprovedPaymentTokens,
-  governorOfferInvestReal,
+  CONTRACT_ADDRESSES, getCompanyGovernance, getCompanyTreasury, getTokenInfo, normalizeAddress, parseAmount,
+  depositTokenReal, getFreeAllowanceLeft, withdrawTokenReal,
+  getTreasuryAuctions, openTreasuryAuctionReal, commitTreasuryBidReal, revealTreasuryBidReal,
+  settleTreasuryAuctionReal, claimTreasuryAuctionReal, getSavedBid, makeRevealCode, parseRevealCode,
+  getVendorPayments, proposeVendorPaymentReal, voteVendorPaymentReal, executeVendorPaymentReal,
+  getDividendTerms, openPolicyVoteReal, votePolicyReal, resolvePolicyVoteReal, claimDividendReal,
+  claimDividendAsCorporationReal, getCorporateHoldings, investReal, voteAsCorporationReal,
+  getApprovedPaymentTokens, governorOfferInvestReal,
 } from "../web3.js";
-import { C, ZERO, short, same, fmt, fmtDate, useCountdown, useTx, count } from "./liveUtils.js";
-import { Button, Input, Select, Field, Notice, Muted, ErrorLine, Section, Row } from "./ui.jsx";
+import { ZERO, same, fmt, int, fmtDate, useChain, useCountdown, useTx } from "./liveUtils.js";
+import {
+  Act, Address, AmountInput, Button, ConnectToAct, ErrorLine, Field, Input, Loading, Muted, Notice, Select, Tabs,
+} from "./ui.jsx";
 
-function Countdown({ to, prefix }) {
-  const { passed, label } = useCountdown(to);
-  return <span>{passed ? "ended" : `${prefix} ${label}`}</span>;
+function Remaining({ to, label }) {
+  const { t } = useT();
+  const { passed, label: time } = useCountdown(to);
+  return <>{passed ? t("ended") : t(label, { time })}</>;
 }
 
-function Tabs({ tabs, active, onChange }) {
+function TokenPicker({ tokens, value, onChange, allowCustom, id }) {
+  const { t } = useT();
   return (
-    <div className="flex gap-1 flex-wrap" style={{ marginBottom: 12 }}>
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          onClick={() => onChange(t.id)}
-          className="mono"
-          style={{
-            background: active === t.id ? "rgba(201,138,62,0.18)" : "transparent",
-            border: `1px solid ${active === t.id ? C.accent : "rgba(237,230,214,0.18)"}`,
-            color: active === t.id ? C.accent : C.text, borderRadius: 3, padding: "4px 10px", fontSize: 10.5, cursor: "pointer",
-          }}
-        >
-          {t.label}
-        </button>
+    <Select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">{t("Choose a token…")}</option>
+      {tokens.map((tk) => (
+        <option key={tk.address} value={tk.address}>
+          {tk.symbol}{tk.balance !== undefined ? ` — ${t("company holds {n}", { n: fmt(tk.balance, tk.decimals) })}` : ""}
+        </option>
       ))}
-    </div>
+      {allowCustom && <option value="custom">{t("Another token (paste its address)")}</option>}
+    </Select>
   );
 }
 
-function Card({ children, dim }) {
-  return <div style={{ border: "1px solid rgba(237,230,214,0.15)", borderRadius: 4, padding: 12, marginBottom: 8, opacity: dim ? 0.6 : 1 }}>{children}</div>;
-}
+// ------------------------------------------------------------ holdings
 
-function Title({ children }) {
-  return <div className="mono" style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{children}</div>;
-}
-
-// Picks one of the company's tokens, or (when allowCustom) any address.
-function TokenPicker({ tokens, value, onChange, allowCustom }) {
-  const [custom, setCustom] = useState("");
-  const isCustom = value === "custom";
-  return (
-    <>
-      <Select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Choose a token…</option>
-        {tokens.map((t) => <option key={t.address} value={t.address}>{t.symbol}{t.balance !== undefined ? ` (company holds ${fmt(t.balance, t.decimals)})` : ""}</option>)}
-        {allowCustom && <option value="custom">Another token (paste its address)</option>}
-      </Select>
-      {isCustom && (
-        <Input style={{ marginTop: 6 }} value={custom} placeholder="0x… token contract address"
-          onChange={(e) => { setCustom(e.target.value); onChange("custom", e.target.value); }} />
-      )}
-    </>
-  );
-}
-
-// ---------------------------------------------------------------- Overview
-
-function Overview({ company, wallet, data, reload }) {
+function Holdings({ company, data }) {
+  const { t } = useT();
+  const { signer, provider } = useSession();
   const [tokenSel, setTokenSel] = useState("");
-  const [customAddr, setCustomAddr] = useState("");
+  const [custom, setCustom] = useState("");
   const [amount, setAmount] = useState("");
+  const [giving, setGiving] = useState(false);
   const { busy, error, setError, run } = useTx();
-  const known = [...data.tokens, ...data.payTokens.filter((p) => !data.tokens.some((t) => same(t.address, p.address)))];
+  const known = [...data.tokens, ...data.payTokens.filter((p) => !data.tokens.some((x) => same(x.address, p.address)))];
 
   const deposit = async () => {
-    const addrText = tokenSel === "custom" ? customAddr : tokenSel;
-    const addr = await normalizeAddress(addrText || "");
+    const addr = await normalizeAddress((tokenSel === "custom" ? custom : tokenSel) || "");
     if (!addr) return setError("Choose a token, or paste a valid token address.");
-    if (same(addr, CONTRACT_ADDRESSES.InvestToken)) return setError("INVEST goes to companies through bidding, not deposits.");
+    if (same(addr, CONTRACT_ADDRESSES.InvestToken)) return setError("INVEST reaches companies through bidding, not deposits.");
     let info, raw;
-    try { info = await getTokenInfo(addr, wallet.provider); raw = await parseAmount(amount, info.decimals); }
-    catch { return setError("Enter a valid amount."); }
-    await run(() => depositTokenReal(wallet.signer, company.id, addr, raw), async () => { setAmount(""); await reload(); });
+    try { info = await getTokenInfo(addr, provider); raw = await parseAmount(amount, info.decimals); } catch { return setError("Enter a valid amount."); }
+    await run(() => depositTokenReal(signer, company.id, addr, raw), () => setAmount(""));
   };
 
   return (
-    <div>
-      <Row label="INVEST capital (from the sale of shares)">{fmt(data.capital)} INVEST</Row>
-      <Row label="Reinvestable income (from asset sales and dividends)">{fmt(data.reinvestableIncome)} INVEST</Row>
-      {data.tokens.length === 0 ? (
-        <Muted style={{ margin: "6px 0 12px" }}>The treasury holds no other tokens yet.</Muted>
-      ) : (
-        data.tokens.map((t) => <Row key={t.address} label={t.symbol}>{fmt(t.balance, t.decimals, 4)}</Row>)
-      )}
-      <Muted style={{ margin: "8px 0 12px" }}>
-        The governor can move up to 5% of each token per term on their own. Anything more goes through a sealed-bid auction
-        or a payment that shareholders approve.
+    <div className="stack">
+      <dl className="facts">
+        <div><dt>{t("Capital, from selling shares")}</dt><dd>{fmt(data.capital)} INVEST</dd></div>
+        <div><dt>{t("Income it can reinvest")}</dt><dd>{fmt(data.reinvestableIncome)} INVEST</dd></div>
+        {data.tokens.map((tk) => <div key={tk.address}><dt>{tk.symbol}</dt><dd>{fmt(tk.balance, tk.decimals, 4)}</dd></div>)}
+      </dl>
+      <Muted small>
+        {t("Capital can't be reinvested in other companies; income can. In these contracts the governor may move up to 5% of each token per term on their own. Anything larger goes through a sealed-bid auction or a payment shareholders vote on.")}
       </Muted>
-
-      <Title>Add tokens to this treasury</Title>
-      <Field label="Token">
-        <TokenPicker tokens={known} value={tokenSel} allowCustom onChange={(v, custom) => { setTokenSel(v); if (custom !== undefined) setCustomAddr(custom); }} />
-      </Field>
-      <Field label="Amount"><Input type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
-      <Muted style={{ marginBottom: 8 }}>Anyone can add tokens. A deposit is a gift to the company and can't be taken back.</Muted>
-      <Button busy={busy} onClick={deposit}>Deposit</Button>
-      <ErrorLine error={error} />
+      {signer && !giving && (
+        <div><Button kind="secondary" small onClick={() => setGiving(true)}>{t("Give tokens to this company")}</Button></div>
+      )}
+      {signer && giving ? (
+        <Act title={t("Give tokens to this company")}>
+          <p className="small">{t("Anyone can add tokens to a company's treasury. A deposit is a gift and can't be taken back.")}</p>
+          <Field label={t("Token")}>
+            <TokenPicker tokens={known} value={tokenSel} allowCustom onChange={setTokenSel} />
+          </Field>
+          {tokenSel === "custom" && (
+            <Field label={t("Token contract address")}><Input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="0x…" spellCheck={false} /></Field>
+          )}
+          <Field label={t("Amount")}><Input type="number" min="0" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
+          <div className="row-tight">
+            <Button busy={busy} onClick={deposit}>{t("Deposit")}</Button>
+            <Button kind="plain" onClick={() => setGiving(false)}>{t("Cancel")}</Button>
+          </div>
+          <ErrorLine error={error} />
+        </Act>
+      ) : null}
     </div>
   );
 }
 
-// ---------------------------------------------------------------- Auctions
+// ------------------------------------------------------------ sealed-bid auctions
 
-function AuctionCard({ a, wallet, reload }) {
+function AuctionItem({ a }) {
+  const { t } = useT();
+  const { signer, address } = useSession();
   const { busy, error, setError, run } = useTx();
   const [bid, setBid] = useState("");
   const [code, setCode] = useState("");
   const [newCode, setNewCode] = useState(null);
-  const commitOver = useCountdown(a.commitEnd).passed; // re-renders as deadlines pass
+  const commitOver = useCountdown(a.commitEnd).passed;
   const revealOver = useCountdown(a.revealEnd).passed;
   const phase = !commitOver ? "commit" : !revealOver ? "reveal" : a.settled ? "done" : "settle";
-  const saved = getSavedBid(a.id, wallet.address);
-  const iWon = a.settled && same(a.leader, wallet.address);
+  const saved = address ? getSavedBid(a.id, address) : null;
+  const iWon = a.settled && same(a.leader, address);
 
   const commit = async () => {
     let raw;
     try { raw = await parseAmount(bid, 18); } catch { return setError("Enter your bid in INVEST."); }
-    await run(() => commitTreasuryBidReal(wallet.signer, a.id, raw, a.deposit), async (revealCode) => { setNewCode(revealCode); setBid(""); await reload(); });
+    await run(() => commitTreasuryBidReal(signer, a.id, raw, a.deposit), (rc) => { setNewCode(rc); setBid(""); });
   };
   const reveal = async () => {
     const p = saved ? { amount: BigInt(saved.amount), salt: saved.salt } : parseRevealCode(code);
-    if (!p) return setError("That reveal code isn't valid. It looks like 25000000000000000000-0x…");
-    await run(() => revealTreasuryBidReal(wallet.signer, a.id, p.amount, p.salt), reload);
+    if (!p) return setError("That reveal code isn't valid.");
+    await run(() => revealTreasuryBidReal(signer, a.id, p.amount, p.salt));
   };
-  const copy = (text) => { try { navigator.clipboard.writeText(text); } catch { /* clipboard blocked */ } };
+  const copy = (text) => { try { navigator.clipboard.writeText(text); } catch { /* blocked */ } };
+
+  const status = {
+    commit: <Remaining to={a.commitEnd} label="Sealed bids close in {time}" />,
+    reveal: <Remaining to={a.revealEnd} label="Reveals close in {time}" />,
+    settle: t("Waiting to be settled"),
+    done: a.leader === ZERO ? t("No valid bids; the tokens went back to the company.") : t("Sold for {n} INVEST", { n: fmt(a.leadingAmount) }),
+  }[phase];
 
   return (
-    <Card dim={phase === "done" && !a.mine.revealed}>
-      <Title>Selling {fmt(a.amount, a.token.decimals, 4)} {a.token.symbol}</Title>
-      <div className="mono" style={{ fontSize: 10.5, opacity: 0.6, marginBottom: 8 }}>
-        Auction #{a.id.toString()} · {a.committed.toString()} sealed bid{a.committed === 1n ? "" : "s"}
-        {phase !== "commit" && ` · ${a.revealed.toString()} revealed`}
-        {" · "}
-        {phase === "commit" && <Countdown to={a.commitEnd} prefix="bidding closes in" />}
-        {phase === "reveal" && <Countdown to={a.revealEnd} prefix="reveals close in" />}
-        {phase === "settle" && "waiting to be settled"}
-        {phase === "done" && (a.leader === ZERO ? "no valid bids, tokens returned to the company" : `won by ${same(a.leader, wallet.address) ? "you" : short(a.leader)} for ${fmt(a.leadingAmount)} INVEST`)}
+    <li className="stack-sm">
+      <div className="spread">
+        <span className="strong">{t("{amount} {symbol} for sale", { amount: fmt(a.amount, a.token.decimals, 4), symbol: a.token.symbol })}</span>
+        <span className="small muted">{t("Auction {id}", { id: a.id.toString() })}</span>
       </div>
+      <p className="small muted">
+        {status}. {t("{c} sealed, {r} revealed.", { c: int(a.committed), r: int(a.revealed) })}
+        {phase === "done" && a.leader !== ZERO && <> {t("Winner:")} <Address value={a.leader} /></>}
+      </p>
 
       {newCode && (
-        <Notice>
-          <b>Save your reveal code.</b> You'll need it after bidding closes to reveal your bid. It's saved in this browser too, but if you
-          switch device or clear your browser without it, you can't reveal and you lose the {fmt(a.deposit)} INVEST deposit.
-          <div className="flex gap-2 items-center" style={{ marginTop: 6 }}>
-            <code style={{ wordBreak: "break-all", fontSize: 10 }}>{newCode}</code>
-            <Button small kind="outline" onClick={() => copy(newCode)}><Copy size={10} /> Copy</Button>
-          </div>
+        <Notice title={t("Save your reveal code")}>
+          <p>{t("You need it to reveal your bid after bidding closes. It's saved in this browser too, but without it on another device you can't reveal and you lose the {n} INVEST deposit.", { n: fmt(a.deposit) })}</p>
+          <p className="row-tight" style={{ marginTop: 8 }}>
+            <code className="code">{newCode}</code>
+            <Button kind="secondary" small onClick={() => copy(newCode)}><Copy size={14} aria-hidden="true" /> {t("Copy")}</Button>
+          </p>
         </Notice>
       )}
 
-      {phase === "commit" && !a.mine.committed && (
-        <>
-          <div className="flex gap-2">
-            <Input type="number" min="0" value={bid} onChange={(e) => setBid(e.target.value)} placeholder="Your bid in INVEST" style={{ flex: 1 }} />
-            <Button busy={busy} onClick={commit}>Place sealed bid</Button>
-          </div>
-          <Muted style={{ marginTop: 6 }}>
-            Nobody sees your amount until you reveal it. Placing the bid locks a {fmt(a.deposit)} INVEST deposit, returned when you reveal.
-            Your bid amount is only paid when you reveal, and refunded if you don't win.
-          </Muted>
-        </>
+      {signer && phase === "commit" && !a.mine.committed && (
+        <Act title={t("Place a sealed bid")}>
+          <Field label={t("Your bid")} hint={t("Nobody sees the amount until you reveal it. Bidding locks a {n} INVEST deposit, returned when you reveal; the bid itself is paid only at reveal and refunded if you lose.", { n: fmt(a.deposit) })}>
+            <AmountInput unit="INVEST" value={bid} onChange={(e) => setBid(e.target.value)} />
+          </Field>
+          <Button busy={busy} onClick={commit}>{t("Place sealed bid")}</Button>
+        </Act>
       )}
-      {phase === "commit" && a.mine.committed && !newCode && (
-        <Muted>
-          You've placed a sealed bid. Come back after bidding closes to reveal it.
-          {saved && <> Reveal code (keep a copy): <code style={{ wordBreak: "break-all", fontSize: 10 }}>{makeRevealCode(BigInt(saved.amount), saved.salt)}</code></>}
+      {signer && phase === "commit" && a.mine.committed && !newCode && (
+        <Muted small>
+          {t("You've placed a sealed bid. Come back after bidding closes to reveal it.")}
+          {saved && <> {t("Reveal code:")} <code className="code">{makeRevealCode(BigInt(saved.amount), saved.salt)}</code></>}
         </Muted>
       )}
-
-      {phase === "reveal" && a.mine.committed && !a.mine.revealed && (
-        saved ? (
-          <>
-            <Button busy={busy} onClick={reveal}>Reveal my bid of {fmt(BigInt(saved.amount))} INVEST</Button>
-            <Muted style={{ marginTop: 6 }}>Revealing pays your bid now. If you don't win, claim it back after the auction is settled.</Muted>
-          </>
-        ) : (
-          <>
-            <Muted style={{ marginBottom: 6 }}>This browser doesn't have your bid saved. Paste the reveal code you copied when you bid.</Muted>
-            <div className="flex gap-2">
-              <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Reveal code" style={{ flex: 1 }} />
-              <Button busy={busy} onClick={reveal}>Reveal</Button>
-            </div>
-          </>
-        )
+      {signer && phase === "reveal" && a.mine.committed && !a.mine.revealed && (
+        <Act title={t("Reveal your bid")}>
+          {saved ? (
+            <Button busy={busy} onClick={reveal}>{t("Reveal my bid of {n} INVEST", { n: fmt(BigInt(saved.amount)) })}</Button>
+          ) : (
+            <>
+              <Field label={t("Reveal code")} hint={t("This browser doesn't have your bid saved. Paste the code you copied when you bid.")}>
+                <Input value={code} onChange={(e) => setCode(e.target.value)} spellCheck={false} />
+              </Field>
+              <Button busy={busy} onClick={reveal}>{t("Reveal")}</Button>
+            </>
+          )}
+        </Act>
       )}
-      {phase === "reveal" && a.mine.revealed && <Muted>Your bid of {fmt(a.mine.revealedAmount)} INVEST is revealed.</Muted>}
-
-      {phase === "settle" && (
-        <>
-          <Button kind="light" busy={busy} onClick={() => run(() => settleTreasuryAuctionReal(wallet.signer, a.id), reload)}>Settle auction</Button>
-          <Muted style={{ marginTop: 6 }}>Anyone can settle. The highest revealed bid wins; then each bidder claims their tokens or refund.</Muted>
-        </>
+      {phase === "reveal" && a.mine.revealed && <Muted small>{t("Your bid of {n} INVEST is revealed.", { n: fmt(a.mine.revealedAmount) })}</Muted>}
+      {phase === "settle" && (signer
+        ? <div><Button kind="secondary" busy={busy} onClick={() => run(() => settleTreasuryAuctionReal(signer, a.id))}>{t("Settle the auction")}</Button></div>
+        : <ConnectToAct what={t("Connect a wallet to settle this auction. The highest revealed bid wins.")} />)}
+      {signer && phase === "done" && a.mine.revealed && !a.mine.claimed && (
+        <div>
+          <Button busy={busy} onClick={() => run(() => claimTreasuryAuctionReal(signer, a.id))}>
+            {iWon ? t("Claim {amount} {symbol} and your deposit", { amount: fmt(a.amount, a.token.decimals, 4), symbol: a.token.symbol }) : t("Claim back {n} INVEST", { n: fmt(a.deposit + a.mine.revealedAmount) })}
+          </Button>
+        </div>
       )}
-
-      {phase === "done" && a.mine.revealed && !a.mine.claimed && (
-        <Button busy={busy} onClick={() => run(() => claimTreasuryAuctionReal(wallet.signer, a.id), reload)}>
-          {iWon ? `Claim ${fmt(a.amount, a.token.decimals, 4)} ${a.token.symbol} and your deposit` : `Claim back ${fmt(a.deposit + a.mine.revealedAmount)} INVEST`}
-        </Button>
-      )}
-      {phase === "done" && a.mine.claimed && <Muted>Claimed.</Muted>}
-      {(phase === "done" || phase === "settle") && a.mine.committed && !a.mine.revealed && (
-        <Muted>Your bid wasn't revealed in time, so its {fmt(a.deposit)} INVEST deposit went to the company.</Muted>
+      {signer && phase === "done" && a.mine.claimed && <Muted small>{t("Claimed.")}</Muted>}
+      {signer && (phase === "done" || phase === "settle") && a.mine.committed && !a.mine.revealed && (
+        <Muted small>{t("Your bid wasn't revealed in time, so its {n} INVEST deposit went to the company.", { n: fmt(a.deposit) })}</Muted>
       )}
       <ErrorLine error={error} />
-    </Card>
+    </li>
   );
 }
 
-function Auctions({ company, wallet }) {
-  const [list, setList] = useState(null);
-  const load = useCallback(async () => setList(await getTreasuryAuctions(company.id, wallet.address, wallet.provider)), [company.id, wallet]);
-  useEffect(() => { load(); }, [load]);
-  if (!list) return <Muted>Loading auctions…</Muted>;
+function Auctions({ company }) {
+  const { t } = useT();
+  const { me } = useSession();
+  const [list, err] = useChain((p) => getTreasuryAuctions(company.id, me, p), [company.id, me]);
   return (
-    <div>
-      <Muted style={{ marginBottom: 10 }}>
-        When the governor sells more than 5% of a token, it's sold here by sealed bids: 2 days to bid, then 1 day to reveal.
-        What the company earns becomes income it can reinvest.
-      </Muted>
-      {list.length === 0 ? <Muted>No auctions yet.</Muted> : list.map((a) => <AuctionCard key={a.id.toString()} a={a} wallet={wallet} reload={load} />)}
+    <div className="stack">
+      <Muted small>{t("The governor can put company tokens up for sale here. Bids are sealed for 2 days, then revealed over 1 day; the highest revealed bid wins. Proceeds become income the company can reinvest.")}</Muted>
+      <ErrorLine error={err} />
+      {!list ? !err && <Loading /> : list.length === 0 ? <Muted>{t("No auctions yet.")}</Muted> : (
+        <ul className="list">{list.map((a) => <AuctionItem key={a.id.toString()} a={a} />)}</ul>
+      )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------- Payments
+// ------------------------------------------------------------ payments
 
-function PaymentCard({ p, wallet, reload }) {
+function PaymentItem({ p }) {
+  const { t, tn } = useT();
+  const { signer } = useSession();
   const { busy, error, run } = useTx();
   const open = !useCountdown(p.voteEnd).passed;
   const turnout = p.yesWeight + p.noWeight;
   return (
-    <Card dim={p.executed}>
-      <Title>Pay {fmt(p.amount, p.token.decimals, 4)} {p.token.symbol} to {short(p.to)}</Title>
-      <div className="mono" style={{ fontSize: 10.5, opacity: 0.65, marginBottom: 8, lineHeight: 1.6 }}>
-        Payment #{p.id.toString()} · {p.executed ? (p.passes ? "approved and paid" : "rejected, funds returned to the company") : open ? <Countdown to={p.voteEnd} prefix="voting closes in" /> : "voting closed, waiting to be carried out"}
-        <br />
-        Yes {p.yesWeight.toLocaleString()} · No {p.noWeight.toLocaleString()} · turnout {turnout.toLocaleString()} of the {p.quorumNeeded.toLocaleString()} shares needed (20% of {p.issued.toLocaleString()})
-        {!p.executed && <> · <span style={{ color: p.passes ? C.ok : C.danger }}>{p.passes ? "would pass now" : "would fail now"}</span></>}
+    <li className="stack-sm">
+      <div className="spread">
+        <span className="strong">{t("Pay {amount} {symbol} to", { amount: fmt(p.amount, p.token.decimals, 4), symbol: p.token.symbol })} <Address value={p.to} /></span>
+        <span className="small muted">{t("Payment {id}", { id: p.id.toString() })}</span>
       </div>
-      {open && !p.voted && p.myWeight > 0n && (
-        <div className="flex gap-2">
-          <Button small busy={busy} onClick={() => run(() => voteVendorPaymentReal(wallet.signer, p.id, true), reload)}>Approve ({count(p.myWeight, "share")})</Button>
-          <Button small kind="quiet" busy={busy} onClick={() => run(() => voteVendorPaymentReal(wallet.signer, p.id, false), reload)}>Reject</Button>
+      <p className="small muted num">
+        {p.executed ? (p.passes ? t("Approved and paid.") : t("Rejected; the money went back to the company."))
+          : open ? <Remaining to={p.voteEnd} label="Voting closes in {time}" /> : t("Voting has closed; anyone can carry out the result.")}
+        {" "}{t("Yes {y}, no {n}. {turnout} of the {q} shares needed have voted (20% of {issued}).", { y: int(p.yesWeight), n: int(p.noWeight), turnout: int(turnout), q: int(p.quorumNeeded), issued: int(p.issued) })}
+        {!p.executed && <> <span style={{ color: p.passes ? "var(--ok)" : "var(--danger)" }}>{p.passes ? t("It would pass now.") : t("It would fail now.")}</span></>}
+      </p>
+      {signer && open && !p.voted && p.myWeight > 0n && (
+        <div className="row-tight">
+          <Button small busy={busy} onClick={() => run(() => voteVendorPaymentReal(signer, p.id, true))}>{tn("Approve with {n} share", "Approve with {n} shares", p.myWeight)}</Button>
+          <Button small kind="secondary" busy={busy} onClick={() => run(() => voteVendorPaymentReal(signer, p.id, false))}>{t("Reject")}</Button>
         </div>
       )}
-      {open && p.voted && <Muted>You've voted on this payment.</Muted>}
-      {open && !p.voted && p.myWeight === 0n && <Muted>Only wallets that held shares when this was proposed can vote.</Muted>}
-      {!open && !p.executed && (
-        <Button kind="light" busy={busy} onClick={() => run(() => executeVendorPaymentReal(wallet.signer, p.id), reload)}>
-          {p.passes ? "Carry out the payment" : "Close and return the funds"}
-        </Button>
+      {signer && open && p.voted && <Muted small>{t("You've voted on this payment.")}</Muted>}
+      {signer && open && !p.voted && p.myWeight === 0n && <Muted small>{t("Only wallets that held shares when this was proposed can vote.")}</Muted>}
+      {signer && !open && !p.executed && (
+        <div><Button kind="secondary" busy={busy} onClick={() => run(() => executeVendorPaymentReal(signer, p.id))}>{p.passes ? t("Carry out the payment") : t("Close it and return the money")}</Button></div>
       )}
       <ErrorLine error={error} />
-    </Card>
+    </li>
   );
 }
 
-function Payments({ company, wallet }) {
-  const [list, setList] = useState(null);
-  const load = useCallback(async () => setList(await getVendorPayments(company.id, wallet.address, wallet.provider)), [company.id, wallet]);
-  useEffect(() => { load(); }, [load]);
-  if (!list) return <Muted>Loading payments…</Muted>;
+function Payments({ company }) {
+  const { t } = useT();
+  const { me } = useSession();
+  const [list, err] = useChain((p) => getVendorPayments(company.id, me, p), [company.id, me]);
   return (
-    <div>
-      <Muted style={{ marginBottom: 10 }}>
-        Payments the governor proposes to a named address. Shareholders have 3 days to vote. A payment goes through only if at least
-        20% of shares vote and 51% of the votes say yes. Otherwise the money goes back to the company.
-      </Muted>
-      {list.length === 0 ? <Muted>No payments proposed yet.</Muted> : list.map((p) => <PaymentCard key={p.id.toString()} p={p} wallet={wallet} reload={load} />)}
+    <div className="stack">
+      <Muted small>{t("Payments the governor proposes to a named address. Shareholders vote for 3 days; a payment goes through only if at least 20% of the shares vote and 51% of the votes say yes. Otherwise the money stays with the company.")}</Muted>
+      <ErrorLine error={err} />
+      {!list ? !err && <Loading /> : list.length === 0 ? <Muted>{t("No payments proposed yet.")}</Muted> : (
+        <ul className="list">{list.map((p) => <PaymentItem key={p.id.toString()} p={p} />)}</ul>
+      )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------- Dividends
+// ------------------------------------------------------------ dividends
 
-function TermCard({ company, t, wallet, reload }) {
+function TermItem({ company, tm }) {
+  const { t, tn, lang } = useT();
+  const { signer } = useSession();
   const { busy, error, run } = useTx();
-  const voteOver = useCountdown(t.voteEnd).passed;
-  const voting = t.voteEnd > 0n && !voteOver;
-  const awaitingResolve = t.voteEnd > 0n && !voting && !t.resolved;
-  const total = t.dividendWeight + t.reinvestWeight;
+  const over = useCountdown(tm.voteEnd).passed;
+  const voting = tm.voteEnd > 0n && !over;
+  const toCount = tm.voteEnd > 0n && !voting && !tm.resolved;
   return (
-    <Card>
-      <Title>Term {t.term} · ended {fmtDate(t.endTime)}</Title>
-      {t.voteEnd === 0n && (
+    <li className="stack-sm">
+      <span className="strong">{t("Term {n}, ended {date}", { n: tm.term, date: fmtDate(tm.endTime, lang) })}</span>
+      {tm.voteEnd === 0n && (
         <>
-          <Muted style={{ marginBottom: 8 }}>Shareholders decide: pay 1% of the company's capital out as a dividend, or keep it invested. Anyone can open the vote.</Muted>
-          <Button kind="light" busy={busy} onClick={() => run(() => openPolicyVoteReal(wallet.signer, company.id, t.term), reload)}>Open the dividend vote</Button>
+          <Muted small>{t("Shareholders decide whether 1% of the company's capital is paid out as a dividend or kept. Anyone can open the vote.")}</Muted>
+          {signer && <div><Button kind="secondary" busy={busy} onClick={() => run(() => openPolicyVoteReal(signer, company.id, tm.term))}>{t("Open the dividend vote")}</Button></div>}
         </>
       )}
-      {(voting || awaitingResolve) && (
-        <div className="mono" style={{ fontSize: 10.5, opacity: 0.7, marginBottom: 8 }}>
-          Pay a dividend: {t.dividendWeight.toLocaleString()} · Reinvest: {t.reinvestWeight.toLocaleString()} ({count(total, "share")} voted)
-          {" · "}{voting ? <Countdown to={t.voteEnd} prefix="closes in" /> : "voting closed"}
+      {(voting || toCount) && (
+        <p className="small muted num">
+          {t("Dividend {d}, keep it {r}.", { d: int(tm.dividendWeight), r: int(tm.reinvestWeight) })}{" "}
+          {voting ? <Remaining to={tm.voteEnd} label="Voting closes in {time}" /> : t("Voting has closed.")}
+        </p>
+      )}
+      {signer && voting && !tm.hasVoted && tm.myWeight > 0n && (
+        <div className="row-tight">
+          <Button small busy={busy} onClick={() => run(() => votePolicyReal(signer, company.id, tm.term, true))}>{t("Pay the dividend")}</Button>
+          <Button small kind="secondary" busy={busy} onClick={() => run(() => votePolicyReal(signer, company.id, tm.term, false))}>{t("Keep it in the company")}</Button>
+          <span className="small muted">{tn("with {n} share", "with {n} shares", tm.myWeight)}</span>
         </div>
       )}
-      {voting && !t.hasVoted && t.myWeight > 0n && (
-        <div className="flex gap-2">
-          <Button small busy={busy} onClick={() => run(() => votePolicyReal(wallet.signer, company.id, t.term, true), reload)}>Pay a dividend</Button>
-          <Button small kind="quiet" busy={busy} onClick={() => run(() => votePolicyReal(wallet.signer, company.id, t.term, false), reload)}>Reinvest</Button>
-          <span className="mono" style={{ fontSize: 10.5, opacity: 0.6, alignSelf: "center" }}>{count(t.myWeight, "share")}</span>
-        </div>
-      )}
-      {voting && t.hasVoted && <Muted>You've voted.</Muted>}
-      {voting && !t.hasVoted && t.myWeight === 0n && <Muted>Only wallets that held shares when the term ended can vote.</Muted>}
-      {awaitingResolve && <Button kind="light" busy={busy} onClick={() => run(() => resolvePolicyVoteReal(wallet.signer, company.id, t.term), reload)}>Count the vote</Button>}
-      {t.resolved && (t.perShare > 0n ? (
-        <div className="mono" style={{ fontSize: 11 }}>
-          <div style={{ marginBottom: 6 }}>Dividend: {fmt(t.perShare / 10n ** 18n, 18, 6)} INVEST per share, paid on shares held when the term ended.</div>
-          {t.owed > 0n && <Button busy={busy} onClick={() => run(() => claimDividendReal(wallet.signer, company.id, t.term), reload)}>Claim {fmt(t.owed, 18, 4)} INVEST</Button>}
-          {t.claimed && <Muted>You've claimed your dividend.</Muted>}
-          {!t.claimed && t.owed === 0n && <Muted>Nothing to claim for this wallet.</Muted>}
-        </div>
-      ) : (
-        <Muted>Shareholders chose to reinvest. No dividend this term.</Muted>
-      ))}
+      {signer && voting && tm.hasVoted && <Muted small>{t("You've voted.")}</Muted>}
+      {signer && voting && !tm.hasVoted && tm.myWeight === 0n && <Muted small>{t("Only wallets that held shares when the term ended can vote.")}</Muted>}
+      {signer && toCount && <div><Button kind="secondary" busy={busy} onClick={() => run(() => resolvePolicyVoteReal(signer, company.id, tm.term))}>{t("Count the vote")}</Button></div>}
+      {tm.resolved && (tm.perShare > 0n ? (
+        <>
+          <p className="small">{t("Dividend paid: {n} INVEST per share held when the term ended.", { n: fmt(tm.perShare / 10n ** 18n, 18, 6) })}</p>
+          {signer && tm.owed > 0n && <div><Button busy={busy} onClick={() => run(() => claimDividendReal(signer, company.id, tm.term))}>{t("Claim {n} INVEST", { n: fmt(tm.owed, 18, 4) })}</Button></div>}
+          {signer && tm.claimed && <Muted small>{t("You've claimed your dividend.")}</Muted>}
+        </>
+      ) : <Muted small>{t("Shareholders kept the money in the company.")}</Muted>)}
       <ErrorLine error={error} />
-    </Card>
+    </li>
   );
 }
 
-function Dividends({ company, wallet }) {
-  const [terms, setTerms] = useState(null);
-  const load = useCallback(async () => setTerms(await getDividendTerms(company.id, wallet.address, wallet.provider)), [company.id, wallet]);
-  useEffect(() => { load(); }, [load]);
-  if (!terms) return <Muted>Loading dividends…</Muted>;
+function Dividends({ company }) {
+  const { t } = useT();
+  const { me } = useSession();
+  const [terms, err] = useChain((p) => getDividendTerms(company.id, me, p), [company.id, me]);
   return (
-    <div>
-      <Muted style={{ marginBottom: 10 }}>
-        After each governor's term, shareholders vote on a dividend of 1% of capital. Votes and payouts use the shares each wallet held
-        when the term ended, so shares moved afterwards don't change anything.
-      </Muted>
-      {terms.length === 0 ? <Muted>No term has ended yet.</Muted> : terms.map((t) => <TermCard key={t.term} company={company} t={t} wallet={wallet} reload={load} />)}
+    <div className="stack">
+      <Muted small>{t("After every term, shareholders vote on paying 1% of the company's capital as a dividend. The vote and the payout use the shares each wallet held when the term ended, so moving shares afterwards changes nothing.")}</Muted>
+      <ErrorLine error={err} />
+      {!terms ? !err && <Loading /> : terms.length === 0 ? <Muted>{t("No term has ended yet.")}</Muted> : (
+        <ul className="list">{terms.map((tm) => <TermItem key={tm.term} company={company} tm={tm} />)}</ul>
+      )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------- Governor tools
+// ------------------------------------------------------------ governor tools
 
-function TokenAmountForm({ data, title, explain, needTo, submitLabel, onSubmit, extra }) {
+function TokenForm({ data, title, explain, needTo, submitLabel, onSubmit, extra }) {
+  const { t } = useT();
   const [token, setToken] = useState("");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const { busy, error, setError, run } = useTx();
   const submit = async () => {
-    const info = data.tokens.find((t) => same(t.address, token));
+    const info = data.tokens.find((x) => same(x.address, token));
     if (!info) return setError("Choose a token the company holds.");
     let toAddr = null;
     if (needTo) { toAddr = await normalizeAddress(to); if (!toAddr) return setError("Enter a valid recipient address."); }
@@ -390,37 +341,35 @@ function TokenAmountForm({ data, title, explain, needTo, submitLabel, onSubmit, 
     await run(() => onSubmit(info.address, raw, toAddr), () => { setAmount(""); setTo(""); });
   };
   return (
-    <Card>
-      <Title>{title}</Title>
-      <Muted style={{ marginBottom: 8 }}>{explain}</Muted>
-      {data.tokens.length === 0 ? <Muted>The company holds no tokens to use for this.</Muted> : (
+    <Act title={title}>
+      <p className="small">{explain}</p>
+      {data.tokens.length === 0 ? <Muted small>{t("The company holds no tokens to use for this.")}</Muted> : (
         <>
-          <Field label="Token"><TokenPicker tokens={data.tokens} value={token} onChange={(v) => setToken(v)} /></Field>
+          <Field label={t("Token")}><TokenPicker tokens={data.tokens} value={token} onChange={setToken} /></Field>
           {extra && extra(token)}
-          {needTo && <Field label="Recipient address"><Input value={to} onChange={(e) => setTo(e.target.value)} placeholder="0x…" /></Field>}
-          <Field label="Amount"><Input type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
+          {needTo && <Field label={t("Recipient address")}><Input value={to} onChange={(e) => setTo(e.target.value)} placeholder="0x…" spellCheck={false} /></Field>}
+          <Field label={t("Amount")}><Input type="number" min="0" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
           <Button busy={busy} onClick={submit}>{submitLabel}</Button>
         </>
       )}
       <ErrorLine error={error} />
-    </Card>
+    </Act>
   );
 }
 
-function FreeAllowance({ companyId, token, wallet, data }) {
-  const [left, setLeft] = useState(null);
-  useEffect(() => {
-    if (!token) { setLeft(null); return; }
-    getFreeAllowanceLeft(companyId, token, wallet.provider).then(setLeft).catch(() => setLeft(null));
-  }, [companyId, token, wallet.provider, data]); // data changes after every withdrawal
-  const info = data.tokens.find((t) => same(t.address, token));
+function FreeAllowance({ companyId, token, data }) {
+  const { t } = useT();
+  const [left] = useChain((p) => (token ? getFreeAllowanceLeft(companyId, token, p) : Promise.resolve(null)), [companyId, token]);
+  const info = data.tokens.find((x) => same(x.address, token));
   if (!info || left === null) return null;
-  return <Muted style={{ marginBottom: 8 }}>You can still withdraw {fmt(left, info.decimals, 4)} {info.symbol} on your own this term.</Muted>;
+  return <Muted small>{t("You can still move {n} {symbol} on your own this term.", { n: fmt(left, info.decimals, 4), symbol: info.symbol })}</Muted>;
 }
 
-function GovernorTools({ company, companies, wallet, data, reload }) {
-  const [holdings, setHoldings] = useState(null);
-  const [payTokens, setPayTokens] = useState([]);
+function GovernorTools({ company, companies, data }) {
+  const { t, tn } = useT();
+  const { signer } = useSession();
+  const others = companies.filter((c) => c.id !== company.id);
+  const [holdings] = useChain((p) => getCorporateHoldings(company.id, others, p), [company.id, others.length]);
   const inv = useTx();
   const corp = useTx();
   const sell = useTx();
@@ -432,174 +381,130 @@ function GovernorTools({ company, companies, wallet, data, reload }) {
   const [sellAmt, setSellAmt] = useState("");
   const [sellToken, setSellToken] = useState("");
   const [sellPrice, setSellPrice] = useState("");
-  const others = companies.filter((c) => c.id !== company.id);
-
-  useEffect(() => {
-    getCorporateHoldings(company.id, others, wallet.provider).then(setHoldings).catch(() => setHoldings([]));
-    getApprovedPaymentTokens(wallet.provider).then(setPayTokens).catch(() => setPayTokens([]));
-  }, [company.id, wallet.provider, companies.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const doInvest = async () => {
     if (target === "") return inv.setError("Choose a company to invest in.");
     let raw;
     try { raw = await parseAmount(investAmt, 18); } catch { return inv.setError("Enter an amount of INVEST."); }
-    await inv.run(() => investReal(wallet.signer, company.id, Number(target), raw), async () => { setInvestAmt(""); await reload(); });
+    await inv.run(() => investReal(signer, company.id, Number(target), raw), () => setInvestAmt(""));
   };
   const doSell = async () => {
-    const tok = payTokens.find((t) => same(t.address, sellToken));
+    const tok = data.payTokens.find((x) => same(x.address, sellToken));
     if (!tok) return sell.setError("Choose what buyers pay with.");
     let amt, price;
     try { amt = await parseAmount(sellAmt, 18); price = await parseAmount(sellPrice, tok.decimals); } catch { return sell.setError("Enter both amounts."); }
-    await sell.run(() => governorOfferInvestReal(wallet.signer, company.id, amt, tok.address, price), async () => { setSellAmt(""); setSellPrice(""); await reload(); });
+    await sell.run(() => governorOfferInvestReal(signer, company.id, amt, tok.address, price), () => { setSellAmt(""); setSellPrice(""); });
   };
 
   return (
-    <div>
-      <Notice color={C.ok}>You're signed in with {company.name}'s operating key. Everything here acts for the company.</Notice>
+    <div className="stack">
+      <Notice tone="ok">{t("You're signed in with {name}'s operating key. Everything here acts for the company and is public.", { name: company.name })}</Notice>
 
-      <TokenAmountForm data={data} needTo title="Withdraw (up to 5% per term)"
-        explain="Send a token to any address. You can move at most 5% of each token's balance per term on your own."
-        submitLabel="Withdraw"
-        extra={(token) => <FreeAllowance companyId={company.id} token={token} wallet={wallet} data={data} />}
-        onSubmit={async (token, raw, to) => { await withdrawTokenReal(wallet.signer, company.id, token, to, raw); await reload(); }} />
+      <TokenForm data={data} needTo title={t("Move tokens (up to 5% a term)")}
+        explain={t("Sends a token from the treasury to any address, without a vote, up to 5% of each token's balance per term.")}
+        submitLabel={t("Send")}
+        extra={(token) => <FreeAllowance companyId={company.id} token={token} data={data} />}
+        onSubmit={(token, raw, to) => withdrawTokenReal(signer, company.id, token, to, raw)} />
 
-      <TokenAmountForm data={data} title="Sell at a sealed-bid auction"
-        explain="Puts the tokens up for sealed bids: 2 days to bid, 1 day to reveal, highest bid wins. The INVEST earned becomes reinvestable income."
-        submitLabel="Start auction"
-        onSubmit={async (token, raw) => { await openTreasuryAuctionReal(wallet.signer, company.id, token, raw); await reload(); }} />
+      <TokenForm data={data} title={t("Sell at a sealed-bid auction")}
+        explain={t("2 days of sealed bids, 1 day to reveal, the highest bid wins. What it earns becomes income the company can reinvest.")}
+        submitLabel={t("Start the auction")}
+        onSubmit={(token, raw) => openTreasuryAuctionReal(signer, company.id, token, raw)} />
 
-      <TokenAmountForm data={data} needTo title="Propose a payment"
-        explain="For a bill or contract larger than 5%. The amount is set aside, shareholders vote for 3 days, and it's paid only if at least 20% of shares vote and 51% approve."
-        submitLabel="Propose payment"
-        onSubmit={async (token, raw, to) => { await proposeVendorPaymentReal(wallet.signer, company.id, token, to, raw); await reload(); }} />
+      <TokenForm data={data} needTo title={t("Propose a payment")}
+        explain={t("For amounts above 5%. The money is set aside and shareholders vote for 3 days; it's paid only if 20% of the shares vote and 51% approve.")}
+        submitLabel={t("Propose the payment")}
+        onSubmit={(token, raw, to) => proposeVendorPaymentReal(signer, company.id, token, to, raw)} />
 
-      <Card>
-        <Title>Reinvest in another company</Title>
-        <Muted style={{ marginBottom: 8 }}>
-          Bid the company's reinvestable income ({fmt(data.reinvestableIncome)} INVEST available) in another company's auction. Original capital
-          can never be used. If the bid wins, you personally receive 1% of the shares, locked until two more terms have passed.
-        </Muted>
-        <Field label="Company to invest in">
+      <Act title={t("Bid in another company's auction")}>
+        <p className="small">{t("Uses the company's income ({n} INVEST available), never its capital. If the bid wins, you personally receive 1% of the shares it buys, locked until two more terms have passed.", { n: fmt(data.reinvestableIncome) })}</p>
+        <Field label={t("Company")}>
           <Select value={target} onChange={(e) => setTarget(e.target.value)}>
-            <option value="">Choose…</option>
+            <option value="">{t("Choose…")}</option>
             {others.filter((c) => !c.finalized).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </Select>
         </Field>
-        <Field label="INVEST to bid"><Input type="number" min="1" value={investAmt} onChange={(e) => setInvestAmt(e.target.value)} /></Field>
-        <Button busy={inv.busy} onClick={doInvest} disabled={data.reinvestableIncome === 0n}>Place company bid</Button>
+        <Field label={t("Bid")}><AmountInput unit="INVEST" value={investAmt} onChange={(e) => setInvestAmt(e.target.value)} /></Field>
+        <Button busy={inv.busy} disabled={data.reinvestableIncome === 0n} onClick={doInvest}>{t("Place the company's bid")}</Button>
         <ErrorLine error={inv.error} />
-      </Card>
+      </Act>
 
-      <Card>
-        <Title>Shares this company holds elsewhere</Title>
-        {holdings === null ? <Muted>Loading…</Muted> : holdings.length === 0 ? <Muted>None yet. Reinvesting builds them.</Muted> : (
+      <Act title={t("Shares this company holds elsewhere")}>
+        {!holdings ? <Loading /> : holdings.length === 0 ? <Muted small>{t("None yet. Bidding in other companies builds them.")}</Muted> : (
           <>
-            {holdings.map((h) => <Row key={h.companyId} label={h.name}>{count(h.shares, "share")}</Row>)}
-            <div style={{ marginTop: 10 }}>
-              <Field label="Company">
-                <Select value={corpTarget} onChange={(e) => setCorpTarget(e.target.value)}>
-                  <option value="">Choose…</option>
-                  {holdings.map((h) => <option key={h.companyId} value={h.companyId}>{h.name}</option>)}
-                </Select>
-              </Field>
-              <div className="flex gap-2" style={{ marginBottom: 8 }}>
-                <Input type="number" min="1" value={corpTerm} onChange={(e) => setCorpTerm(e.target.value)} placeholder="Term number" style={{ flex: 1 }} />
-                <Button small busy={corp.busy} onClick={() => corp.run(() => claimDividendAsCorporationReal(wallet.signer, company.id, Number(corpTarget), Number(corpTerm)), reload)} disabled={corpTarget === "" || !corpTerm}>
-                  Claim dividend
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Input value={corpCandidate} onChange={(e) => setCorpCandidate(e.target.value)} placeholder="Candidate address to vote for" style={{ flex: 1 }} />
-                <Button small busy={corp.busy} disabled={corpTarget === "" || !corpCandidate} onClick={async () => {
-                  const cand = await normalizeAddress(corpCandidate);
-                  if (!cand) return corp.setError("Enter a valid candidate address.");
-                  await corp.run(() => voteAsCorporationReal(wallet.signer, company.id, Number(corpTarget), cand));
-                }}>Vote these shares</Button>
-              </div>
-              <Muted style={{ marginTop: 6 }}>Dividends claimed this way become this company's reinvestable income.</Muted>
+            <ul className="small" style={{ listStyle: "none", padding: 0 }}>
+              {holdings.map((h) => <li key={h.companyId}>{h.name}: {tn("{n} share", "{n} shares", h.shares)}</li>)}
+            </ul>
+            <Field label={t("Company")}>
+              <Select value={corpTarget} onChange={(e) => setCorpTarget(e.target.value)}>
+                <option value="">{t("Choose…")}</option>
+                {holdings.map((h) => <option key={h.companyId} value={h.companyId}>{h.name}</option>)}
+              </Select>
+            </Field>
+            <div className="input-row">
+              <Input aria-label={t("Term number")} type="number" min="1" value={corpTerm} onChange={(e) => setCorpTerm(e.target.value)} placeholder={t("Term number")} />
+              <Button small kind="secondary" busy={corp.busy} disabled={corpTarget === "" || !corpTerm}
+                onClick={() => corp.run(() => claimDividendAsCorporationReal(signer, company.id, Number(corpTarget), Number(corpTerm)))}>{t("Claim its dividend")}</Button>
             </div>
+            <div className="input-row">
+              <Input aria-label={t("Candidate address")} value={corpCandidate} onChange={(e) => setCorpCandidate(e.target.value)} placeholder={t("Candidate address")} spellCheck={false} />
+              <Button small kind="secondary" busy={corp.busy} disabled={corpTarget === "" || !corpCandidate} onClick={async () => {
+                const cand = await normalizeAddress(corpCandidate);
+                if (!cand) return corp.setError("Enter a valid candidate address.");
+                await corp.run(() => voteAsCorporationReal(signer, company.id, Number(corpTarget), cand));
+              }}>{t("Vote these shares")}</Button>
+            </div>
+            <Muted small>{t("Dividends claimed this way become this company's income.")}</Muted>
           </>
         )}
         <ErrorLine error={corp.error} />
-      </Card>
+      </Act>
 
-      <Card>
-        <Title>Sell company INVEST on the market</Title>
-        <Muted style={{ marginBottom: 8 }}>Offer some of the company's capital ({fmt(data.capital)} INVEST) for an accepted token. Payment goes to the company's treasury.</Muted>
-        {payTokens.length === 0 ? <Muted>No payment tokens are accepted on the market yet.</Muted> : (
+      <Act title={t("Offer company INVEST on the market")}>
+        <p className="small">{t("Offers some of the company's capital ({n} INVEST) for an accepted token. The payment goes to the treasury.", { n: fmt(data.capital) })}</p>
+        {data.payTokens.length === 0 ? <Muted small>{t("No payment token is accepted on the market at the moment.")}</Muted> : (
           <>
-            <Field label="INVEST to sell"><Input type="number" min="0" value={sellAmt} onChange={(e) => setSellAmt(e.target.value)} /></Field>
-            <Field label="Paid in"><TokenPicker tokens={payTokens} value={sellToken} onChange={(v) => setSellToken(v)} /></Field>
-            <Field label="Total price"><Input type="number" min="0" value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} /></Field>
-            <Button busy={sell.busy} onClick={doSell}>Post offer</Button>
+            <Field label={t("INVEST to sell")}><AmountInput unit="INVEST" value={sellAmt} onChange={(e) => setSellAmt(e.target.value)} /></Field>
+            <Field label={t("Paid in")}><TokenPicker tokens={data.payTokens} value={sellToken} onChange={setSellToken} /></Field>
+            <Field label={t("Total price")}><Input type="number" min="0" step="any" value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} /></Field>
+            <Button busy={sell.busy} onClick={doSell}>{t("Post the offer")}</Button>
           </>
         )}
         <ErrorLine error={sell.error} />
-      </Card>
+      </Act>
     </div>
   );
 }
 
-// ---------------------------------------------------------------- Panel
+// ------------------------------------------------------------ section
 
-export default function CompanyTreasury({ company, companies, wallet, onChanged }) {
-  const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState("overview");
-  const [data, setData] = useState(null);
-  const [gov, setGov] = useState(null);
-  const [loadError, setLoadError] = useState("");
+export default function CompanyTreasury({ company, companies }) {
+  const { t } = useT();
+  const { address } = useSession();
+  const [tab, setTab] = useState("holdings");
+  const [data, err] = useChain(async (p) => {
+    const [tr, g, payTokens] = await Promise.all([getCompanyTreasury(company.id, p), getCompanyGovernance(company.id, p), getApprovedPaymentTokens(p)]);
+    return { ...tr, payTokens, gov: g };
+  }, [company.id]);
 
-  const load = useCallback(async () => {
-    try {
-      const [t, g, payTokens] = await Promise.all([
-        getCompanyTreasury(company.id, wallet.provider),
-        getCompanyGovernance(company.id, wallet.provider),
-        getApprovedPaymentTokens(wallet.provider),
-      ]);
-      setData({ ...t, payTokens }); setGov(g); setLoadError("");
-    } catch (err) {
-      setLoadError(err.shortMessage || err.message || "Couldn't read the treasury.");
-    }
-  }, [company.id, wallet.provider]);
-
-  useEffect(() => { if (open) load(); }, [open, load]);
-
-  const reload = async () => { await load(); if (onChanged) await onChanged(); };
+  if (!data) return err ? <ErrorLine error={err} /> : <Loading />;
   const now = Math.floor(Date.now() / 1000);
-  const iAmKey = gov && gov.operatingKey !== ZERO && same(gov.operatingKey, wallet.address) && now < Number(gov.termEnd);
+  const iAmKey = data.gov.operatingKey !== ZERO && same(data.gov.operatingKey, address) && now < Number(data.gov.termEnd);
   const tabs = [
-    { id: "overview", label: "Holdings" },
-    { id: "auctions", label: "Auctions" },
-    { id: "payments", label: "Payments" },
-    { id: "dividends", label: "Dividends" },
-    ...(iAmKey ? [{ id: "governor", label: "Governor tools" }] : []),
+    { id: "holdings", label: t("Holdings") },
+    { id: "auctions", label: t("Sales") },
+    { id: "payments", label: t("Payments") },
+    { id: "dividends", label: t("Dividends") },
+    ...(iAmKey ? [{ id: "governor", label: t("Governor tools") }] : []),
   ];
-
-  const toggle = (
-    <button onClick={() => setOpen(!open)} className="mono flex items-center gap-1" style={{ background: "none", border: "none", color: C.accent, fontSize: 10.5, cursor: "pointer" }}>
-      {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />} {open ? "Hide" : "Show"}
-    </button>
-  );
-
   return (
-    <Section icon={Vault} title="Treasury" right={toggle}>
-      {!open ? (
-        <Muted>Capital {fmt(company.capital)} INVEST. Open to see holdings, auctions, payments and dividends. Governor tools appear here when the operating key is connected.</Muted>
-      ) : loadError ? (
-        <ErrorLine error={loadError} />
-      ) : !data ? (
-        <Muted>Loading treasury…</Muted>
-      ) : (
-        <>
-          <Tabs tabs={tabs} active={tab} onChange={setTab} />
-          {tab === "overview" && <Overview company={company} wallet={wallet} data={data} reload={reload} />}
-          {tab === "auctions" && <Auctions company={company} wallet={wallet} />}
-          {tab === "payments" && <Payments company={company} wallet={wallet} />}
-          {tab === "dividends" && <Dividends company={company} wallet={wallet} />}
-          {tab === "governor" && iAmKey && <GovernorTools company={company} companies={companies} wallet={wallet} data={data} reload={reload} />}
-        </>
-      )}
-    </Section>
+    <div>
+      <Tabs tabs={tabs} active={tab} onChange={setTab} label={t("Treasury")} />
+      {tab === "holdings" && <Holdings company={company} data={data} />}
+      {tab === "auctions" && <Auctions company={company} />}
+      {tab === "payments" && <Payments company={company} />}
+      {tab === "dividends" && <Dividends company={company} />}
+      {tab === "governor" && iAmKey && <GovernorTools company={company} companies={companies} data={data} />}
+    </div>
   );
 }
-

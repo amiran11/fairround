@@ -2,7 +2,7 @@
 SP=/tmp/claude-0/-home-claude/c667cef1-564c-5988-af83-0e432e6ac15a/scratchpad
 SITE=/home/claude/sakartvelo-exchange/site
 LOG=$SP/ui.log; : > $LOG
-for f in anvil.pid preview.pid; do [ -f $SP/$f ] && kill $(cat $SP/$f) 2>/dev/null; done; sleep 1
+for f in anvil.pid; do [ -f $SP/$f ] && kill $(cat $SP/$f) 2>/dev/null; done; for p in $(lsof -t -i :4173 2>/dev/null); do kill $p; done; sleep 1
 $SP/anvil/anvil --accounts 8 --balance 100000 --gas-limit 32000000 --hardfork cancun --code-size-limit 24576 --silent & echo $! > $SP/anvil.pid
 sleep 2
 cd $SP/ui && ART=$SP/build/art node setup.mjs >> $LOG 2>&1 || { echo "SETUP FAILED" >> $LOG; exit 1; }

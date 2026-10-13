@@ -12,11 +12,12 @@ compiled with Solidity 0.8.34, optimizer 200 runs, viaIR, OpenZeppelin 5.x
 | `roundauction.gas.mjs` | Worst-case settlement gas | 22.1M of 32M |
 | `system.test.mjs` | All three contracts together, incl. the full corporate chain (asset sale → invest → corporate shares → corporate vote → corporate dividend) | 57 passed |
 | `site-web3.test.mjs` | The website's own `site/src/web3.js` functions against freshly deployed contracts | 38 passed |
+| `site-i18n.test.mjs` | Every English string on the site has a Georgian translation, and no translation is left over | 438 strings, all translated |
 | `rehearse-fresh-deploy.mjs` | `REDEPLOY_V8.md` performed step by step with the same read-back checks, then a new citizen verifies, claims, bids and receives shares | all checks passed |
 | `relock.test.mjs` | The experiment's re-lock intervention (TradabilityLock) | 16 passed |
 | `v9.test.mjs` | The v9 contracts: normal behaviour, plus one attack per v8 Finding 23–40 and per finding of the three v9 audit rounds, each of which must fail; worst-case settlement gas | 134 passed; worst case 20.7M of 32M |
 | `rehearse-v9-deploy.mjs` | `DEPLOY_V9.md` step by step with read-back checks (deploy, wiring, do-not-touch checks, timelock hand-over, a timelocked listing), then a new citizen verifies with OpenVerifierV2, claims, bids and receives a v9 share | 28 passed |
-| `ui/` | The built website in Chromium: a new wallet verifying and claiming, bidding, reading candidate programs and voting, sealed bids, payment votes, the INVEST market, governor withdrawals; every click checked on chain | 25 passed |
+| `ui/` | The built website in Chromium: a visitor with no wallet browsing the register (desktop, phone width, Georgian), a new wallet verifying and claiming, bidding, reading programs and voting, sealed bids, payment votes, the INVEST market, the governor's 5% transfer; every action checked on chain | 35 passed |
 
 v8 contract tests expect compiled artifacts in `art8/art_<Name>.json`; the
 v9 tests expect `art9/<Name>.art.json` (with `TestHelpersV9.sol` compiled

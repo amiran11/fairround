@@ -162,6 +162,29 @@ export async function connectWallet() {
   return { provider, signer, address };
 }
 
+// A read-only connection for visitors without a wallet: everything on the
+// site can be browsed from the chain before anyone connects.
+let readProvider = null;
+export async function getReadProvider() {
+  if (readProvider) return readProvider;
+  const { JsonRpcProvider, Network } = await getEthers();
+  const network = Network.from(Number(BigInt(ACTIVE_NETWORK.chainIdHex)));
+  readProvider = new JsonRpcProvider(ACTIVE_NETWORK.rpcUrls[0], network, { staticNetwork: network, batchMaxCount: 20 });
+  return readProvider;
+}
+
+// Citizen numbers and whether INVEST can move freely between wallets.
+export async function getPublicStats(provider) {
+  const [it, ra] = await Promise.all([getContract("InvestToken", provider), getContract("RoundAuction", provider)]);
+  const [citizenCount, maxCitizens, tradable] = await Promise.all([
+    it.citizenCount(),
+    it.maxCitizens(),
+    ra.globalTradabilityUnlocked().catch(() => false),
+  ]);
+  const verifyOpen = await it.verifier(CONTRACT_ADDRESSES.OpenVerifier).catch(() => true);
+  return { citizenCount, maxCitizens, tradable, verifyOpen };
+}
+
 // Returns an ethers Contract instance connected to a signer (for writes)
 // or a provider (for reads only).
 export async function getContract(name, signerOrProvider) {
