@@ -52,7 +52,7 @@ function Issued({ c }) {
 
 export default function Register() {
   const { t } = useT();
-  usePageTitle(null, t("A simulation of privatization on Arbitrum One: citizens get equal INVEST, bid for shares in state companies in open rounds, and elect governors."));
+  usePageTitle(null, t("A simulation of privatization on Arbitrum One: citizens get equal INVEST, bid for shares in state companies in open rounds, and elect CEOs."));
   const navigate = useNavigate();
   const { signer, account } = useSession();
   const [companies, error] = useCompanies();
@@ -65,7 +65,7 @@ export default function Register() {
       <section style={{ padding: "56px 0 40px" }} className="stack">
         <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("State companies, sold share by share to citizens.")}</h1>
         <p className="lede">
-          {t("Every citizen receives the same 1,000 INVEST and bids it for shares in open rounds. Once half of a company is sold, its shareholders elect a governor for 30 days at a time, and nothing leaves the company without their vote.")}
+          {t("Every citizen receives the same 1,000 INVEST and bids it for shares in open rounds. Once half of a company is sold, its shareholders elect a CEO for 30 days at a time, and nothing leaves the company without their vote.")}
         </p>
         <p className="lede muted">
           {t("The process is real: the contracts run on {network} and every bid, vote and payment is public. The companies are fictional.", { network: ACTIVE_NETWORK.label })}

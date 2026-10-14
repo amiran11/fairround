@@ -37,9 +37,9 @@ function TodoItem({ item }) {
   const { t, tn } = useT();
   const n = item.weight ?? 0n;
   const text = {
-    acceptKey: t("The governor named this wallet as the operating key. Accept it to act for the company."),
+    acceptKey: t("The CEO named this wallet as the operating key. Accept it to act for the company."),
     reveal: t("Reveal your sealed bid on proposal {id}. An unrevealed bid loses its deposit.", { id: item.proposal?.toString() }),
-    recall: tn("Vote on recalling the governor with {n} share.", "Vote on recalling the governor with {n} shares.", n),
+    recall: tn("Vote on recalling the CEO with {n} share.", "Vote on recalling the CEO with {n} shares.", n),
     elect: tn("Vote in the election with {n} share.", "Vote in the election with {n} shares.", n),
     nominate: tn("Back a candidate in the election with {n} share.", "Back a candidate in the election with {n} shares.", n),
     proposal: tn("Vote on proposal {id} with {n} share.", "Vote on proposal {id} with {n} shares.", n, { id: item.proposal?.toString() }),
@@ -233,9 +233,9 @@ export default function Portfolio() {
                   <li key={`r${i}`} className="spread">
                     <CompanyLink company={r.company} />
                     <span>
-                      {r.role === "governor" && t("Governor, term {n}.", { n: r.term.toString() })}
+                      {r.role === "governor" && t("CEO, term {n}.", { n: r.term.toString() })}
                       {r.role === "key" && t("Operating key, term {n}.", { n: r.term.toString() })}
-                      {r.role === "candidate" && t("Candidate for governor.")}
+                      {r.role === "candidate" && t("Candidate for CEO.")}
                       {r.role === "governor" && !r.hasKey && own && <span className="error-line" style={{ display: "block" }}>{t("No operating key registered yet.")}</span>}
                     </span>
                   </li>

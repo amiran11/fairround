@@ -28,8 +28,8 @@ export default function Rules() {
         <ol>
           <li>{t("It is listed with a fixed number of shares and a round length.")}</li>
           <li>{t("Its shares are sold in rounds to the bidders who pay the most per share, until all are sold.")}</li>
-          <li>{t("Once half the shares are sold, shareholders elect a governor.")}</li>
-          <li>{t("The governor runs the company for 30 days and proposes what it pays, sells and invests; shareholders vote on each proposal.")}</li>
+          <li>{t("Once half the shares are sold, shareholders elect a CEO.")}</li>
+          <li>{t("The CEO runs the company for 30 days and proposes what it pays, sells and invests; shareholders vote on each proposal.")}</li>
           <li>{t("After every term, shareholders vote on a dividend, and a new election can start.")}</li>
         </ol>
 
@@ -60,22 +60,22 @@ export default function Rules() {
           <li>{t("Otherwise, if more than two candidates are left and at least 20% of the shares voted, the top two go to a runoff. If not, the round fails; after two failed rounds the election ends and a new one can be opened.")}</li>
         </ol>
 
-        <h2 className="h2">{t("The governor and recall")}</h2>
-        <p>{t("A governor serves one 30-day term. They act through an operating key: a separate wallet they name, which must accept, and which stops working when the term ends.")}</p>
-        <p>{t("Shareholders can remove a governor early. A holder of at least 1% of the shares opens a 3-day recall vote; it passes if a third of the shares vote and 51% of the votes say remove. A governor can never vote shares their company holds elsewhere for themself or on their own recall.")}</p>
+        <h2 className="h2">{t("The CEO and recall")}</h2>
+        <p>{t("A CEO serves one 30-day term. They act through an operating key: a separate wallet they name, which must accept, and which stops working when the term ends.")}</p>
+        <p>{t("Shareholders can remove a CEO early. A holder of at least 1% of the shares opens a 3-day recall vote; it passes if a third of the shares vote and 51% of the votes say remove. A CEO can never vote shares their company holds elsewhere for themself or on their own recall.")}</p>
 
         <h2 className="h2">{t("The treasury")}</h2>
-        <p>{t("Each company's money is kept in two parts: capital, raised by selling shares and from gifts, and income, which shareholders choose to reinvest at the end of a term. The governor can't take anything out alone. Everything is a proposal shareholders vote on:")}</p>
+        <p>{t("Each company's money is kept in two parts: capital, raised by selling shares and from gifts, and income, which shareholders choose to reinvest at the end of a term. The CEO can't take anything out alone. Everything is a proposal shareholders vote on:")}</p>
         <ul>
-          <li>{t("a payment to a named address, which can't be the governor or the operating key;")}</li>
+          <li>{t("a payment to a named address, which can't be the CEO or the operating key;")}</li>
           <li>{t("a sale at a sealed-bid auction with a minimum price (2 days of sealed bids, 1 day to reveal, the highest bid wins; 1% of the winning bid goes to the host);")}</li>
-          <li>{t("an investment of income in another company's share auction, with a maximum price per share. The governor then receives 1% of the shares it buys, locked for 60 days.")}</li>
+          <li>{t("an investment of income in another company's share auction, with a maximum price per share. The CEO then receives 1% of the shares it buys, locked for 60 days.")}</li>
         </ul>
-        <p>{t("A proposal is voted on for 3 days. It passes with yes votes from at least 20% of the shares that can vote and 51% of the votes cast; once this term's proposals pass 5% of the balance, it needs 40%. The governor, the operating key and the recipient can't vote. No more than 20% of a balance can go out in one term.")}</p>
-        <p>{t("An approved proposal waits 5 days before it can be carried out, so shareholders can recall the governor first. A recall, or the end of the term, cancels anything not yet carried out.")}</p>
+        <p>{t("A proposal is voted on for 3 days. It passes with yes votes from at least 20% of the shares that can vote and 51% of the votes cast; once this term's proposals pass 5% of the balance, it needs 40%. The CEO, the operating key and the recipient can't vote. No more than 20% of a balance can go out in one term.")}</p>
+        <p>{t("An approved proposal waits 5 days before it can be carried out, so shareholders can recall the CEO first. A recall, or the end of the term, cancels anything not yet carried out.")}</p>
 
         <h2 className="h2">{t("Dividends")}</h2>
-        <p>{t("After each term, anyone can open a 3-day vote on 1% of the company's INVEST capital: pay it to shareholders as a dividend, or move it to income for reinvesting. The winning side needs 20% of the shares that can vote; otherwise nothing happens. Voting and payout use the shares held when the term ended, and that term's governor can't vote.")}</p>
+        <p>{t("After each term, anyone can open a 3-day vote on 1% of the company's INVEST capital: pay it to shareholders as a dividend, or move it to income for reinvesting. The winning side needs 20% of the shares that can vote; otherwise nothing happens. Voting and payout use the shares held when the term ended, and that term's CEO can't vote.")}</p>
 
         <h2 className="h2">{t("How this was checked")}</h2>
         <p>{t("Version 9 was written to fix the weaknesses found in version 8 and reviewed three times by AI auditors that had not written it, with attack tests on a local chain that copies Arbitrum's limits. Every problem they confirmed was fixed and has a test. It has not been audited by a paid external firm.")} <a href={LINKS.security} target="_blank" rel="noreferrer">{t("Read the security review")}</a></p>

@@ -208,12 +208,12 @@ function ProposalItem({ p, companies, gov, delay }) {
             </div>
           )}
           {signer && voting && p.voted && <Muted small>{t("You've voted on this proposal.")}</Muted>}
-          {signer && voting && !p.voted && proposer && <Muted small>{t("The governor and operating key can't vote on their own proposal.")}</Muted>}
+          {signer && voting && !p.voted && proposer && <Muted small>{t("The CEO and operating key can't vote on their own proposal.")}</Muted>}
           {signer && voting && !p.voted && !proposer && p.myWeight === 0n && <Muted small>{t("Only wallets that held shares a day before this was proposed can vote.")}</Muted>}
           {signer && !voting && (due || !termLive) && (
             p.kind === "Payment" ? <div><Button kind="secondary" busy={tx.busy} onClick={() => tx.run(() => executePayment(signer, p.id))}>{p.passes && termLive ? t("Carry out the payment") : t("Close it and return the money")}</Button></div>
               : p.kind === "Sale" ? <div><Button kind="secondary" busy={tx.busy} onClick={() => tx.run(() => startAuction(signer, p.id))}>{p.passes && termLive ? t("Start the auction") : t("Close it and return the asset")}</Button></div>
-                : (p.passes && termLive ? (isKey ? <div><Button busy={tx.busy} onClick={() => tx.run(() => executeInvest(signer, p.id))}>{t("Place the company's bid")}</Button></div> : <Muted small>{t("Approved. The governor's operating key places the bid while the target's round is open.")}</Muted>)
+                : (p.passes && termLive ? (isKey ? <div><Button busy={tx.busy} onClick={() => tx.run(() => executeInvest(signer, p.id))}>{t("Place the company's bid")}</Button></div> : <Muted small>{t("Approved. The CEO's operating key places the bid while the target's round is open.")}</Muted>)
                   : <div><Button kind="secondary" busy={tx.busy} onClick={() => tx.run(() => executeInvest(signer, p.id))}>{t("Close it and return the income")}</Button></div>)
           )}
         </>
@@ -232,7 +232,7 @@ function Proposals({ company, companies, gov }) {
   const [rules] = useChain(getRules, []);
   return (
     <div className="stack">
-      <Muted small>{t("Everything the company pays, sells or invests is proposed by the governor and decided by shareholders in a 3-day vote. It passes with yes votes from at least 20% of the shares that can vote (40% once this term's total passes 5% of the balance) and 51% of the votes cast. Then it waits 5 days, so shareholders can recall the governor first.")}</Muted>
+      <Muted small>{t("Everything the company pays, sells or invests is proposed by the CEO and decided by shareholders in a 3-day vote. It passes with yes votes from at least 20% of the shares that can vote (40% once this term's total passes 5% of the balance) and 51% of the votes cast. Then it waits 5 days, so shareholders can recall the CEO first.")}</Muted>
       <ErrorLine error={err} />
       {!list || !rules ? !err && <Loading /> : list.length === 0 ? <Muted>{t("No proposals yet.")}</Muted> : (
         <ul className="list">{list.map((p) => <ProposalItem key={p.id.toString()} p={p} companies={companies} gov={gov} delay={rules.delay} />)}</ul>
@@ -310,7 +310,7 @@ function GovernorTools({ company, companies, holdings, gov }) {
       {late && <Notice tone="plain">{t("It's too late in this term for new proposals: each needs 3 days of voting, 5 days of waiting and room for a recall before the term ends.")}</Notice>}
 
       <Act title={t("Propose a payment")}>
-        <p className="small">{t("Pays a named address. The recipient can't be you or the governor, and can't vote on it.")}</p>
+        <p className="small">{t("Pays a named address. The recipient can't be you or the CEO, and can't vote on it.")}</p>
         <BucketTokenFields holdings={holdings} token={pToken} setToken={setPToken} bucket={pBucket} setBucket={setPBucket} />
         <Field label={t("Recipient address")}><Input value={pTo} onChange={(e) => setPTo(e.target.value)} placeholder="0x…" spellCheck={false} /></Field>
         <Field label={t("Amount")}><Input type="number" min="0" step="any" value={pAmt} onChange={(e) => setPAmt(e.target.value)} /></Field>
@@ -403,7 +403,7 @@ function TermItem({ company, tm }) {
           <span className="small muted">{tn("with {n} share", "with {n} shares", tm.myWeight)}</span>
         </div>
       )}
-      {signer && voting && isTermGov && <Muted small>{t("That term's governor can't vote on it.")}</Muted>}
+      {signer && voting && isTermGov && <Muted small>{t("That term's CEO can't vote on it.")}</Muted>}
       {signer && voting && tm.hasVoted && <Muted small>{t("You've voted.")}</Muted>}
       {signer && toCount && <div><Button kind="secondary" busy={tx.busy} onClick={() => tx.run(() => resolvePolicyVote(signer, company.id, tm.term))}>{t("Count the vote")}</Button></div>}
       {tm.resolved && (tm.perShare > 0n ? (
@@ -426,7 +426,7 @@ function Dividends({ company }) {
   const termOver = governancePhase(company) === "termOver";
   return (
     <div className="stack">
-      <Muted small>{t("After every term, shareholders vote on 1% of the company's INVEST capital: pay it out as a dividend, or move it to income for reinvesting. The vote and the payout use the shares held when the term ended, and that term's governor can't vote.")}</Muted>
+      <Muted small>{t("After every term, shareholders vote on 1% of the company's INVEST capital: pay it out as a dividend, or move it to income for reinvesting. The vote and the payout use the shares held when the term ended, and that term's CEO can't vote.")}</Muted>
       {termOver && signer && (
         <Act title={t("Record the end of term {n}", { n: company.gov.termNum.toString() })}>
           <p className="small">{t("The term is over but hasn't been recorded yet. Recording it lets the dividend vote open. Opening the next election records it too.")}</p>
@@ -458,7 +458,7 @@ export default function Treasury({ company, companies }) {
     { id: "holdings", label: t("Holdings") },
     { id: "proposals", label: t("Proposals") },
     { id: "dividends", label: t("Dividends") },
-    ...(iAmKey ? [{ id: "governor", label: t("Governor tools") }] : []),
+    ...(iAmKey ? [{ id: "governor", label: t("CEO tools") }] : []),
   ];
   void pct; void getTokens;
   if (!holdings) return err ? <ErrorLine error={err} /> : <Loading />;
