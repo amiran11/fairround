@@ -77,7 +77,7 @@ function Candidacy({ company, e }) {
             </Notice>
           )}
           {!mine && !e.nominated && (e.myWeight >= minStake && e.myWeight > 0n ? (
-            <Act title={t("Stand for governor")}>
+            <Act title={t("Stand for CEO")}>
               <Field label={t("Your program")} hint={t("{used} of {max} bytes, about 700 words. It can't be changed after you declare. Declaring backs yourself with your shares.", { used: int(bytes), max: int(MAX_PROGRAM_BYTES) })}>
                 <Textarea value={program} onChange={(ev) => setProgram(ev.target.value)} placeholder={t("What you'll do with the company: priorities, how you'd use the treasury, dividends or reinvestment.")} />
               </Field>
@@ -124,7 +124,7 @@ function Voting({ company, e, phase }) {
               : <Muted small>{t("You held no shares a day before this election opened, so you can't vote in it.")}</Muted>
         ) : (
           <Act title={t("Count the votes")}>
-            <p className="small">{t("This elects a governor, starts a runoff between the top two, or records a failed round.")}</p>
+            <p className="small">{t("This elects a CEO, starts a runoff between the top two, or records a failed round.")}</p>
             <Button busy={tx.busy} onClick={() => tx.run(() => tallyRound(signer, company.id))}>{t("Count the votes")}</Button>
           </Act>
         )}
@@ -167,7 +167,7 @@ function KeyForm({ governor, companyName, busy, onSubmit }) {
     setProblem("");
     const addr = await normalizeAddress(input);
     if (!addr || addr === ZERO) return setProblem(t("That isn't a wallet address. Copy it again from MetaMask."));
-    if (same(addr, governor)) return setProblem(t("That's your governor account. Add a separate account in MetaMask and use its address."));
+    if (same(addr, governor)) return setProblem(t("That's your CEO account. Add a separate account in MetaMask and use its address."));
     onSubmit(addr);
   };
   return (
@@ -204,12 +204,12 @@ function Recall({ company }) {
       <h3 className="h3">{t("Recall")}</h3>
       {open ? (
         <>
-          <p>{t("A vote to remove the governor is open and closes in {time}. It passes if a third of the shares vote ({q}) and 51% of the votes say remove.", { time: closes.label, q: int(turnout) })}</p>
+          <p>{t("A vote to remove the CEO is open and closes in {time}. It passes if a third of the shares vote ({q}) and 51% of the votes say remove.", { time: closes.label, q: int(turnout) })}</p>
           <p className="small muted num">{t("Remove {y}, keep {n}.", { y: int(r.yes), n: int(r.no) })}</p>
           {signer && !r.voted && r.myWeight > 0n && (
             <div className="row-tight">
-              <Button small busy={tx.busy} onClick={() => tx.run(() => voteRecall(signer, company.id, true))}>{tn("Remove the governor ({n} share)", "Remove the governor ({n} shares)", r.myWeight)}</Button>
-              <Button small kind="secondary" busy={tx.busy} onClick={() => tx.run(() => voteRecall(signer, company.id, false))}>{t("Keep the governor")}</Button>
+              <Button small busy={tx.busy} onClick={() => tx.run(() => voteRecall(signer, company.id, true))}>{tn("Remove the CEO ({n} share)", "Remove the CEO ({n} shares)", r.myWeight)}</Button>
+              <Button small kind="secondary" busy={tx.busy} onClick={() => tx.run(() => voteRecall(signer, company.id, false))}>{t("Keep the CEO")}</Button>
             </div>
           )}
           {signer && r.voted && <Muted small>{t("You've voted on this recall.")}</Muted>}
@@ -217,11 +217,11 @@ function Recall({ company }) {
       ) : toResolve ? (
         <>
           <p>{r.passes ? t("The recall vote has closed and passed. Anyone can carry it out, which ends the term now.") : t("The recall vote has closed without passing. Anyone can close it.")}</p>
-          {signer && <div><Button busy={tx.busy} onClick={() => tx.run(() => resolveRecall(signer, company.id))}>{r.passes ? t("Remove the governor") : t("Close the recall")}</Button></div>}
+          {signer && <div><Button busy={tx.busy} onClick={() => tx.run(() => resolveRecall(signer, company.id))}>{r.passes ? t("Remove the CEO") : t("Close the recall")}</Button></div>}
         </>
       ) : (
         <>
-          <Muted small>{t("Shareholders can remove a governor before the term ends. A holder of at least 1% of the shares opens a 3-day vote. While a recall is open, payments that fall due wait for it.")}</Muted>
+          <Muted small>{t("Shareholders can remove a CEO before the term ends. A holder of at least 1% of the shares opens a 3-day vote. While a recall is open, payments that fall due wait for it.")}</Muted>
           {signer && canOpen && <div><Button kind="secondary" busy={tx.busy} onClick={() => tx.run(() => openRecall(signer, company.id))}>{t("Open a recall vote")}</Button></div>}
         </>
       )}
@@ -244,11 +244,11 @@ function Governed({ company, g }) {
   return (
     <div className="stack">
       <dl className="facts">
-        <div><dt>{t("Governor")}</dt><dd><Address value={g.governor} /></dd></div>
+        <div><dt>{t("CEO")}</dt><dd><Address value={g.governor} /></dd></div>
         <div><dt>{t("Operating key")}</dt><dd>{g.opKey !== ZERO ? <Address value={g.opKey} /> : g.pendingKey !== ZERO ? t("Waiting for acceptance") : t("Not registered yet")}</dd></div>
         <div><dt>{t("Term")}</dt><dd>{t("Term {n}, ends in {time}", { n: g.termNum.toString(), time: term.label })}</dd></div>
       </dl>
-      <Muted small>{t("The governor proposes; shareholders decide. Payments, sales and investments are proposals in the treasury section, each with its own vote.")}</Muted>
+      <Muted small>{t("The CEO proposes; shareholders decide. Payments, sales and investments are proposals in the treasury section, each with its own vote.")}</Muted>
 
       {iAmKey && (
         <Notice tone="ok" title={t("This wallet is the operating key of {name}", { name: company.name })}>
@@ -257,7 +257,7 @@ function Governed({ company, g }) {
       )}
       {iAmPending && (
         <Act title={t("Accept the operating key")}>
-          <p className="small">{t("The governor named this wallet as the operating key of {name}. Accepting lets it sign governor actions until the term ends.", { name: company.name })}</p>
+          <p className="small">{t("The CEO named this wallet as the operating key of {name}. Accepting lets it sign CEO actions until the term ends.", { name: company.name })}</p>
           <Button busy={tx.busy} onClick={() => tx.run(() => acceptOperatingKey(signer, company.id))}>{t("Accept")}</Button>
         </Act>
       )}
@@ -294,7 +294,7 @@ export default function Election({ company }) {
     return (
       <div className="stack">
         <p>
-          {phase === "termOver" ? t("Term {n} is over.", { n: g.termNum.toString() }) : t("Half of the shares are sold, so the company can elect a governor.")}{" "}
+          {phase === "termOver" ? t("Term {n} is over.", { n: g.termNum.toString() }) : t("Half of the shares are sold, so the company can elect a CEO.")}{" "}
           {t("Anyone can open the election: 5 days for candidates to declare and be backed, then 3 days of voting. Shares count as they were one day before it opens.")}
         </p>
         {signer ? (

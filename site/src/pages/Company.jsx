@@ -57,7 +57,7 @@ function CompanyView({ company, companies, n }) {
             <Auction company={company} />
           </section>
           <section className="section" id="s-election" aria-labelledby="s-election-h">
-            <div className="section-head"><h2 id="s-election-h" className="h2">{t("Election and governor")}</h2></div>
+            <div className="section-head"><h2 id="s-election-h" className="h2">{t("Election and CEO")}</h2></div>
             <Election company={company} />
           </section>
           <section className="section" id="s-treasury" aria-labelledby="s-treasury-h">
@@ -76,7 +76,7 @@ function CompanyView({ company, companies, n }) {
               <dd>{fmt(company.capital)} INVEST</dd>
               <dt>{t("Income")}</dt>
               <dd>{fmt(company.income)} INVEST</dd>
-              <dt>{t("Governor")}</dt>
+              <dt>{t("CEO")}</dt>
               <dd>{g.active && g.governor !== ZERO ? <Address value={g.governor} /> : t("None yet")}</dd>
               <dt>{t("Round length")}</dt>
               <dd>{t("{n} min", { n: int(company.roundDuration / 60n) })}</dd>

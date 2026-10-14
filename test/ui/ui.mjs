@@ -83,7 +83,7 @@ console.log("Visitor without a wallet");
   await page.getByRole("heading", { name: "აქციების აუქციონი" }).waitFor({ timeout: 5000 });
   ok(await page.getByRole("heading", { name: "ენგურის ჰესი" }).isVisible(), "the Georgian switch translates the page");
   await page.close();
-  for (const path of ["/", "/company/0", "/company/3", "/market", `/portfolio/${st.viewer}`, "/rules", "/v8"]) {
+  for (const path of ["/", "/company/0", "/company/3", "/market", `/portfolio/${st.viewer}`, "/rules"]) {
     const ph = await open(path, { viewport: { width: 390, height: 844 } });
     await ph.waitForTimeout(2000);
     ok(await noSideScroll(ph), `phone width: no sideways scrolling on ${path}`);
@@ -220,15 +220,12 @@ console.log("Eight days later: carrying out, and a sealed-bid sale");
   await page.close();
 }
 
-// ------------------------------------------------------------- version 8 archive
-console.log("Version 8 archive");
+// ------------------------------------------------------------- version 8 retired
+console.log("Version 8 retired");
 {
   const page = await open("/v8", { account: st.viewer });
-  await page.getByRole("heading", { name: "Version 8 register" }).waitFor({ timeout: 20000 });
-  ok(await page.getByText("It keeps running").isVisible(), "the archive explains that v8 keeps running");
-  await page.getByRole("link", { name: "Bolnisi Gold Mines" }).click();
-  await page.getByRole("heading", { name: "Share auction" }).waitFor({ timeout: 20000 });
-  ok(page.url().endsWith("/v8/company/0"), "v8 company pages stay inside the archive");
+  await page.waitForURL((u) => !u.pathname.startsWith("/v8"), { timeout: 20000 });
+  ok(new URL(page.url()).pathname === "/", "old /v8 links go to the homepage");
   await page.close();
 }
 

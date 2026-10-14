@@ -96,19 +96,17 @@ export default function Layout() {
         <div className="page colophon-grid">
           <div className="stack-sm prose">
             <p>
-              {t("Sakartvelo Exchange simulates a privatization. The process is real: every auction, vote and payment is a transaction on {network} that anyone can check. The companies are fictional, and INVEST is not money or an investment.", { network: ACTIVE_NETWORK.label })}
+              {t("Sakartvelo Exchange simulates a privatization. The process is real: every auction, vote and payment is a transaction on {network} that anyone can check. The companies are fictional. INVEST is given free and has no value when issued; if it becomes freely tradable, any price it gets comes from demand alone, and nobody guarantees one.", { network: ACTIVE_NETWORK.label })}
             </p>
             <p className="row">
               <a href={LINKS.repo} target="_blank" rel="noreferrer">{t("Source code")}</a>
               <a href={LINKS.security} target="_blank" rel="noreferrer">{t("Security review")}</a>
               <a href={LINKS.paper} target="_blank" rel="noreferrer">{t("Research paper (SSRN)")}</a>
-              <Link to="/v8">{t("Version 8 (archive)")}</Link>
             </p>
           </div>
           <div>
             {[
               [t("Version 9 contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "SakartveloTimelock"]],
-              [t("Version 8 contracts"), ["RoundAuction", "Governance", "CompanyTreasury", "OpenVerifier"]],
             ].map(([title, names]) => (
               <div key={title} style={{ marginBottom: 16 }}>
                 <p className="strong" style={{ color: "var(--ink)", marginBottom: 8 }}>{title}</p>

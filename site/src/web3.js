@@ -82,10 +82,8 @@ export function getMetaMaskDeepLink() {
 }
 
 import InvestTokenABI from "./contracts/InvestToken.json";
-import CompanyTreasuryABI from "./contracts/CompanyTreasury.json";
 import RoundAuctionABI from "./contracts/RoundAuction.json";
 import OpenVerifierABI from "./contracts/OpenVerifier.json";
-import GovernanceABI from "./contracts/Governance.json";
 import RoundAuctionV9ABI from "./contracts/RoundAuctionV9.json";
 import GovernanceV9ABI from "./contracts/GovernanceV9.json";
 import CompanyTreasuryV9ABI from "./contracts/CompanyTreasuryV9.json";
@@ -94,10 +92,8 @@ import OpenVerifierV2ABI from "./contracts/OpenVerifierV2.json";
 
 export const ABIS = {
   InvestToken: InvestTokenABI,
-  CompanyTreasury: CompanyTreasuryABI,
   RoundAuction: RoundAuctionABI,
   OpenVerifier: OpenVerifierABI,
-  Governance: GovernanceABI,
   RoundAuctionV9: RoundAuctionV9ABI,
   GovernanceV9: GovernanceV9ABI,
   CompanyTreasuryV9: CompanyTreasuryV9ABI,
@@ -259,7 +255,7 @@ const ERROR_TEXT = [
   ["RA: sold out", "This company is sold out."],
   ["GOV: under 50% issued at snapshot", "The election can open one day after half of the shares are sold: votes count shares as they were a day earlier."],
   ["GOV: election in progress", "An election is already under way."],
-  ["GOV: governor in office", "The company has a governor whose term isn't over."],
+  ["GOV: governor in office", "The company has a CEO whose term isn't over."],
   ["GOV: candidacy not open", "Candidates can't declare or be backed at this stage."],
   ["GOV: already nominated someone", "You've already backed a candidate, so you can't stand in this election."],
   ["GOV: already nominated", "You've already backed a candidate in this election."],
@@ -271,20 +267,20 @@ const ERROR_TEXT = [
   ["GOV: recall cooldown", "A recall reached its turnout less than 7 days ago; a new one can open after that."],
   ["GOV: recall in progress", "A recall vote is already open."],
   ["GOV: recall vote still open", "The recall vote is still open."],
-  ["GOV: not the proposed key", "This wallet isn't the operating key the governor named."],
+  ["GOV: not the proposed key", "This wallet isn't the operating key the CEO named."],
   ["GOV: voting closed", "Voting has closed."],
   ["CT: would outlast the term", "It's too late in the term: a proposal needs 3 days of voting, 5 days of waiting and room for a recall before the term ends."],
   ["CT: over 20% of the bucket this term", "That would take more than 20% of this balance out in one term."],
   ["CT: execution delay", "Approved proposals wait 5 days after the vote before they can be carried out."],
   ["CT: recall pending", "A recall vote is pending; this waits until it is resolved."],
-  ["CT: recipient not allowed", "That recipient isn't allowed: it can't be the governor, the operating key or the company itself."],
-  ["CT: proposer can't vote", "The governor and operating key can't vote on their own proposal."],
+  ["CT: recipient not allowed", "That recipient isn't allowed: it can't be the CEO, the operating key or the company itself."],
+  ["CT: proposer can't vote", "The CEO and operating key can't vote on their own proposal."],
   ["CT: recipient can't vote", "The recipient of a payment can't vote on it."],
   ["CT: below reserve", "That bid is below the minimum price for this sale."],
   ["CT: reserve too small", "The minimum price is too small."],
   ["CT: token not approved", "That token isn't accepted by the treasury."],
   ["CT: voting closed", "Voting on this proposal has closed."],
-  ["DV: that term's governor can't vote", "That term's governor can't vote on its dividend."],
+  ["DV: that term's governor can't vote", "That term's CEO can't vote on its dividend."],
   ["DV: no shares at record date", "You held no shares when this term ended, so you can't vote on its dividend."],
   ["OV2: limit for this hour reached", "The 10 verifications for this hour are used up. Try again at the start of the next hour."],
   ["OV2: ordinary wallets only", "Only an ordinary wallet can verify, not a contract."],
@@ -308,7 +304,7 @@ const ERROR_TEXT = [
   ["not reveal window", "Reveals are only accepted after bidding closes and before the reveal deadline."],
   ["commit window closed", "Bidding on this auction has closed."],
   ["not operating key", "This must be signed by the company's registered operating key. Switch MetaMask to that account."],
-  ["term expired", "The governor's term has ended, so governor actions are no longer allowed."],
+  ["term expired", "The CEO's term has ended, so CEO actions are no longer allowed."],
   ["nothing to claim", "There's nothing for this wallet to claim."],
   ["already claimed", "Already claimed."],
   ["insufficient balance", "The company doesn't hold that much of this token (or some of it is reserved by an auction or payment)."],
@@ -385,14 +381,6 @@ export async function claimReal(signer) {
   const receipt = await tx.wait();
   return receipt;
 }
-
-// ---- Real auctions (Stage 2) ----
-
-// Companies don't have a registry array on-chain — listCompany() is called
-// per-id by the owner, whenever. We just probe a reasonable range of ids
-// and keep whichever ones actually have totalShares > 0 (i.e. are real).
-// 0-19 comfortably covers the 11-company roster with room to grow.
-const COMPANY_ID_PROBE_RANGE = 20;
 
 // The redeployed contracts went live within roughly the last 85,000
 // blocks — using this as fromBlock instead of 0 avoids exceeding the
@@ -533,88 +521,6 @@ export async function queryFilterChunked(contract, filter) {
     });
 }
 
-// ---- Governance ----
-//
-// Elections, governors and operating keys live in the Governance contract;
-// share balances (and the history that votes are weighted by) live in
-// RoundAuction.
-
-export async function getCompanyGovernance(companyId, provider) {
-  const c = await getContract("Governance", provider);
-  const [round, voteEnd, governor, termEnd, operatingKey, termNum] = await Promise.all([
-    c.governanceRound(companyId),
-    c.governanceVoteEnd(companyId),
-    c.companyGovernor(companyId),
-    c.governorTermEnd(companyId),
-    c.governorOperatingKey(companyId),
-    c.termNumber(companyId),
-  ]);
-  let totalVotesCast = 0n;
-  let snapshot = 0n;
-  if (round > 0n) {
-    [totalVotesCast, snapshot] = await Promise.all([c.roundTotalVotesCast(companyId, round), c.roundSnapshot(companyId, round)]);
-  }
-  return { round, voteEnd, governor, termEnd, operatingKey, termNum, totalVotesCast, snapshot };
-}
-
-// Election limits, read from the contract so the site never disagrees
-// with it: max candidates, and the minimum stake needed to stand.
-export async function getElectionRules(provider) {
-  const c = await getContract("Governance", provider);
-  const [maxCandidates, minStakeBps] = await Promise.all([c.MAX_CANDIDATES(), c.MIN_CANDIDATE_STAKE_BPS()]);
-  return { maxCandidates, minStakeBps };
-}
-
-// Candidates with their written programs (at most 20, read directly) and
-// each one's current share stake, so voters can see who they vote for.
-export async function getCandidates(companyId, provider) {
-  const [c, s] = await Promise.all([getContract("Governance", provider), getContract("RoundAuction", provider)]);
-  const [round, count] = await Promise.all([c.governanceRound(companyId), c.candidateCount(companyId)]);
-  const addrs = await Promise.all(Array.from({ length: Number(count) }, (_, i) => c.candidateList(companyId, i)));
-  const candidates = await Promise.all(
-    addrs.map(async (address) => {
-      const [info, isEliminated, votes, stake] = await Promise.all([
-        c.candidates(companyId, address),
-        c.eliminated(companyId, address),
-        round > 0n ? c.roundVotes(companyId, round, address) : Promise.resolve(0n),
-        s.companyShareCount(companyId, address),
-      ]);
-      return { address, program: info.program, registered: info.registered, eliminated: isEliminated, votes, stake };
-    })
-  );
-  return candidates.filter((x) => x.registered);
-}
-
-export async function getMyShareCount(companyId, address, provider) {
-  return (await getContract("RoundAuction", provider)).companyShareCount(companyId, address);
-}
-
-// Votes this wallet has in the current round: the shares it held one
-// second before the round opened, not the shares it holds now.
-export async function getMyVoteWeight(companyId, address, gov, provider) {
-  if (gov.round === 0n) return 0n;
-  return (await getContract("RoundAuction", provider)).shareCountAt(companyId, address, gov.snapshot);
-}
-
-export async function hasVotedThisRound(companyId, round, address, provider) {
-  return (await getContract("Governance", provider)).roundHasVoted(companyId, round, address);
-}
-
-async function govWrite(signer, method, ...args) {
-  return sendTx(await getContract("Governance", signer), method, ...args);
-}
-
-export const declareCandidacyReal = (signer, companyId, program) => govWrite(signer, "declareCandidacy", companyId, program);
-export const openGovernanceVoteReal = (signer, companyId) => govWrite(signer, "openGovernanceVote", companyId);
-export const voteReal = (signer, companyId, candidateAddress) => govWrite(signer, "vote", companyId, candidateAddress);
-export const tallyRoundReal = (signer, companyId) => govWrite(signer, "tallyRound", companyId);
-export const setOperatingKeyReal = (signer, companyId, operatingKeyAddress) => govWrite(signer, "setOperatingKey", companyId, operatingKeyAddress);
-export const startNewTermReal = (signer, companyId) => govWrite(signer, "startNewTerm", companyId);
-
-// A governor votes the shares their company holds in another company.
-export const voteAsCorporationReal = (signer, fromCompanyId, toCompanyId, candidate) =>
-  govWrite(signer, "voteAsCorporation", fromCompanyId, toCompanyId, candidate);
-
 // ETH balance of any address: used to warn a governor when their
 // operating-key account doesn't have enough ETH to pay for gas.
 export async function getEthBalance(address, provider) {
@@ -632,75 +538,7 @@ export async function normalizeAddress(input) {
   }
 }
 
-// ---- RoundAuction v8 ----
-
-export async function getListedRoundCompanies(provider) {
-  const roundAuction = await getContract("RoundAuction", provider);
-  const ids = Array.from({ length: COMPANY_ID_PROBE_RANGE }, (_, i) => i);
-  const results = await Promise.all(
-    ids.map(async (id) => {
-      const c = await roundAuction.companies(id);
-      // Explicit field access, not a spread: spreading an ethers v6
-      // Result silently drops its named fields.
-      return {
-        id,
-        name: c.name,
-        totalShares: c.totalShares,
-        sharesIssued: c.sharesIssued,
-        currentRound: c.currentRound,
-        roundEnd: c.roundEnd,
-        roundDuration: c.roundDuration,
-        finalized: c.finalized,
-        firstMintedAt: c.firstMintedAt,
-        capital: c.capital,
-      };
-    })
-  );
-  return results.filter((c) => c.totalShares > 0n);
-}
-
-// v8 keeps only ACTIVE bids, readable in one call. No event scanning.
-export async function getRoundBids(companyId, provider) {
-  const roundAuction = await getContract("RoundAuction", provider);
-  const list = await roundAuction.getActiveBids(companyId);
-  return list.map((b) => ({ bidder: b.bidder, amount: b.amount, seq: b.seq, active: true }));
-}
-
-// Auction limits, read from the contract.
-export async function getRoundAuctionRules(provider) {
-  const c = await getContract("RoundAuction", provider);
-  const [maxActiveBids, maxSharesPerRound, minBid, lockPeriod] = await Promise.all([
-    c.MAX_ACTIVE_BIDS(), c.MAX_SHARES_PER_ROUND(), c.MIN_BID(), c.LOCK_PERIOD(),
-  ]);
-  return { maxActiveBids, maxSharesPerRound, minBid, lockPeriod };
-}
-
-export async function getRoundInvestAllowance(ownerAddress, provider) {
-  const investToken = await getContract("InvestToken", provider);
-  return investToken.allowance(ownerAddress, CONTRACT_ADDRESSES.RoundAuction);
-}
-
-export async function approveInvestForRound(signer, amount) {
-  const investToken = await getContract("InvestToken", signer);
-  const tx = await investToken.approve(CONTRACT_ADDRESSES.RoundAuction, amount);
-  return tx.wait();
-}
-
-export async function placeRoundBid(signer, companyId, amount) {
-  return sendTx(await getContract("RoundAuction", signer), "placeBid", companyId, amount);
-}
-
-// Permissionless: anyone can settle once a round's window closes.
-export async function settleRoundReal(signer, companyId) {
-  return sendTx(await getContract("RoundAuction", signer), "settleRound", companyId);
-}
-
-// A governor bids the company's reinvestable income into another company.
-export async function investReal(signer, fromCompanyId, toCompanyId, amount) {
-  return sendTx(await getContract("RoundAuction", signer), "invest", fromCompanyId, toCompanyId, amount);
-}
-
-// ---- Tokens and approvals (shared by the treasury and the INVEST market) ----
+// ---- Tokens and approvals ----
 
 const tokenInfoCache = new Map();
 
@@ -718,11 +556,6 @@ export async function getTokenInfo(tokenAddress, provider) {
   return info;
 }
 
-export async function formatAmount(raw, decimals = 18) {
-  const { formatUnits } = await getEthers();
-  return formatUnits(raw, decimals);
-}
-
 export async function parseAmount(text, decimals = 18) {
   const { parseUnits } = await getEthers();
   const v = parseUnits(String(text).trim(), decimals); // throws on bad input
@@ -732,7 +565,7 @@ export async function parseAmount(text, decimals = 18) {
 
 // Makes sure `spender` may move at least `needed` of a token from the
 // signer. INVEST gets a one-time unlimited approval, the same pattern as
-// bidding (INVEST has no value outside this closed system). Any other
+// bidding (INVEST is closed-loop until tradability unlocks). Any other
 // token is approved for exactly what this transaction needs.
 export async function ensureAllowance(signer, tokenAddress, spender, needed) {
   const { Contract, MaxUint256 } = await getEthers();
@@ -745,264 +578,7 @@ export async function ensureAllowance(signer, tokenAddress, spender, needed) {
   await tx.wait();
 }
 
-// ---- CompanyTreasury v6 ----
-
-async function ct(signerOrProvider) {
-  return getContract("CompanyTreasury", signerOrProvider);
-}
-
-// A company's money at a glance: INVEST capital and reinvestable income
-// (both held in RoundAuction), plus every other token in its treasury.
-// Tokens are discovered from deposits and from the INVEST market's
-// accepted payment tokens (company sales are paid in those).
-export async function getCompanyTreasury(companyId, provider) {
-  const [treasury, ra] = await Promise.all([ct(provider), getContract("RoundAuction", provider)]);
-  const [company, reinvestableIncome, deposits, payTokens] = await Promise.all([
-    ra.companies(companyId),
-    ra.reinvestableIncome(companyId),
-    queryFilterChunked(treasury, treasury.filters.TokenDeposited(companyId)),
-    getApprovedPaymentTokens(provider),
-  ]);
-  const candidates = new Set([...deposits.map((e) => e.args[1]), ...payTokens.map((t) => t.address)]);
-  const tokens = [];
-  for (const address of candidates) {
-    const balance = await treasury.companyTokenBalance(companyId, address);
-    if (balance === 0n) continue;
-    tokens.push({ ...(await getTokenInfo(address, provider)), balance });
-  }
-  return { capital: company.capital, reinvestableIncome, tokens };
-}
-
-export async function depositTokenReal(signer, companyId, tokenAddress, amount) {
-  const treasury = await ct(signer);
-  await ensureAllowance(signer, tokenAddress, await treasury.getAddress(), amount);
-  return sendTx(treasury, "depositToken", companyId, tokenAddress, amount);
-}
-
-export async function getFreeAllowanceLeft(companyId, tokenAddress, provider) {
-  return (await ct(provider)).freeAllowanceLeft(companyId, tokenAddress);
-}
-
-export async function withdrawTokenReal(signer, companyId, tokenAddress, to, amount) {
-  return sendTx(await ct(signer), "withdrawToken", companyId, tokenAddress, to, amount);
-}
-
-// ---- Treasury auctions (sealed bids: commit, then reveal) ----
-//
-// A sealed bid is committed as a hash of (auction, amount, secret, bidder).
-// The secret is generated here and saved in this browser BEFORE the
-// commit transaction is sent, so it can't be lost to a failed page load.
-// It's also shown as a "reveal code" the bidder can copy and keep: without
-// it the bid can't be revealed, and the 10 INVEST deposit is forfeited
-// (the bid amount itself is only paid at reveal, so nothing more is lost).
-
-function bidStorageKey(auctionId, bidder) {
-  return `sx-sealed-bid:${ACTIVE_NETWORK.chainIdHex}:${CONTRACT_ADDRESSES.CompanyTreasury.toLowerCase()}:${auctionId}:${bidder.toLowerCase()}`;
-}
-
-export function getSavedBid(auctionId, bidder) {
-  try {
-    const raw = window.localStorage.getItem(bidStorageKey(auctionId, bidder));
-    return raw ? JSON.parse(raw) : null; // { amount: "<wei>", salt: "0x..." }
-  } catch {
-    return null;
-  }
-}
-
-function saveBid(auctionId, bidder, amount, salt) {
-  try {
-    window.localStorage.setItem(bidStorageKey(auctionId, bidder), JSON.stringify({ amount: amount.toString(), salt }));
-  } catch {
-    // Private browsing: the reveal code shown on screen is the backup.
-  }
-}
-
-export function makeRevealCode(amount, salt) {
-  return `${amount.toString()}-${salt}`;
-}
-
-export function parseRevealCode(code) {
-  const m = String(code).trim().match(/^(\d+)-(0x[0-9a-fA-F]{64})$/);
-  if (!m) return null;
-  return { amount: BigInt(m[1]), salt: m[2] };
-}
-
-export async function computeCommitHash(auctionId, amount, salt, bidder) {
-  const { keccak256, AbiCoder } = await getEthers();
-  return keccak256(AbiCoder.defaultAbiCoder().encode(
-    ["uint256", "uint256", "bytes32", "address"], [auctionId, amount, salt, bidder]
-  ));
-}
-
-export async function getTreasuryAuctions(companyId, me, provider) {
-  const treasury = await ct(provider);
-  const events = await queryFilterChunked(treasury, treasury.filters.TreasuryAuctionOpened(null, companyId));
-  const list = await Promise.all(
-    events.map(async (e) => {
-      const id = e.args[0];
-      const [a, mine] = await Promise.all([treasury.treasuryAuctions(id), treasury.treasuryBids(id, me)]);
-      const token = await getTokenInfo(a.token, provider);
-      return {
-        id, token, amount: a.amount, commitEnd: a.commitEnd, revealEnd: a.revealEnd, deposit: a.deposit,
-        committed: a.committed, revealed: a.revealed, leader: a.leader, leadingAmount: a.leadingAmount, settled: a.settled,
-        mine: { committed: mine.commitHash !== "0x" + "0".repeat(64), revealed: mine.revealed, revealedAmount: mine.revealedAmount, claimed: mine.claimed },
-      };
-    })
-  );
-  return list.sort((x, y) => Number(y.id - x.id));
-}
-
-export async function openTreasuryAuctionReal(signer, companyId, tokenAddress, amount) {
-  return sendTx(await ct(signer), "openTreasuryAuction", companyId, tokenAddress, amount);
-}
-
-// Returns the reveal code. The secret is saved before anything is sent.
-export async function commitTreasuryBidReal(signer, auctionId, amount, deposit) {
-  const { hexlify, randomBytes } = await getEthers();
-  const bidder = await signer.getAddress();
-  const salt = hexlify(randomBytes(32));
-  saveBid(auctionId, bidder, amount, salt);
-  const treasury = await ct(signer);
-  await ensureAllowance(signer, CONTRACT_ADDRESSES.InvestToken, await treasury.getAddress(), deposit);
-  const hash = await computeCommitHash(auctionId, amount, salt, bidder);
-  await sendTx(treasury, "commitBid", auctionId, hash);
-  return makeRevealCode(amount, salt);
-}
-
-export async function revealTreasuryBidReal(signer, auctionId, amount, salt) {
-  const treasury = await ct(signer);
-  await ensureAllowance(signer, CONTRACT_ADDRESSES.InvestToken, await treasury.getAddress(), amount);
-  return sendTx(treasury, "revealBid", auctionId, amount, salt);
-}
-
-export const settleTreasuryAuctionReal = async (signer, auctionId) => sendTx(await ct(signer), "settleTreasuryAuction", auctionId);
-export const claimTreasuryAuctionReal = async (signer, auctionId) => sendTx(await ct(signer), "claimTreasuryAuction", auctionId);
-
-// ---- Vendor payments (shareholder vote, 20% quorum) ----
-
-export async function getVendorPayments(companyId, me, provider) {
-  const [treasury, ra] = await Promise.all([ct(provider), getContract("RoundAuction", provider)]);
-  const [events, quorumBps] = await Promise.all([
-    queryFilterChunked(treasury, treasury.filters.VendorPaymentProposed(null, companyId)),
-    treasury.VENDOR_QUORUM_BPS(),
-  ]);
-  const list = await Promise.all(
-    events.map(async (e) => {
-      const id = e.args[0];
-      const p = await treasury.vendorPayments(id);
-      const [issued, myWeight, voted, passes, token] = await Promise.all([
-        ra.sharesIssuedAt(companyId, p.snapshot),
-        ra.shareCountAt(companyId, me, p.snapshot),
-        treasury.vendorPaymentVoted(id, me),
-        treasury.vendorPaymentPasses(id),
-        getTokenInfo(p.token, provider),
-      ]);
-      return {
-        id, token, to: p.to, amount: p.amount, voteEnd: p.voteEnd, yesWeight: p.yesWeight, noWeight: p.noWeight,
-        executed: p.executed, issued, quorumNeeded: (issued * quorumBps + 9999n) / 10000n, myWeight, voted, passes,
-      };
-    })
-  );
-  return list.sort((x, y) => Number(y.id - x.id));
-}
-
-export const proposeVendorPaymentReal = async (signer, companyId, token, to, amount) =>
-  sendTx(await ct(signer), "proposeVendorPayment", companyId, token, to, amount);
-export const voteVendorPaymentReal = async (signer, paymentId, approve) =>
-  sendTx(await ct(signer), "voteVendorPayment", paymentId, approve);
-export const executeVendorPaymentReal = async (signer, paymentId) =>
-  sendTx(await ct(signer), "executeVendorPayment", paymentId);
-
-// ---- End-of-term dividend vote ----
-//
-// One row per finished term (most recent first, up to the last 6). The
-// record date is the moment the term ended: votes and dividends are
-// based on the shares held then.
-
-export async function getDividendTerms(companyId, me, provider) {
-  const [treasury, ra, gov] = await Promise.all([ct(provider), getContract("RoundAuction", provider), getContract("Governance", provider)]);
-  const termNum = Number(await gov.termNumber(companyId));
-  const terms = [];
-  for (let t = termNum; t >= 1 && terms.length < 6; t--) {
-    const endTime = await treasury.termEndTime(companyId, t);
-    if (endTime === 0n) continue; // still running
-    const [voteEnd, recordDate, resolved, divW, reinvW, hasVoted, perShare, remaining, claimed] = await Promise.all([
-      treasury.policyVoteEnd(companyId, t),
-      treasury.policyRecordDate(companyId, t),
-      treasury.policyResolved(companyId, t),
-      treasury.policyDividendWeight(companyId, t),
-      treasury.policyReinvestWeight(companyId, t),
-      treasury.policyHasVoted(companyId, t, me),
-      treasury.dividendPerShare(companyId, t),
-      treasury.dividendRemaining(companyId, t),
-      treasury.claimedDividend(companyId, t, me),
-    ]);
-    const myWeight = await ra.shareCountAt(companyId, me, recordDate > 0n ? recordDate : endTime);
-    const owed = resolved ? await treasury.dividendOwed(companyId, t, me) : 0n;
-    terms.push({ term: t, endTime, voteEnd, recordDate, resolved, dividendWeight: divW, reinvestWeight: reinvW, hasVoted, perShare, remaining, claimed, myWeight, owed });
-  }
-  return terms;
-}
-
-export const openPolicyVoteReal = async (signer, companyId, term) => sendTx(await ct(signer), "openPolicyVote", companyId, term);
-export const votePolicyReal = async (signer, companyId, term, wantsDividend) => sendTx(await ct(signer), "votePolicy", companyId, term, wantsDividend);
-export const resolvePolicyVoteReal = async (signer, companyId, term) => sendTx(await ct(signer), "resolvePolicyVote", companyId, term);
-export const claimDividendReal = async (signer, companyId, term) => sendTx(await ct(signer), "claimDividend", companyId, term);
-export const claimDividendAsCorporationReal = async (signer, fromCompanyId, dividendCompanyId, term) =>
-  sendTx(await ct(signer), "claimDividendAsCorporation", fromCompanyId, dividendCompanyId, term);
-
-// Shares a company holds in each other listed company (built up through
-// invest()), for the governor tools.
-export async function getCorporateHoldings(companyId, companies, provider) {
-  const ra = await getContract("RoundAuction", provider);
-  const corp = await ra.corporateHolder(companyId);
-  const counts = await Promise.all(companies.map((c) => ra.companyShareCount(c.id, corp)));
-  return companies.map((c, i) => ({ companyId: c.id, name: c.name, shares: counts[i] })).filter((h) => h.shares > 0n);
-}
-
-// ---- INVEST market ----
-
-export async function getApprovedPaymentTokens(provider) {
-  const treasury = await ct(provider);
-  const events = await queryFilterChunked(treasury, treasury.filters.PaymentTokenApprovalSet());
-  const latest = new Map();
-  for (const e of events) latest.set(e.args[0], e.args[1]);
-  const approved = [...latest].filter(([, ok]) => ok).map(([a]) => a);
-  return Promise.all(approved.map((a) => getTokenInfo(a, provider)));
-}
-
-export async function getInvestOffers(provider) {
-  const treasury = await ct(provider);
-  const events = await queryFilterChunked(treasury, treasury.filters.InvestOffered());
-  const offers = await Promise.all(
-    events.map(async (e) => {
-      const id = e.args[0];
-      const o = await treasury.investOffers(id);
-      if (!o.active) return null;
-      return {
-        id, seller: o.seller, investAmount: o.investAmount, paymentAmount: o.paymentAmount,
-        token: await getTokenInfo(o.paymentToken, provider), isCorporateOffer: o.isCorporateOffer, creditCompanyId: o.creditCompanyId,
-      };
-    })
-  );
-  return offers.filter(Boolean).sort((x, y) => Number(y.id - x.id));
-}
-
-export async function offerInvestReal(signer, investAmount, paymentToken, paymentAmount) {
-  const treasury = await ct(signer);
-  await ensureAllowance(signer, CONTRACT_ADDRESSES.InvestToken, await treasury.getAddress(), investAmount);
-  return sendTx(treasury, "offerInvest", investAmount, paymentToken, paymentAmount);
-}
-
-export async function buyInvestReal(signer, offer) {
-  const treasury = await ct(signer);
-  await ensureAllowance(signer, offer.token.address, await treasury.getAddress(), offer.paymentAmount);
-  return sendTx(treasury, "buyInvest", offer.id);
-}
-
-export const cancelInvestOfferReal = async (signer, offerId) => sendTx(await ct(signer), "cancelInvestOffer", offerId);
-export const governorOfferInvestReal = async (signer, companyId, investAmount, paymentToken, paymentAmount) =>
-  sendTx(await ct(signer), "governorOfferInvest", companyId, investAmount, paymentToken, paymentAmount);
+// ---- INVEST balance ----
 
 export async function getInvestBalance(address, provider) {
   return (await getContract("InvestToken", provider)).balanceOf(address);

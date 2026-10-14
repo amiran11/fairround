@@ -121,7 +121,6 @@ export default function Market() {
 
       <section className="section" style={{ marginTop: 40, maxWidth: 560 }} aria-label={t("Sell a share")}>
         {signer ? <SellForm companies={companies} /> : <ConnectToAct what={t("Connect a wallet to buy or sell shares.")} />}
-        <p className="small muted" style={{ marginTop: 16 }}>{t("INVEST itself can be sent between wallets. The fixed-price INVEST market of version 8 is still open.")} <Link to="/v8/market">{t("Open the version 8 INVEST market")}</Link></p>
       </section>
     </div>
   );
