@@ -19,18 +19,20 @@ export const NETWORKS = {
     // From REDEPLOY_V8.md step 14. deploymentBlock = InvestToken's deploy
     // block, the first contract deployed, so no event can be earlier.
     deploymentBlock: 512862832, // InvestToken deploy, 8 Oct 2026
+    v9DeploymentBlock: 514727826, // RoundAuctionV9 deploy, 14 Oct 2026
     addresses: {
       InvestToken: "0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a",
       OpenVerifier: "0x444653dDbBb24B24bcD8D674e30b371800Cc2ad2",
       RoundAuction: "0x9739e5dCcc76BD424BcD12e7f1ce56143e77b796",
       Governance: "0x5668F72F3dB11c4DA6aF682604d1184763bB971d",
       CompanyTreasury: "0xaD50c4726E78a8e8a18a1A188bd60E7ef0A501e8",
-      // v9, deployed alongside v8 (DEPLOY_V9.md). Filled in after deployment.
-      RoundAuctionV9: "",
-      GovernanceV9: "",
-      CompanyTreasuryV9: "",
-      CompanyDividendsV9: "",
-      OpenVerifierV2: "",
+      // v9, deployed alongside v8 on 14 October 2026 (DEPLOY_V9.md).
+      RoundAuctionV9: "0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f",
+      GovernanceV9: "0x044213A8c8b7C83E6A00cac1BbC8962B4b0Ebe85",
+      CompanyTreasuryV9: "0x70ffEeAabAaE49cB969ADC8137A3DeD94c8F1B75",
+      CompanyDividendsV9: "0x641f3864F7dcbD6630D21247e8DA123A2A138023",
+      OpenVerifierV2: "0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A",
+      SakartveloTimelock: "0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f",
     },
   },
 };
@@ -469,15 +471,25 @@ async function getLogsRange(provider, address, topic0, fromBlock, toBlock) {
 
 // Returns every log of one event type on one contract, from the deploy
 // block to the latest block.
+// v9 contracts can't have events before RoundAuctionV9 existed, so their
+// history scan starts there instead of at the v8 start (2M fewer blocks).
+const V9_NAMES = ["RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2"];
+function startBlockFor(address) {
+  const a = address.toLowerCase();
+  const v9 = V9_NAMES.some((n) => (CONTRACT_ADDRESSES[n] || "").toLowerCase() === a);
+  return v9 && ACTIVE_NETWORK.v9DeploymentBlock ? ACTIVE_NETWORK.v9DeploymentBlock : DEPLOYMENT_BLOCK;
+}
+
 async function syncEventLogs(provider, address, topic0) {
   const key = logCacheKey(address, topic0);
+  const START = startBlockFor(address);
   if (inflightSync.has(key)) return inflightSync.get(key);
 
   const job = (async () => {
     const latest = await provider.getBlockNumber();
     const settleTarget = latest - SETTLE_MARGIN;
 
-    let cached = settledLogs.get(key) || readStoredLogs(key) || { settledBlock: DEPLOYMENT_BLOCK - 1, logs: [] };
+    let cached = settledLogs.get(key) || readStoredLogs(key) || { settledBlock: START - 1, logs: [] };
 
     if (settleTarget > cached.settledBlock) {
       const fresh = await getLogsRange(provider, address, topic0, cached.settledBlock + 1, settleTarget);
@@ -486,7 +498,7 @@ async function syncEventLogs(provider, address, topic0) {
     }
     settledLogs.set(key, cached);
 
-    const tailFrom = Math.max(cached.settledBlock + 1, DEPLOYMENT_BLOCK);
+    const tailFrom = Math.max(cached.settledBlock + 1, START);
     const tail = tailFrom <= latest ? await getLogsRange(provider, address, topic0, tailFrom, latest) : [];
     return cached.logs.concat(tail);
   })();

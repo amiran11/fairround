@@ -107,7 +107,7 @@ export default function Layout() {
           </div>
           <div>
             {[
-              [t("Version 9 contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2"]],
+              [t("Version 9 contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "SakartveloTimelock"]],
               [t("Version 8 contracts"), ["RoundAuction", "Governance", "CompanyTreasury", "OpenVerifier"]],
             ].map(([title, names]) => (
               <div key={title} style={{ marginBottom: 16 }}>

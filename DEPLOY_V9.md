@@ -27,12 +27,12 @@ Write each address down as you go:
 
 | | Address | Block |
 |---|---|---|
-| RA9 (RoundAuctionV9) | | |
-| GOV9 (GovernanceV9) | | |
-| CT9 (CompanyTreasuryV9) | | |
-| DV9 (CompanyDividendsV9) | | |
-| OV2 (OpenVerifierV2) | | |
-| TL (SakartveloTimelock) | | |
+| RA9 (RoundAuctionV9) | `0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f` | 514727826 |
+| GOV9 (GovernanceV9) | `0x044213A8c8b7C83E6A00cac1BbC8962B4b0Ebe85` | 514728539 |
+| CT9 (CompanyTreasuryV9) | `0x70ffEeAabAaE49cB969ADC8137A3DeD94c8F1B75` | 514728960 |
+| DV9 (CompanyDividendsV9) | `0x641f3864F7dcbD6630D21247e8DA123A2A138023` | 514729472 |
+| OV2 (OpenVerifierV2) | `0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A` | 514729862 |
+| TL (SakartveloTimelock) | `0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f` | 514730884 |
 
 ---
 
