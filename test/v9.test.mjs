@@ -654,12 +654,12 @@ console.log("\nOpenVerifier v2 (F32)");
   ok(await reverts(async () => F.tryVerify(await OV.getAddress()), "ordinary wallets only"), "F32: a contract can't verify (no claim factories)");
   await w(OV.connect(S[1]).verifySelf());
   ok(await reverts(async () => OV.connect(S[1]).verifySelf(), "already verified"), "re-verifying doesn't use the cap");
-  ok((await OV.remainingThisHour()) === 9n, "hourly counter: 9 left");
-  for (let i = 2; i < 11; i++) await w(OV.connect(S[i]).verifySelf());
-  ok(await reverts(async () => OV.connect(S[11]).verifySelf(), "this hour"), "CT-8: at most 10 new citizens an hour");
+  ok((await OV.remainingThisHour()) === 49n, "hourly counter: 49 left");
+  for (let i = 2; i < 51; i++) await w(OV.connect(S[i]).verifySelf());
+  ok(await reverts(async () => OV.connect(S[51]).verifySelf(), "this hour"), "CT-8: at most 50 new citizens an hour");
   await warp(HOUR);
   await w(OV.setPaused(true));
-  ok(await reverts(async () => OV.connect(S[12]).verifySelf(), "paused"), "guardian can pause");
+  ok(await reverts(async () => OV.connect(S[52]).verifySelf(), "paused"), "guardian can pause");
   ok(await reverts(async () => OV.connect(S[2]).setPaused(false), "not guardian"), "only the guardian can pause");
 }
 

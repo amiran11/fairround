@@ -119,6 +119,41 @@ links between them, cannot be told apart from real people. Cluster counts are
 therefore a **lower bound** on Sybil activity, and that is how they will be
 reported.
 
+## 5b. Amendment (13 October 2026): window closed early, on 14 October
+
+The observation window planned to run until 8 November 2026 is **closed
+early, on 14 October 2026**, the day version 9 of the contracts is deployed
+alongside v8.
+
+**Why.** The purpose of opening v8 to outsiders was to stress-test the
+system. In the five days since the window opened, that purpose was met by
+the author's own testing and by three rounds of AI-assisted audits, which
+found the weaknesses v9 fixes (`SECURITY_REVIEW.md`, Findings 23–40 and
+"Independent audits of v9"). Keeping v8 as the only live version until
+8 November would mean knowingly running the weaker contracts for three more
+weeks. The decision is the author's, made on 13 October and recorded here
+before the deploy, as §4 requires of any change to the window.
+
+**What this means for the results.** The window ran from 9 to 14 October,
+about five days instead of thirty. Participation from outside was very low
+(see §5a and the closing state below), so the expected reading under §8 is
+**insufficient participation**: the data can't confirm or reject H1. That
+result is reported, not hidden.
+
+**What doesn't change.** The continuity commitment (§6a) stands: v8 is not
+switched off, INVEST and v8 shares keep working, and moving to v9 is each
+holder's own choice. INVEST stays tradable.
+
+**Closing state** (to be filled from the chain at the moment of the v9
+deploy):
+
+| Measure | Value |
+|---|---|
+| Citizens (InvestToken `citizenCount`) | *to be added* |
+| INVEST holders (Arbiscan) | *to be added* |
+| INVEST total supply | *to be added* |
+| Outside wallets that claimed | *to be added* |
+
 ## 6. Abort conditions and allowed interventions
 
 The experiment may be stopped early, and the stop recorded, if:
@@ -182,6 +217,8 @@ Participants join a live system, not a disposable test. Whatever the result:
 | 9 Oct 2026, ~17:22 | OpenVerifier switched back **on** | tx — *to be added* |
 | 9 Oct 2026, ~17:25 | Author removing liquidity from the pool | tx — *to be added* |
 | 9 Oct 2026, 19:15 | **This note written. Window opens.** State: total supply 1,000 INVEST, 4 holders (author, RoundAuction, Uniswap PoolManager, burn address), one citizen (the author). | — |
+| 13 Oct 2026 | Amendment §5b: window to close early on 14 Oct, when v9 is deployed | this file |
+| 14 Oct 2026 | **Window closes.** v9 deployed alongside v8 | v9 addresses — *to be added* |
 
 ## 8. Reporting
 

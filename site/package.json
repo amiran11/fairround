@@ -10,13 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.3",
+    "@fontsource-variable/archivo": "^5.2.5",
+    "@fontsource-variable/noto-sans-georgian": "^5.2.5",
     "ethers": "^6.17.0",
     "lucide-react": "^1.25.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.3",
-    "tailwindcss": "^4.3.3"
+    "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

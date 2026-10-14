@@ -1,4 +1,4 @@
-# Deploy checklist: v9 alongside v8 (after 8 November 2026)
+# Deploy checklist: v9 alongside v8 (14 October 2026)
 
 v9 adds a new, audited set of contracts **next to** v8. Nothing in v8 is
 switched off: same INVEST token, same balances, v8 companies keep running
@@ -11,7 +11,7 @@ switched off: same INVEST token, same balances, v8 companies keep running
 | 2 | GovernanceV9 | new | Elections, terms, operating keys, recall |
 | 3 | CompanyTreasuryV9 | new | Payments, sales and investments, all by shareholder vote |
 | 4 | CompanyDividendsV9 | new | End-of-term dividend / reinvest vote |
-| 5 | OpenVerifierV2 | new (replaces OpenVerifier) | Self-verification: normal wallets, 10 per hour |
+| 5 | OpenVerifierV2 | new (replaces OpenVerifier) | Self-verification: normal wallets, 50 per hour |
 | 6 | SakartveloTimelock | new | Owner of everything, 48-hour delay |
 
 **Rehearsed:** this exact sequence, with the same read-back checks, runs
@@ -27,28 +27,30 @@ Write each address down as you go:
 
 | | Address | Block |
 |---|---|---|
-| RA9 (RoundAuctionV9) | | |
-| GOV9 (GovernanceV9) | | |
-| CT9 (CompanyTreasuryV9) | | |
-| DV9 (CompanyDividendsV9) | | |
-| OV2 (OpenVerifierV2) | | |
-| TL (SakartveloTimelock) | | |
+| RA9 (RoundAuctionV9) | `0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f` | 514727826 |
+| GOV9 (GovernanceV9) | `0x044213A8c8b7C83E6A00cac1BbC8962B4b0Ebe85` | 514728539 |
+| CT9 (CompanyTreasuryV9) | `0x70ffEeAabAaE49cB969ADC8137A3DeD94c8F1B75` | 514728960 |
+| DV9 (CompanyDividendsV9) | `0x641f3864F7dcbD6630D21247e8DA123A2A138023` | 514729472 |
+| OV2 (OpenVerifierV2) | `0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A` | 514729862 |
+| TL (SakartveloTimelock) | `0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f` | 514730884 |
 
 ---
 
 ## Part 0 — Before you start
 
-1. The experiment window has closed (8 November) and its results note is
-   published.
-2. In **v8**, USDC is switched off on CompanyTreasury
-   (`setApprovedPaymentToken(0xaf88d065e77c8cC2239327C5EDb3A432268e5831, false)`),
-   so Finding 23 can't be repeated on v8.
-3. About 0.002 ETH on Arbitrum in your wallet for gas (13 deploy and
-   wiring transactions).
-4. Decide the first v9 companies (id, name, number of shares, round length
-   in seconds). List them **before** Part 4 — after that each listing
-   waits 48 hours. Company ids must be new (not used in v8, to avoid
-   confusion on the site), below 18,446,744,073,709,551,615.
+1. The early-tradability experiment is closed (see the 14 October
+   amendment in `EXPERIMENT_EARLY_TRADABILITY.md`).
+2. In **v8**, switch USDC off on CompanyTreasury so Finding 23 (a governor
+   selling company INVEST for USDC without a vote) can't be used on v8:
+   load CompanyTreasury `0xaD50c4726E78a8e8a18a1A188bd60E7ef0A501e8` with
+   At Address, click **setApprovedPaymentToken** with
+   `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`, `false`. Read back:
+   **approvedPaymentTokens**(that address) = false.
+3. About 0.003 ETH on Arbitrum in your wallet for gas (6 deploys, about
+   25 setup transactions).
+4. Have the company list below open. **List every company in Part 3,
+   before Part 4**: after the timelock takes over, each listing waits 48
+   hours.
 
 ## Part 1 — Compile in Remix (once)
 
@@ -82,6 +84,9 @@ After each: copy the address from **Deployed Contracts**, write it in the
 table, and open it — check the function list shows the new functions
 (e.g. RA9 has **placeCorporateBid**, **corporateCompanyPlusOne**; CT9 has
 **proposeInvest**). That proves Remix didn't deploy stale code.
+On OV2, click **HOURLY_CAP**: it must say **50** (the limit was raised
+from 10 on 13 October; if it says 10, re-upload `OpenVerifierV2.sol`
+from the repo and deploy it again).
 
 ## Part 3 — Wire it up (while you still own everything)
 
@@ -92,10 +97,37 @@ On **RA9**:
 | 3.1 | setGovernance | GOV9 | **governance** = GOV9 |
 | 3.2 | setTreasury | CT9 | **treasury** = CT9 |
 | 3.3 | setDividends | DV9 | **dividends** = DV9 |
-| 3.4 | listCompany (one per company) | id, name, totalShares, roundDuration | **companies**(id) shows the name |
+| 3.4 | listCompany, once per company in the table below | id, name, totalShares, 3600 | **companies**(id) shows the name and share count |
 
 Each of 3.1–3.3 can be set **once only**. Double-check the address before
 you click.
+
+**Companies for step 3.4** (round length 3600 seconds = 1 hour for all).
+Type the name exactly as written: the site shows the Georgian name by
+matching it.
+
+| id | name | totalShares | tier |
+|---|---|---|---|
+| 0 | Bolnisi Gold Mines | 3000 | 3,000 |
+| 1 | Georgian Railway | 6000 | 6,000 |
+| 2 | Enguri Hydropower Plant | 6000 | 6,000 |
+| 3 | Batumi Sea Port | 6000 | 6,000 |
+| 4 | Sakartvelo Land Fund | 3000 | 3,000 |
+| 5 | Tkibuli Coal Basin | 1000 | 1,000 |
+| 6 | Racha Marble Works | 1000 | 1,000 |
+| 7 | National Forest Fund | 1000 | 1,000 |
+| 8 | Chiatura Manganese Concern | 3000 | 3,000 |
+| 9 | Zestafoni Ferroalloys Plant | 3000 | 3,000 |
+| 10 | Anaklia Deep Sea Port | 6000 | 6,000 |
+| 12 | Georgian Stock Exchange | 12000 | 12,000 |
+
+On 14 October the Stock Exchange was listed as **id 12** (id 11 was
+skipped by mistake and is left empty). The site finds companies by
+checking every id from 0 to 23, so the gap doesn't matter.
+
+v9 sells at most 150 shares a round, so a 1,000-share company needs at
+least 4 rounds with enough demand to reach 50% and open an election;
+12,000 shares needs at least 40.
 
 On **InvestToken** (load it with **At Address**
 `0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a`, using the v8 InvestToken
@@ -154,15 +186,18 @@ moving them to the timelock too is optional (decide separately).
 
 ## Part 6 — Site and announcement
 
-- The site needs v9 support (new addresses and ABIs, a max-price field on
-  bids, nomination, recall, proposals) before announcing. Two gas notes
-  for it:
-  - **settleRound**: set the gas limit explicitly (e.g. the estimate ×
-    1.3, capped at 32,000,000). The worst case measured is 20.7M.
-  - **Share trades** (transfer, buy): use a 50% gas margin. Balance
-    history costs more when the transaction lands a second later than the
-    block it was estimated on.
-- Announce with the v9 rules in plain words (`V9_DESIGN.md`, "v9 rules in
-  one place") and the audit record (`SECURITY_REVIEW.md`, "Independent
-  audits of v9"). Moving to v9 is each holder's own choice; v8 stays.
-- Verify all six contracts on Arbiscan (same compiler settings as Part 1).
+1. **Send Claude the six addresses** from your table (RA9, GOV9, CT9, DV9,
+   OV2, TL). They go into the site's settings, the pull request is
+   updated, and you merge it on GitHub (green **Merge** button). Vercel
+   publishes the site within a few minutes.
+2. Open www.sakartvelo-exchange.com and check: the register lists the 12
+   companies; the footer shows "Version 9 contracts" with your addresses;
+   /v8 still shows the version 8 companies.
+3. **Verify** all six contracts on Arbiscan, same compiler settings as
+   Part 1 (Remix's Contract Verification plugin, as for v8).
+4. Announce with the v9 rules in plain words (the site's Rules page) and
+   the audit record (`SECURITY_REVIEW.md`). Moving to v9 is each holder's
+   own choice; v8 stays.
+
+The host (who receives the 1% fees) is the deploying wallet. Change it
+later, if ever, with **setHost** through the timelock.

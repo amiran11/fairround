@@ -45,7 +45,15 @@ await w(RA9.setTreasury(ct9)); ok((await RA9.treasury()) === ct9, "3.2 treasury 
 await w(RA9.setDividends(dv9)); ok((await RA9.dividends()) === dv9, "3.3 dividends = DV9");
 let threw = false; try { await w(RA9.setTreasury(me.address)); } catch { threw = true; }
 ok(threw, "3.1-3.3 can't be set twice");
-await w(RA9.listCompany(100, "First v9 company", 100, HOUR)); ok((await RA9.companies(100)).name === "First v9 company", "3.4 company 100 listed");
+const COMPANIES = [
+  [0, "Bolnisi Gold Mines", 3000], [1, "Georgian Railway", 6000], [2, "Enguri Hydropower Plant", 6000], [3, "Batumi Sea Port", 6000],
+  [4, "Sakartvelo Land Fund", 3000], [5, "Tkibuli Coal Basin", 1000], [6, "Racha Marble Works", 1000], [7, "National Forest Fund", 1000],
+  [8, "Chiatura Manganese Concern", 3000], [9, "Zestafoni Ferroalloys Plant", 3000], [10, "Anaklia Deep Sea Port", 6000], [11, "Georgian Stock Exchange", 12000],
+];
+for (const [id, name, n] of COMPANIES) await w(RA9.listCompany(id, name, n, HOUR));
+let allListed = true;
+for (const [id, name, n] of COMPANIES) { const c = await RA9.companies(id); allListed &&= c.name === name && c.totalShares === BigInt(n); }
+ok(allListed, "3.4 all 12 companies listed with their tiers (DEPLOY_V9.md table)");
 await w(IT.setAuthorizedSink(ra9, true)); ok(await IT.authorizedSink(ra9), "3.5 RA9 sink");
 await w(IT.setAuthorizedSink(ct9, true)); ok(await IT.authorizedSink(ct9), "3.6 CT9 sink");
 await w(IT.setAuthorizedSink(dv9, true)); ok(await IT.authorizedSink(dv9), "3.7 DV9 sink");

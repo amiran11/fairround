@@ -19,12 +19,20 @@ export const NETWORKS = {
     // From REDEPLOY_V8.md step 14. deploymentBlock = InvestToken's deploy
     // block, the first contract deployed, so no event can be earlier.
     deploymentBlock: 512862832, // InvestToken deploy, 8 Oct 2026
+    v9DeploymentBlock: 514727826, // RoundAuctionV9 deploy, 14 Oct 2026
     addresses: {
       InvestToken: "0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a",
       OpenVerifier: "0x444653dDbBb24B24bcD8D674e30b371800Cc2ad2",
       RoundAuction: "0x9739e5dCcc76BD424BcD12e7f1ce56143e77b796",
       Governance: "0x5668F72F3dB11c4DA6aF682604d1184763bB971d",
       CompanyTreasury: "0xaD50c4726E78a8e8a18a1A188bd60E7ef0A501e8",
+      // v9, deployed alongside v8 on 14 October 2026 (DEPLOY_V9.md).
+      RoundAuctionV9: "0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f",
+      GovernanceV9: "0x044213A8c8b7C83E6A00cac1BbC8962B4b0Ebe85",
+      CompanyTreasuryV9: "0x70ffEeAabAaE49cB969ADC8137A3DeD94c8F1B75",
+      CompanyDividendsV9: "0x641f3864F7dcbD6630D21247e8DA123A2A138023",
+      OpenVerifierV2: "0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A",
+      SakartveloTimelock: "0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f",
     },
   },
 };
@@ -78,6 +86,11 @@ import CompanyTreasuryABI from "./contracts/CompanyTreasury.json";
 import RoundAuctionABI from "./contracts/RoundAuction.json";
 import OpenVerifierABI from "./contracts/OpenVerifier.json";
 import GovernanceABI from "./contracts/Governance.json";
+import RoundAuctionV9ABI from "./contracts/RoundAuctionV9.json";
+import GovernanceV9ABI from "./contracts/GovernanceV9.json";
+import CompanyTreasuryV9ABI from "./contracts/CompanyTreasuryV9.json";
+import CompanyDividendsV9ABI from "./contracts/CompanyDividendsV9.json";
+import OpenVerifierV2ABI from "./contracts/OpenVerifierV2.json";
 
 export const ABIS = {
   InvestToken: InvestTokenABI,
@@ -85,7 +98,15 @@ export const ABIS = {
   RoundAuction: RoundAuctionABI,
   OpenVerifier: OpenVerifierABI,
   Governance: GovernanceABI,
+  RoundAuctionV9: RoundAuctionV9ABI,
+  GovernanceV9: GovernanceV9ABI,
+  CompanyTreasuryV9: CompanyTreasuryV9ABI,
+  CompanyDividendsV9: CompanyDividendsV9ABI,
+  OpenVerifierV2: OpenVerifierV2ABI,
 };
+
+// True once the v9 contracts are deployed and their addresses filled in.
+export const V9_LIVE = !!CONTRACT_ADDRESSES.RoundAuctionV9;
 
 // Just the ERC-20 functions the treasury screens need, for any token a
 // company holds (not only INVEST).
@@ -99,7 +120,7 @@ const ERC20_ABI = [
 
 // Lazily imports ethers only when actually needed — keeps it out of the
 // main bundle for visitors who never connect a real wallet at all.
-async function getEthers() {
+export async function getEthers() {
   return await import("ethers");
 }
 
@@ -162,6 +183,29 @@ export async function connectWallet() {
   return { provider, signer, address };
 }
 
+// A read-only connection for visitors without a wallet: everything on the
+// site can be browsed from the chain before anyone connects.
+let readProvider = null;
+export async function getReadProvider() {
+  if (readProvider) return readProvider;
+  const { JsonRpcProvider, Network } = await getEthers();
+  const network = Network.from(Number(BigInt(ACTIVE_NETWORK.chainIdHex)));
+  readProvider = new JsonRpcProvider(ACTIVE_NETWORK.rpcUrls[0], network, { staticNetwork: network, batchMaxCount: 20 });
+  return readProvider;
+}
+
+// Citizen numbers and whether INVEST can move freely between wallets.
+export async function getPublicStats(provider) {
+  const [it, ra] = await Promise.all([getContract("InvestToken", provider), getContract("RoundAuction", provider)]);
+  const [citizenCount, maxCitizens, tradable] = await Promise.all([
+    it.citizenCount(),
+    it.maxCitizens(),
+    ra.globalTradabilityUnlocked().catch(() => false),
+  ]);
+  const verifyOpen = await it.verifier(CONTRACT_ADDRESSES.OpenVerifier).catch(() => true);
+  return { citizenCount, maxCitizens, tradable, verifyOpen };
+}
+
 // Returns an ethers Contract instance connected to a signer (for writes)
 // or a provider (for reads only).
 export async function getContract(name, signerOrProvider) {
@@ -188,7 +232,7 @@ export async function getContract(name, signerOrProvider) {
 // refunded, so the margin costs nothing extra in practice.
 const GAS_CAP = 32_000_000n;
 
-async function sendTx(contract, method, ...args) {
+export async function sendTx(contract, method, ...args) {
   const estimate = await contract[method].estimateGas(...args);
   let gasLimit = (estimate * 125n) / 100n + 100_000n;
   if (gasLimit > GAS_CAP) gasLimit = GAS_CAP;
@@ -203,6 +247,50 @@ async function sendTx(contract, method, ...args) {
 // to say what happened and what to do. Anything else falls back to the
 // contract's own message.
 const ERROR_TEXT = [
+  ["RA: cooldown, round not open yet", "The next round hasn't opened yet. Bidding opens an hour after each settlement."],
+  ["RA: book full, bid must beat the lowest", "The book is full. To get in, your bid needs a higher price per share than the lowest bid."],
+  ["RA: max price below 1 INVEST", "The price limit must be at least 1 INVEST a share."],
+  ["RA: withdraw only during cooldown", "A bid can only be withdrawn in the hour between rounds."],
+  ["RA: no active bid", "This wallet has no active bid on this company."],
+  ["RA: share still locked", "This share can't be moved or sold yet: a share is locked for 7 days after it is issued."],
+  ["RA: comp shares locked", "Compensation shares are locked for 60 days."],
+  ["RA: seller no longer owns share", "The seller no longer has this share, so the offer has ended."],
+  ["RA: own listing", "That's your own offer."],
+  ["RA: sold out", "This company is sold out."],
+  ["GOV: under 50% issued at snapshot", "The election can open one day after half of the shares are sold: votes count shares as they were a day earlier."],
+  ["GOV: election in progress", "An election is already under way."],
+  ["GOV: governor in office", "The company has a governor whose term isn't over."],
+  ["GOV: candidacy not open", "Candidates can't declare or be backed at this stage."],
+  ["GOV: already nominated someone", "You've already backed a candidate, so you can't stand in this election."],
+  ["GOV: already nominated", "You've already backed a candidate in this election."],
+  ["GOV: already declared", "You've already declared in this election."],
+  ["GOV: candidacy period not over", "Voting can open only after the 5-day candidacy stage."],
+  ["GOV: not on the ballot", "That candidate isn't on the ballot."],
+  ["GOV: others nominated you; you can't withdraw", "Others have backed you, so you can't withdraw."],
+  ["GOV: need 1% to open a recall", "Opening a recall needs at least 1% of the shares, held since yesterday."],
+  ["GOV: recall cooldown", "A recall reached its turnout less than 7 days ago; a new one can open after that."],
+  ["GOV: recall in progress", "A recall vote is already open."],
+  ["GOV: recall vote still open", "The recall vote is still open."],
+  ["GOV: not the proposed key", "This wallet isn't the operating key the governor named."],
+  ["GOV: voting closed", "Voting has closed."],
+  ["CT: would outlast the term", "It's too late in the term: a proposal needs 3 days of voting, 5 days of waiting and room for a recall before the term ends."],
+  ["CT: over 20% of the bucket this term", "That would take more than 20% of this balance out in one term."],
+  ["CT: execution delay", "Approved proposals wait 5 days after the vote before they can be carried out."],
+  ["CT: recall pending", "A recall vote is pending; this waits until it is resolved."],
+  ["CT: recipient not allowed", "That recipient isn't allowed: it can't be the governor, the operating key or the company itself."],
+  ["CT: proposer can't vote", "The governor and operating key can't vote on their own proposal."],
+  ["CT: recipient can't vote", "The recipient of a payment can't vote on it."],
+  ["CT: below reserve", "That bid is below the minimum price for this sale."],
+  ["CT: reserve too small", "The minimum price is too small."],
+  ["CT: token not approved", "That token isn't accepted by the treasury."],
+  ["CT: voting closed", "Voting on this proposal has closed."],
+  ["DV: that term's governor can't vote", "That term's governor can't vote on its dividend."],
+  ["DV: no shares at record date", "You held no shares when this term ended, so you can't vote on its dividend."],
+  ["OV2: limit for this hour reached", "The 10 verifications for this hour are used up. Try again at the start of the next hour."],
+  ["OV2: ordinary wallets only", "Only an ordinary wallet can verify, not a contract."],
+  ["OV2: insufficient ETH balance", "This wallet needs at least 0.0083 ETH on Arbitrum One to verify. Nothing is taken."],
+  ["OV2: paused", "Self-verification is switched off at the moment."],
+  ["OV2: already verified", "This wallet is already verified."],
   ["already have active bid", "You already have an active bid on this company. It carries into every round until it wins or the company sells out."],
   ["active bid cap reached", "This company already has 100 active bids, the maximum. Try again after the next settlement."],
   ["bid below 1 INVEST", "The minimum bid is 1 INVEST."],
@@ -383,15 +471,25 @@ async function getLogsRange(provider, address, topic0, fromBlock, toBlock) {
 
 // Returns every log of one event type on one contract, from the deploy
 // block to the latest block.
+// v9 contracts can't have events before RoundAuctionV9 existed, so their
+// history scan starts there instead of at the v8 start (2M fewer blocks).
+const V9_NAMES = ["RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2"];
+function startBlockFor(address) {
+  const a = address.toLowerCase();
+  const v9 = V9_NAMES.some((n) => (CONTRACT_ADDRESSES[n] || "").toLowerCase() === a);
+  return v9 && ACTIVE_NETWORK.v9DeploymentBlock ? ACTIVE_NETWORK.v9DeploymentBlock : DEPLOYMENT_BLOCK;
+}
+
 async function syncEventLogs(provider, address, topic0) {
   const key = logCacheKey(address, topic0);
+  const START = startBlockFor(address);
   if (inflightSync.has(key)) return inflightSync.get(key);
 
   const job = (async () => {
     const latest = await provider.getBlockNumber();
     const settleTarget = latest - SETTLE_MARGIN;
 
-    let cached = settledLogs.get(key) || readStoredLogs(key) || { settledBlock: DEPLOYMENT_BLOCK - 1, logs: [] };
+    let cached = settledLogs.get(key) || readStoredLogs(key) || { settledBlock: START - 1, logs: [] };
 
     if (settleTarget > cached.settledBlock) {
       const fresh = await getLogsRange(provider, address, topic0, cached.settledBlock + 1, settleTarget);
@@ -400,7 +498,7 @@ async function syncEventLogs(provider, address, topic0) {
     }
     settledLogs.set(key, cached);
 
-    const tailFrom = Math.max(cached.settledBlock + 1, DEPLOYMENT_BLOCK);
+    const tailFrom = Math.max(cached.settledBlock + 1, START);
     const tail = tailFrom <= latest ? await getLogsRange(provider, address, topic0, tailFrom, latest) : [];
     return cached.logs.concat(tail);
   })();
@@ -421,7 +519,7 @@ function topicMatches(wanted, actual) {
 
 // Drop-in replacement for the old chunked queryFilter: same filter in,
 // same { args } events out, but served from the shared cached scan.
-async function queryFilterChunked(contract, filter) {
+export async function queryFilterChunked(contract, filter) {
   const provider = contract.runner.provider;
   const address = await contract.getAddress();
   const topics = await filter.getTopicFilter();
@@ -636,7 +734,7 @@ export async function parseAmount(text, decimals = 18) {
 // signer. INVEST gets a one-time unlimited approval, the same pattern as
 // bidding (INVEST has no value outside this closed system). Any other
 // token is approved for exactly what this transaction needs.
-async function ensureAllowance(signer, tokenAddress, spender, needed) {
+export async function ensureAllowance(signer, tokenAddress, spender, needed) {
   const { Contract, MaxUint256 } = await getEthers();
   const owner = await signer.getAddress();
   const t = new Contract(tokenAddress, ERC20_ABI, signer);
