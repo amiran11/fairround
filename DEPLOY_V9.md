@@ -119,7 +119,11 @@ matching it.
 | 8 | Chiatura Manganese Concern | 3000 | 3,000 |
 | 9 | Zestafoni Ferroalloys Plant | 3000 | 3,000 |
 | 10 | Anaklia Deep Sea Port | 6000 | 6,000 |
-| 11 | Georgian Stock Exchange | 12000 | 12,000 |
+| 12 | Georgian Stock Exchange | 12000 | 12,000 |
+
+On 14 October the Stock Exchange was listed as **id 12** (id 11 was
+skipped by mistake and is left empty). The site finds companies by
+checking every id from 0 to 23, so the gap doesn't matter.
 
 v9 sells at most 150 shares a round, so a 1,000-share company needs at
 least 4 rounds with enough demand to reach 50% and open an election;
