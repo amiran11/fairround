@@ -192,7 +192,7 @@ moving them to the timelock too is optional (decide separately).
    publishes the site within a few minutes.
 2. Open www.sakartvelo-exchange.com and check: the register lists the 12
    companies; the footer shows "Version 9 contracts" with your addresses;
-   /v8 still shows the version 8 companies.
+   /v8 now goes to the homepage (v8 was retired from the site on 14 October).
 3. **Verify** all six contracts on Arbiscan, same compiler settings as
    Part 1 (Remix's Contract Verification plugin, as for v8).
 4. Announce with the v9 rules in plain words (the site's Rules page) and

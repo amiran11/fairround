@@ -86,7 +86,7 @@ export default function Register() {
           )}
         </div>
         {!V9_LIVE ? (
-          <p className="notice">{t("Version 9 is being deployed. Until it's live, the companies are in the version 8 register.")} <Link to="/v8">{t("Open the version 8 register")}</Link></p>
+          <p className="notice">{t("Version 9 is being deployed. The companies appear here once it's live.")}</p>
         ) : (
           <>
             <ErrorLine error={error} />
@@ -127,9 +127,6 @@ export default function Register() {
             )}
           </>
         )}
-        <p className="small muted" style={{ marginTop: 24 }}>
-          {t("Companies from the first version of the contracts keep running.")} <Link to="/v8">{t("Open the version 8 register")}</Link>
-        </p>
       </section>
     </div>
   );

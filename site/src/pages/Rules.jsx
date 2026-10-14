@@ -18,7 +18,7 @@ export default function Rules() {
       <article className="prose">
         <h1 className="h1">{t("Rules")}</h1>
         <p className="lede">{t("These are the rules the contracts enforce, in plain words. If this page and the contracts ever disagree, the contracts win; their source is public and verified.")}</p>
-        <p className="muted">{t("This is version 9, live since 14 October 2026. Version 8 keeps running with its own rules.")} <Link to="/v8/rules">{t("Version 8 rules")}</Link></p>
+        <p className="muted">{t("This is version 9, live since 14 October 2026.")}</p>
 
         <h2 className="h2">{t("What is real")}</h2>
         <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The companies are fictional, named after real Georgian places and industries. INVEST is given free and has no value when issued. If it later becomes freely tradable, it may get a market price set by demand alone; nobody guarantees that, and it is not an investment product.", { network: ACTIVE_NETWORK.label })}</p>

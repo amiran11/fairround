@@ -251,7 +251,6 @@ export default function Portfolio() {
           )}
 
           <section className="section" aria-label={t("Look up any address")}>
-            <p className="small muted" style={{ marginBottom: 16 }}>{t("Holdings in the first version of the contracts are listed separately.")} <Link to={params.address ? `/v8/portfolio/${target}` : "/v8/portfolio"}>{t("Open the version 8 portfolio")}</Link></p>
             <Lookup />
           </section>
         </>
