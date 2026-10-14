@@ -732,7 +732,7 @@ export async function parseAmount(text, decimals = 18) {
 
 // Makes sure `spender` may move at least `needed` of a token from the
 // signer. INVEST gets a one-time unlimited approval, the same pattern as
-// bidding (INVEST has no value outside this closed system). Any other
+// bidding (INVEST is closed-loop until tradability unlocks). Any other
 // token is approved for exactly what this transaction needs.
 export async function ensureAllowance(signer, tokenAddress, spender, needed) {
   const { Contract, MaxUint256 } = await getEthers();

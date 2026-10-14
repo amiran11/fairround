@@ -23,7 +23,7 @@ export default function Rules() {
         <p className="lede">{t("These are the rules the contracts enforce today, in plain words. If this page and the contracts ever disagree, the contracts win; their source is public and verified.")}</p>
 
         <h2 className="h2">{t("What is real")}</h2>
-        <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The companies are fictional, named after real Georgian places and industries, and INVEST is not money or an investment: it has no value outside this simulation.", { network: ACTIVE_NETWORK.label })}</p>
+        <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The companies are fictional, named after real Georgian places and industries. INVEST is given free and has no value when issued. If it later becomes freely tradable, it may get a market price set by demand alone; nobody guarantees that, and it is not an investment product.", { network: ACTIVE_NETWORK.label })}</p>
         <p>{t("One owner wallet can still list companies, decide which tokens are accepted as payment, change the citizen limit and switch self-verification on or off. It cannot move anyone's INVEST or shares.")}</p>
 
         <h2 className="h2">{t("The life of a company")}</h2>

@@ -96,7 +96,7 @@ export default function Layout() {
         <div className="page colophon-grid">
           <div className="stack-sm prose">
             <p>
-              {t("Sakartvelo Exchange simulates a privatization. The process is real: every auction, vote and payment is a transaction on {network} that anyone can check. The companies are fictional, and INVEST is not money or an investment.", { network: ACTIVE_NETWORK.label })}
+              {t("Sakartvelo Exchange simulates a privatization. The process is real: every auction, vote and payment is a transaction on {network} that anyone can check. The companies are fictional. INVEST is given free and has no value when issued; if it becomes freely tradable, any price it gets comes from demand alone, and nobody guarantees one.", { network: ACTIVE_NETWORK.label })}
             </p>
             <p className="row">
               <a href={LINKS.repo} target="_blank" rel="noreferrer">{t("Source code")}</a>
