@@ -410,7 +410,6 @@ export default {
   "No price limit.": "ფასის ზღვრის გარეშე.",
   "No proposals yet.": "წინადადებები ჯერ არ არის.",
   "No shares are offered right now.": "ამჟამად გასაყიდი აქციები არ არის.",
-  "No single person can move value out of a company. The owner of the contracts can list companies, approve tokens and change the citizen limit, and every such change is announced 48 hours before it takes effect. The owner cannot move anyone's INVEST or shares.": "ვერცერთი ადამიანი მარტო ვერ გაიტანს ღირებულებას კომპანიიდან. კონტრაქტების მფლობელს შეუძლია კომპანიების რეესტრში შეტანა, ტოკენების დამტკიცება და მოქალაქეების ლიმიტის შეცვლა, და ყოველი ასეთი ცვლილება ძალაში შესვლამდე 48 საათით ადრე ცხადდება. მფლობელს არ შეუძლია ვინმეს INVEST-ის ან აქციების გადატანა.",
   "No valid bids; the asset went back to the company.": "სწორი ბიდები არ იყო; აქტივი კომპანიას დაუბრუნდა.",
   "None of your shares can be sold yet.": "თქვენი აქციებიდან ჯერ არცერთის გაყიდვა არ შეიძლება.",
   "None yet. Approved investments build them.": "ჯერ არ არის. ისინი მიღებული ინვესტიციებით გროვდება.",
@@ -580,4 +579,10 @@ export default {
   "{used} of {max} bytes, about 700 words. It can't be changed after you declare. Declaring backs yourself with your shares.": "{used} / {max} ბაიტი, დაახლოებით 700 სიტყვა. წარდგენის შემდეგ მისი შეცვლა შეუძლებელია. წარდგენით საკუთარ თავს თქვენი აქციებით უჭერთ მხარს.",
   "Version 9 is being deployed. The companies appear here once it's live.": "მეცხრე ვერსია ახლა ეშვება. კომპანიები აქ გამოჩნდება, როგორც კი ის ამოქმედდება.",
   "This is version 9, live since 14 October 2026.": "ეს მეცხრე ვერსიაა, მოქმედი 2026 წლის 14 ოქტომბრიდან.",
+  "No single person can move value out of a company, and nobody, the site administrator included, can move anyone's INVEST or shares.": "კომპანიიდან ღირებულებას ვერცერთი ადამიანი ვერ გაიტანს, და ვერავინ, მათ შორის საიტის ადმინისტრატორი, ვერ გადაიტანს ვინმეს INVEST-ს ან აქციებს.",
+  "What the site administrator can do": "რისი გაკეთება შეუძლია საიტის ადმინისტრატორს",
+  "The site administrator can list companies, approve tokens for company treasuries, change the citizen limit, choose who may verify citizens, and switch whether INVEST can be sent between wallets, including freezing it. Because the administrator chooses the verifiers, they could also, in principle, create new citizens and with them new INVEST.": "საიტის ადმინისტრატორს შეუძლია კომპანიების ჩამონათვალში დამატება, კომპანიების ხაზინებისთვის ტოკენების დაშვება, მოქალაქეების ლიმიტის შეცვლა, იმის განსაზღვრა, ვინ ადასტურებს მოქალაქეებს, და იმის გადაწყვეტა, შეიძლება თუ არა INVEST-ის საფულეებს შორის გადაგზავნა, მათ შორის მისი გაყინვა. რადგან ადმინისტრატორი ირჩევს დამდასტურებლებს, თეორიულად მას ახალი მოქალაქეების და მათთან ერთად ახალი INVEST-ის შექმნაც შეუძლია.",
+  "None of this happens quietly. Every one of these powers goes through a public timelock: a change is scheduled first, anyone can see it, and it can only take effect 48 hours later. The administrator cannot skip or shorten the wait.": "არცერთი ეს ცვლილება ჩუმად არ ხდება. ყველა ეს უფლებამოსილება საჯარო ტაიმლოკზე გადის: ცვლილება ჯერ იგეგმება, მას ნებისმიერი ხედავს, და ძალაში მხოლოდ 48 საათის შემდეგ შედის. ადმინისტრატორს ამ ლოდინის გამოტოვება ან შემოკლება არ შეუძლია.",
+  "The only instant power is a pause button for new citizens. It stops new wallets from verifying; it cannot touch anyone's INVEST, shares or company.": "ერთადერთი მყისიერი უფლებამოსილებაა ახალი მოქალაქეების შეჩერების ღილაკი. ის ახალ საფულეებს დადასტურებას უჩერებს; ვინმეს INVEST-ს, აქციებს ან კომპანიას ვერ ეხება.",
+  "See every scheduled change on Arbiscan": "ყველა დაგეგმილი ცვლილება იხილეთ Arbiscan-ზე",
 };

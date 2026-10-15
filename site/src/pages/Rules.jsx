@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useT } from "../i18n.jsx";
-import { getPublicStats, ACTIVE_NETWORK } from "../web3.js";
+import { getPublicStats, ACTIVE_NETWORK, CONTRACT_ADDRESSES } from "../web3.js";
 import { int, useChain } from "../components/liveUtils.js";
 import { LINKS } from "../components/Layout.jsx";
 import { usePageTitle } from "../meta.js";
@@ -22,7 +22,15 @@ export default function Rules() {
 
         <h2 className="h2">{t("What is real")}</h2>
         <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The companies are fictional, named after real Georgian places and industries. INVEST is given free and has no value when issued. If it later becomes freely tradable, it may get a market price set by demand alone; nobody guarantees that, and it is not an investment product.", { network: ACTIVE_NETWORK.label })}</p>
-        <p>{t("No single person can move value out of a company. The owner of the contracts can list companies, approve tokens and change the citizen limit, and every such change is announced 48 hours before it takes effect. The owner cannot move anyone's INVEST or shares.")}</p>
+        <p>{t("No single person can move value out of a company, and nobody, the site administrator included, can move anyone's INVEST or shares.")}</p>
+
+        <h2 className="h2">{t("What the site administrator can do")}</h2>
+        <p>{t("The site administrator can list companies, approve tokens for company treasuries, change the citizen limit, choose who may verify citizens, and switch whether INVEST can be sent between wallets, including freezing it. Because the administrator chooses the verifiers, they could also, in principle, create new citizens and with them new INVEST.")}</p>
+        <p>{t("None of this happens quietly. Every one of these powers goes through a public timelock: a change is scheduled first, anyone can see it, and it can only take effect 48 hours later. The administrator cannot skip or shorten the wait.")}</p>
+        <p>{t("The only instant power is a pause button for new citizens. It stops new wallets from verifying; it cannot touch anyone's INVEST, shares or company.")}</p>
+        {CONTRACT_ADDRESSES.SakartveloTimelock && (
+          <p><a href={`${ACTIVE_NETWORK.blockExplorerUrls[0]}/address/${CONTRACT_ADDRESSES.SakartveloTimelock}`} target="_blank" rel="noreferrer">{t("See every scheduled change on Arbiscan")}</a></p>
+        )}
 
         <h2 className="h2">{t("The life of a company")}</h2>
         <ol>

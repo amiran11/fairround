@@ -807,6 +807,34 @@ plainly:
 Items 1–3 are engineering work. Items 4–5 are policy decisions about
 what the project is meant to be, as much as they are code.
 
+## Deployment: version 9 on Arbitrum One (14 October 2026)
+
+The reviewed v9 code is live at these addresses, all verified on Arbiscan
+with the compiler settings in `DEPLOY_V9.md`:
+
+| Contract | Address |
+|---|---|
+| InvestToken (kept from v8) | `0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a` |
+| RoundAuctionV9 | `0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f` |
+| GovernanceV9 | `0x044213A8c8b7C83E6A00cac1BbC8962B4b0Ebe85` |
+| CompanyTreasuryV9 | `0x70ffEeAabAaE49cB969ADC8137A3DeD94c8F1B75` |
+| CompanyDividendsV9 | `0x641f3864F7dcbD6630D21247e8DA123A2A138023` |
+| OpenVerifierV2 | `0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A` |
+| SakartveloTimelock | `0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f` |
+
+**Owner powers after deployment (Finding 36).** InvestToken,
+RoundAuctionV9 and CompanyTreasuryV9 are owned by the timelock, so every
+owner power listed in Finding 36 (freezing or switching INVEST transfers,
+choosing verifiers, raising the citizen limit, listing companies,
+approving tokens) is scheduled publicly and takes effect only after 48
+hours; the delay itself can only change through the timelock. The v8
+RoundAuction (which holds INVEST's tradability switch) and v8
+CompanyTreasury were handed to the same timelock on 15 October 2026, so
+no owner action can bypass the delay. GovernanceV9 and CompanyDividendsV9
+have no owner. The only instant power left is OpenVerifierV2's guardian
+pause, which can stop new verifications and nothing else. The site's
+Rules page lists these powers in plain words.
+
 ## What this document is not
 
 It is not a certification that the contracts are free of bugs, not a
