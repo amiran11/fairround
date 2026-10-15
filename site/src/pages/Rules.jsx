@@ -32,6 +32,16 @@ export default function Rules() {
           <p><a href={`${ACTIVE_NETWORK.blockExplorerUrls[0]}/address/${CONTRACT_ADDRESSES.SakartveloTimelock}`} target="_blank" rel="noreferrer">{t("See every scheduled change on Arbiscan")}</a></p>
         )}
 
+        <h2 className="h2">{t("Risks, and how they are handled")}</h2>
+        <dl className="stack-sm">
+          <div><dt className="strong">{t("One person, many wallets.")}</dt><dd style={{ margin: 0 }}>{t("Verification checks a wallet's balance, not who owns it, so one person can verify several wallets. To slow this down, only ordinary wallets can verify, each needs 0.0083 ETH, at most 50 can verify an hour, and new verifications can be paused. A real privatization would need real identity checks.")}</dd></div>
+          <div><dt className="strong">{t("A rich buyer taking over a company.")}</dt><dd style={{ margin: 0 }}>{t("Someone with a lot of INVEST can buy a majority. They can't do it quickly or quietly: a round sells at most 150 shares, every bid is public, and everyone in a round pays the same price. Whatever they pay becomes the company's capital, which they can't take back out without the shareholders' vote.")}</dd></div>
+          <div><dt className="strong">{t("A CEO misusing company money.")}</dt><dd style={{ margin: 0 }}>{t("The CEO can only propose. Every payment, sale or investment is voted on by shareholders, the CEO can't vote on their own proposal, an approved proposal waits 5 days before it runs, at most 20% of a bucket can be spent per term, and shareholders can vote the CEO out.")}</dd></div>
+          <div><dt className="strong">{t("Bugs in the contracts.")}</dt><dd style={{ margin: 0 }}>{t("The contracts were reviewed in several rounds by AI agents, every finding was fixed and tested, and the full record is public. There has been no paid external audit. The contracts can't be upgraded, so the code you see on Arbiscan is the code that runs.")}</dd></div>
+          <div><dt className="strong">{t("Losing your wallet, or being scammed.")}</dt><dd style={{ margin: 0 }}>{t("Nobody can recover a lost wallet or reverse a transaction, the site administrator included. Keep your secret phrase offline. Nobody from this project will ever ask for it.")}</dd></div>
+        </dl>
+        <p><a href={LINKS.security} target="_blank" rel="noreferrer">{t("Read the full security review")}</a></p>
+
         <h2 className="h2">{t("The life of a company")}</h2>
         <ol>
           <li>{t("It is listed with a fixed number of shares and a round length.")}</li>
