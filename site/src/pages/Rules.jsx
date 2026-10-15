@@ -26,8 +26,8 @@ export default function Rules() {
 
         <h2 className="h2">{t("What the site administrator can do")}</h2>
         <p>{t("The site administrator can list companies, approve tokens for company treasuries, change the citizen limit, choose who may verify citizens, and switch whether INVEST can be sent between wallets, including freezing it. Because the administrator chooses the verifiers, they could also, in principle, create new citizens and with them new INVEST.")}</p>
-        <p>{t("None of this happens quietly. Every one of these powers goes through a public timelock: a change is scheduled first, anyone can see it, and it can only take effect 48 hours later. The administrator cannot skip or shorten the wait.")}</p>
-        <p>{t("The only instant power is a pause button for new citizens. It stops new wallets from verifying; it cannot touch anyone's INVEST, shares or company.")}</p>
+        <p>{t("These powers go through a public timelock: a change is scheduled first, anyone can see it, and it can only take effect 48 hours later.")}</p>
+        <p>{t("Two powers are instant. The administrator can pause new citizens, which stops new wallets from verifying and touches nothing else. And through the contracts of the earlier version 8, which still hold INVEST's trading switch, the administrator can make INVEST freely transferable for everyone at once; that can't be undone the same way.")}</p>
         {CONTRACT_ADDRESSES.SakartveloTimelock && (
           <p><a href={`${ACTIVE_NETWORK.blockExplorerUrls[0]}/address/${CONTRACT_ADDRESSES.SakartveloTimelock}`} target="_blank" rel="noreferrer">{t("See every scheduled change on Arbiscan")}</a></p>
         )}

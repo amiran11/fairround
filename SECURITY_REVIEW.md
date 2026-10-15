@@ -827,13 +827,15 @@ RoundAuctionV9 and CompanyTreasuryV9 are owned by the timelock, so every
 owner power listed in Finding 36 (freezing or switching INVEST transfers,
 choosing verifiers, raising the citizen limit, listing companies,
 approving tokens) is scheduled publicly and takes effect only after 48
-hours; the delay itself can only change through the timelock. The v8
-RoundAuction (which holds INVEST's tradability switch) and v8
-CompanyTreasury were handed to the same timelock on 15 October 2026, so
-no owner action can bypass the delay. GovernanceV9 and CompanyDividendsV9
-have no owner. The only instant power left is OpenVerifierV2's guardian
-pause, which can stop new verifications and nothing else. The site's
-Rules page lists these powers in plain words.
+hours; the delay itself can only change through the timelock.
+GovernanceV9 and CompanyDividendsV9 have no owner. Two powers remain
+instant, by choice, and are disclosed on the site's Rules page:
+OpenVerifierV2's guardian pause (stops new verifications, nothing else),
+and the v8 RoundAuction and CompanyTreasury, which stay owned directly by
+the administrator's wallet. Because InvestToken still reads its
+tradability switch from the v8 RoundAuction, the administrator can list a
+small v8 company and, once it passes 51%, make INVEST freely transferable
+for everyone without the 48-hour delay. That switch is one-way in v8.
 
 ## What this document is not
 
