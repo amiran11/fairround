@@ -21,7 +21,7 @@ const pages={
  [`${R}/brand/x/x-profile-400.png`]:[400,400,base(400,400,C.stamp)+`<div style="width:400px;height:400px;display:flex;align-items:center;justify-content:center">${mark(290,C.on,C.stamp)}</div>`],
  [`${R}/brand/x/x-header-1500x500.png`]:[1500,500,base(1500,500,C.paper)+`<div style="position:absolute;left:-170px;top:-130px;opacity:.08">${mark(720,C.stamp,C.paper)}</div>
   <div style="position:absolute;right:110px;top:0;height:500px;width:900px;display:flex;flex-direction:column;justify-content:center">
-   <div style="font-size:24px;font-weight:700;color:${C.stamp};letter-spacing:3px;text-transform:uppercase">FairRound · fair token launches</div>
+   <div style="font-size:24px;font-weight:700;color:${C.stamp};letter-spacing:3px;text-transform:uppercase">FairRound · on-chain IPO exchange</div>
    <div class="wd" style="font-size:72px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:16px">Launch without<br>the rug.</div>
    <div style="font-size:25px;color:${C.graphite};margin-top:22px;line-height:1.4">One price per round. Small buyers filled.<br>The raise held in a treasury only holders can spend.</div>
    <div style="margin-top:24px;display:flex;gap:18px;align-items:center;font-size:22px;color:${C.graphite}"><span class="stamp" style="font-size:22px">Live on Arbitrum One</span><span>fairround.xyz</span></div></div>`],
@@ -41,12 +41,12 @@ const pages={
  [`${R}/site/public/og-image.png`]:[1200,630,base(1200,630,C.paper)+`<div style="position:absolute;right:-140px;top:-120px;opacity:.08">${mark(620,C.stamp,C.paper)}</div><div style="--bg:${C.paper};padding:64px 72px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;position:relative">
    ${logo(44,30)}
    <h1 class="wd" style="margin:52px 0 0;font-size:84px;line-height:1;font-weight:700;letter-spacing:-.02em">Launch without<br>the rug.</h1>
-   <div style="font-size:28px;color:${C.graphite};margin-top:24px;line-height:1.38;max-width:900px">Fair token launches on Arbitrum: one price per round, small buyers filled, the raise held by holders.</div>
+   <div style="font-size:28px;color:${C.graphite};margin-top:24px;line-height:1.38;max-width:900px">The on-chain IPO exchange for crypto projects: one price per round, small buyers filled, the raise held by holders.</div>
    <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:24px;color:${C.graphite}"><span style="color:${C.stamp};font-weight:650">fairround.xyz</span><span class="stamp" style="font-size:22px">Live on Arbitrum One</span></div></div>`],
  [`${R}/brand/fairround-banner-1920x384.png`]:[1920,384,base(1920,384,C.paper)+`<div style="position:absolute;right:-90px;top:-170px;opacity:.08">${mark(720,C.stamp,C.paper)}</div>
   <div style="--bg:${C.paper};position:absolute;left:300px;top:0;height:384px;display:flex;align-items:center;gap:44px">${mark(150,C.stamp,C.paper)}
    <div><div class="wd" style="font-size:84px;font-weight:700;letter-spacing:-.015em;line-height:1">FairRound</div>
-   <div style="font-size:30px;color:${C.graphite};margin-top:14px">Fair token launches on Arbitrum. Launch without the rug.</div>
+   <div style="font-size:30px;color:${C.graphite};margin-top:14px">The on-chain IPO exchange for crypto projects.</div>
    <div style="margin-top:22px;display:flex;gap:18px;align-items:center;font-size:22px;color:${C.graphite}"><span class="stamp" style="font-size:22px">Live on Arbitrum One</span><span>One price · Small buyers filled · Raise held by holders</span></div></div></div>`],
 };
 fs.writeFileSync(`${R}/site/public/favicon.svg`, `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="${C.stamp}"/><g transform="translate(51 51) scale(0.8)">${mark(512,C.on).replace(/^<svg[^>]*>/,"").replace(/<\/svg>$/,"")}</g></svg>`);

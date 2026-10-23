@@ -17,8 +17,8 @@ function BidForm({ company, full, rules, lowestEff }) {
   if (account && account.invest === 0n) {
     return (
       <Act title={t("Bid for units")}>
-        <p className="small">{t("This wallet holds no INVEST. Members claim 1,000 INVEST once.")}</p>
-        <Link to="/citizen" className="btn btn-secondary btn-small">{t("Join and get test credits")}</Link>
+        <p className="small">{t("This wallet holds no INVEST. Investors claim 1,000 INVEST once.")}</p>
+        <Link to="/invest" className="btn btn-secondary btn-small">{t("Become an investor")}</Link>
       </Act>
     );
   }

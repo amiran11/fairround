@@ -13,7 +13,7 @@ const eth = (wei) => (Number(wei) / 1e18).toFixed(4);
 
 export default function Citizen() {
   const { t } = useT();
-  usePageTitle(t("Join and get test credits"), t("Verify a wallet and claim 1,000 INVEST test credits to bid in FairRound's demo launches."));
+  usePageTitle(t("Become an investor"), t("Verify a wallet and claim 1,000 INVEST test credits to bid in FairRound's demo listings."));
   const { connected, signer, address, connect, connecting, account } = useSession();
   const [stats] = useChain(getPublicStats, []);
   const [elig] = useChain((p) => (connected ? getClaimEligibility(address, p) : Promise.resolve(null)), [address, connected]);
@@ -36,9 +36,9 @@ export default function Citizen() {
   return (
     <div className="page" style={{ paddingTop: 48 }}>
       <div className="prose stack">
-        <h1 className="h1">{t("Join and get test credits")}</h1>
-        <p className="lede">{t("Members each claim 1,000 INVEST, once. INVEST is what you bid with for units. It takes two transactions; each costs a fraction of a cent in gas on {network}.", { network: ACTIVE_NETWORK.label })}</p>
-        {stats && <p className="muted num">{t("{n} members have joined, of {max} places.", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}</p>}
+        <h1 className="h1">{t("Become an investor")}</h1>
+        <p className="lede">{t("Investors each claim 1,000 INVEST, once. INVEST is what you bid with for units. It takes two transactions; each costs a fraction of a cent in gas on {network}.", { network: ACTIVE_NETWORK.label })}</p>
+        {stats && <p className="muted num">{t("{n} investors have joined, of {max} places.", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}</p>}
       </div>
 
       <ol className="steps" style={{ maxWidth: 720, marginTop: 40 }}>
@@ -84,7 +84,7 @@ export default function Citizen() {
           <div className="stack-sm">
             <h2 className="h3">{t("Claim 1,000 INVEST")}</h2>
             <p className="small">{t("One claim per wallet, ever. The INVEST goes straight to your wallet.")}</p>
-            {verified && !claimed && full && <Notice tone="plain">{t("All member places are taken.")}</Notice>}
+            {verified && !claimed && full && <Notice tone="plain">{t("All investor places are taken.")}</Notice>}
             {verified && !claimed && !full && (
               <div><Button busy={claim.busy} onClick={() => claim.run(() => claimReal(signer), (r) => setClaimTx(r?.hash))}>{t("Claim 1,000 INVEST")}</Button></div>
             )}
@@ -101,9 +101,9 @@ export default function Citizen() {
         <li className={stepClass(false, claimed)}>
           <div className="stack-sm">
             <h2 className="h3">{t("Bid for units")}</h2>
-            <p className="small">{t("Choose a launch on the Launches page and place a bid. Units are sold in rounds; the rules page explains how a round is priced.")}</p>
+            <p className="small">{t("Choose a listing on the Listings page and place a bid. Units are sold in rounds; the rules page explains how a round is priced.")}</p>
             <div className="row">
-              <Link to="/" className={claimed ? "btn" : "btn btn-secondary"}>{t("See the launches")}</Link>
+              <Link to="/" className={claimed ? "btn" : "btn btn-secondary"}>{t("See the listings")}</Link>
               <Link to="/rules" className="btn btn-plain">{t("Read the rules")}</Link>
             </div>
           </div>

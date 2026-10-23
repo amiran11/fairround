@@ -9,7 +9,7 @@ import { usePageTitle } from "../meta.js";
 // report a number, it is read live.
 export default function Rules() {
   const { t } = useT();
-  usePageTitle(t("Rules"), t("How FairRound works: members, launch rounds, project lead elections, the treasury and dividends, as the contracts on Arbitrum One enforce them."));
+  usePageTitle(t("Rules"), t("How FairRound works: investors, launch rounds, project lead elections, the treasury and dividends, as the contracts on Arbitrum One enforce them."));
   const [stats] = useChain(getPublicStats, []);
   const maxCit = stats ? int(stats.maxCitizens) : "300,000";
 
@@ -21,13 +21,13 @@ export default function Rules() {
         <p className="muted">{t("This is version 9, live since 14 October 2026.")}</p>
 
         <h2 className="h2">{t("What is real")}</h2>
-        <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The demo launches are fictional; the first twelve on Arbitrum One carry the names of Georgian public companies from the project's first experiment. INVEST is a free test credit with no value when issued. If it later becomes freely tradable, it may get a market price set by demand alone; nobody guarantees that, and it is not an investment product.", { network: ACTIVE_NETWORK.label })}</p>
+        <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The demo listings are fictional; the first twelve on Arbitrum One carry the names of Georgian public companies from the project's first experiment. INVEST is a free test credit with no value when issued. If it later becomes freely tradable, it may get a market price set by demand alone; nobody guarantees that, and it is not an investment product.", { network: ACTIVE_NETWORK.label })}</p>
         <p>{t("No single person can move value out of a project, and nobody, the site administrator included, can move anyone's INVEST or units.")}</p>
 
         <h2 className="h2">{t("What the site administrator can do")}</h2>
-        <p>{t("The site administrator can list projects, approve tokens for project treasuries, change the member limit, choose who may verify members, and switch whether INVEST can be sent between wallets, including freezing it. Because the administrator chooses the verifiers, they could also, in principle, create new members and with them new INVEST.")}</p>
+        <p>{t("The site administrator can list projects, approve tokens for project treasuries, change the investor limit, choose who may verify investors, and switch whether INVEST can be sent between wallets, including freezing it. Because the administrator chooses the verifiers, they could also, in principle, create new investors and with them new INVEST.")}</p>
         <p>{t("These powers go through a public timelock: a change is scheduled first, anyone can see it, and it can only take effect 48 hours later.")}</p>
-        <p>{t("Two powers are instant. The administrator can pause new members, which stops new wallets from verifying and touches nothing else. And through the contracts of the earlier version 8, which still hold INVEST's trading switch, the administrator can make INVEST freely transferable for everyone at once; that can't be undone the same way.")}</p>
+        <p>{t("Two powers are instant. The administrator can pause new investors, which stops new wallets from verifying and touches nothing else. And through the contracts of the earlier version 8, which still hold INVEST's trading switch, the administrator can make INVEST freely transferable for everyone at once; that can't be undone the same way.")}</p>
         {CONTRACT_ADDRESSES.SakartveloTimelock && (
           <p><a href={`${ACTIVE_NETWORK.blockExplorerUrls[0]}/address/${CONTRACT_ADDRESSES.SakartveloTimelock}`} target="_blank" rel="noreferrer">{t("See every scheduled change on Arbiscan")}</a></p>
         )}
@@ -52,8 +52,8 @@ export default function Rules() {
           <li>{t("After every term, holders vote on a dividend, and a new election can start.")}</li>
         </ol>
 
-        <h2 className="h2">{t("Members and INVEST test credits")}</h2>
-        <p>{t("A wallet becomes a member by verifying itself: only ordinary wallets can, the contract checks that it holds at least 0.0083 ETH on {network} (nothing is taken), and at most 50 wallets an hour can verify. Each member then claims 1,000 INVEST, once. There are {max} member places.", { network: ACTIVE_NETWORK.label, max: maxCit })}</p>
+        <h2 className="h2">{t("Investors and INVEST test credits")}</h2>
+        <p>{t("A wallet becomes a investor by verifying itself: only ordinary wallets can, the contract checks that it holds at least 0.0083 ETH on {network} (nothing is taken), and at most 50 wallets an hour can verify. Each investor then claims 1,000 INVEST, once. There are {max} investor places.", { network: ACTIVE_NETWORK.label, max: maxCit })}</p>
         <p>{t("This makes creating wallets cost something, but one person can still verify several. Telling people apart needs real identity checks, which this demo doesn't have yet.")}</p>
         <p>{t("INVEST can be sent between wallets. That was unlocked on 9 October 2026, in an experiment with version 8 whose plan and results are published.")} <a href={LINKS.experiment} target="_blank" rel="noreferrer">{t("Read about the experiment")}</a></p>
 
@@ -99,7 +99,7 @@ export default function Rules() {
         <h2 className="h2">{t("How this was checked")}</h2>
         <p>{t("Version 9 was written to fix the weaknesses found in version 8 and reviewed three times by AI auditors that had not written it, with attack tests on a local chain that copies Arbitrum's limits. Every problem they confirmed was fixed and has a test. It has not been audited by a paid external firm.")} <a href={LINKS.security} target="_blank" rel="noreferrer">{t("Read the security review")}</a></p>
 
-        <p style={{ marginTop: 48 }}><Link to="/" className="btn btn-secondary">{t("Back to the launches")}</Link></p>
+        <p style={{ marginTop: 48 }}><Link to="/" className="btn btn-secondary">{t("Back to the listings")}</Link></p>
       </article>
     </div>
   );

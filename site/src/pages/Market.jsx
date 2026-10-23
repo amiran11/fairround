@@ -107,7 +107,7 @@ export default function Market() {
           <table className="ledger">
             <thead>
               <tr>
-                <th scope="col">{t("Launch")}</th>
+                <th scope="col">{t("Listing")}</th>
                 <th scope="col" className="num-cell">{t("Unit")}</th>
                 <th scope="col" className="num-cell">{t("Price, INVEST")}</th>
                 <th scope="col">{t("Seller")}</th>

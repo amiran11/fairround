@@ -52,7 +52,7 @@ function Issued({ c }) {
 
 export default function Register() {
   const { t } = useT();
-  usePageTitle(null, t("Fair token launches on Arbitrum One: every round clears at one price, small buyers get filled, and the raise sits in a treasury only holders can spend."));
+  usePageTitle(null, t("The on-chain IPO exchange for crypto projects, on Arbitrum One: every listing round clears at one price, small buyers get filled, and the raise sits in a treasury only holders can spend."));
   const navigate = useNavigate();
   const { signer, account } = useSession();
   const [companies, error] = useCompanies();
@@ -65,41 +65,41 @@ export default function Register() {
       <section style={{ padding: "56px 0 40px" }} className="stack">
         <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("Launch without the rug.")}</h1>
         <p className="lede">
-          {t("Every member receives the same 1,000 INVEST and bids it for units in open rounds. Once half of a project is sold, its holders elect a project lead for 30 days at a time, and nothing leaves the project without their vote.")}
+          {t("The on-chain IPO exchange for crypto projects. Projects list through fair rounds: everyone pays the same clearing price, small buyers get filled, and the raise sits in a treasury holders control. Then units trade on the market.")}
         </p>
         <p className="lede muted">
-          {t("The process is real: the contracts run on {network} and every bid, vote and payment is public. The demo launches are fictional, and bids use free test credits.", { network: ACTIVE_NETWORK.label })}
+          {t("The process is real: the contracts run on {network} and every bid, vote and payment is public. The demo listings are fictional, and bids use free test credits.", { network: ACTIVE_NETWORK.label })}
         </p>
         <div className="row" style={{ paddingTop: 8 }}>
-          {needsCitizenship && <Link to="/citizen" className="btn">{t("Join and get test credits")}</Link>}
+          {needsCitizenship && <Link to="/invest" className="btn">{t("Become an investor")}</Link>}
           <Link to="/rules" className="btn btn-secondary">{t("Read the rules")}</Link>
         </div>
       </section>
 
       <section aria-labelledby="register-title">
         <div className="spread" style={{ marginBottom: 12 }}>
-          <h2 id="register-title" className="h2">{t("Launches")}</h2>
+          <h2 id="register-title" className="h2">{t("Listings")}</h2>
           {stats && (
             <p className="small muted num">
-              {t("{n} members have joined, of {max} places", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}
+              {t("{n} investors have joined, of {max} places", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}
             </p>
           )}
         </div>
         {!V9_LIVE ? (
-          <p className="notice">{t("Version 9 is being deployed. The launches appear here once it's live.")}</p>
+          <p className="notice">{t("Version 9 is being deployed. The listings appear here once it's live.")}</p>
         ) : (
           <>
             <ErrorLine error={error} />
             {!companies ? (
               !error && <Loading />
             ) : companies.length === 0 ? (
-              <p className="muted">{t("No launches are listed yet.")}</p>
+              <p className="muted">{t("No projects are listed yet.")}</p>
             ) : (
               <table className="register">
-                <caption className="visually-hidden">{t("Listed launches, their stage, units sold and the raise")}</caption>
+                <caption className="visually-hidden">{t("Listed projects, their stage, units sold and the raise")}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">{t("Launch")}</th>
+                    <th scope="col">{t("Listing")}</th>
                     <th scope="col">{t("Stage")}</th>
                     <th scope="col">{t("Units sold")}</th>
                     <th scope="col" className="num-cell">{t("Raised, INVEST")}</th>

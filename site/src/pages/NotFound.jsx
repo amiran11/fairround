@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <div className="page stack" style={{ paddingTop: 48 }}>
       <h1 className="h2">{t("There's no page at this address.")}</h1>
-      <p><Link to="/" className="btn btn-secondary">{t("Back to the launches")}</Link></p>
+      <p><Link to="/" className="btn btn-secondary">{t("Back to the listings")}</Link></p>
     </div>
   );
 }

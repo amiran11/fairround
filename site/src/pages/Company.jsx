@@ -41,7 +41,7 @@ function CompanyView({ company, companies, n }) {
 
   return (
     <div className="page">
-      <p style={{ paddingTop: 24 }} className="small"><Link to="/">{t("Launches")}</Link> <span className="muted">/ {t("Project {id}", { id: company.id })}</span></p>
+      <p style={{ paddingTop: 24 }} className="small"><Link to="/">{t("Listings")}</Link> <span className="muted">/ {t("Project {id}", { id: company.id })}</span></p>
       <header className="stack-sm" style={{ padding: "16px 0 40px" }}>
         <div className="row" style={{ alignItems: "center" }}>
           <h1 className="h1" lang={n.mainLang} style={{ fontSize: "var(--t-3xl)" }}>{n.main}</h1>
@@ -102,7 +102,7 @@ export default function Company() {
     return (
       <div className="page stack" style={{ paddingTop: 48 }}>
         <h1 className="h2">{t("No project with this number")}</h1>
-        <p><Link to="/">{t("Back to the launches")}</Link></p>
+        <p><Link to="/">{t("Back to the listings")}</Link></p>
       </div>
     );
   }

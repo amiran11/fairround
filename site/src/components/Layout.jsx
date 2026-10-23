@@ -32,7 +32,7 @@ function Account() {
     return <Button kind="secondary" small busy={connecting} onClick={connect}>{t("Connect wallet")}</Button>;
   }
   return (
-    <Link to={account && !account.alreadyClaimed ? "/citizen" : "/portfolio"} className="btn btn-secondary btn-small" title={address}>
+    <Link to={account && !account.alreadyClaimed ? "/invest" : "/portfolio"} className="btn btn-secondary btn-small" title={address}>
       <span className="addr">{short(address)}</span>
       {account && <span className="num muted">{fmt(account.invest, 18, 0)} INVEST</span>}
     </Link>
@@ -60,9 +60,9 @@ function ConnectProblem() {
 export default function Layout() {
   const { t, lang, setLang } = useT();
   const nav = [
-    ["/", t("Launches")],
+    ["/", t("Listings")],
     ["/portfolio", t("Portfolio")],
-    ["/citizen", t("Join")],
+    ["/invest", t("Invest")],
     ["/market", t("Market")],
     ["/rules", t("Rules")],
     ["/whitepaper", t("White paper")],
@@ -105,7 +105,7 @@ export default function Layout() {
         <div className="page colophon-grid">
           <div className="stack-sm prose">
             <p>
-              {t("FairRound is a fair token launch mechanism, live as a demo. The process is real: every round, vote and payment is a transaction on {network} that anyone can check. The demo launches are fictional. INVEST is a free test credit with no value when issued; if it becomes freely tradable, any price it gets comes from demand alone, and nobody guarantees one.", { network: ACTIVE_NETWORK.label })}
+              {t("FairRound is an on-chain IPO exchange for crypto projects, live as a demo. The process is real: every round, vote and payment is a transaction on {network} that anyone can check. The demo listings are fictional. INVEST is a free test credit with no value when issued; if it becomes freely tradable, any price it gets comes from demand alone, and nobody guarantees one.", { network: ACTIVE_NETWORK.label })}
             </p>
             <p className="row">
               <a href={LINKS.repo} target="_blank" rel="noreferrer">{t("Source code")}</a>

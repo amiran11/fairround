@@ -1,13 +1,13 @@
 # FairRound
 
-> Fair token launches on Arbitrum One. A sale runs in hourly rounds; everyone filled in a round pays the same clearing price, at most 150 units sell per round, and oversubscribed rounds fill every bid pro rata. 99% of what buyers pay goes into a project treasury that holders control: every payment is a holder vote with a 5-day delay and a per-term cap, and holders can remove the project lead. Live as a demo: bids use INVEST, a free test credit with no value; the demo launches are fictional.
+> The on-chain IPO exchange for crypto projects, on Arbitrum One. A project lists through a fair sale that runs in hourly rounds; everyone filled in a round pays the same clearing price, at most 150 units sell per round, and oversubscribed rounds fill every bid pro rata. 99% of what buyers pay goes into a project treasury that holders control: every payment is a holder vote with a 5-day delay and a per-term cap, and holders can remove the project lead. Live as a demo: bids use INVEST, a free test credit with no value; the demo listings are fictional.
 
 The site is available in English and Georgian (ქართული). Pages are rendered in the browser and read live data from the contracts.
 
 ## Pages
 
-- [Launches](https://fairround.xyz/): all listed demo launches, their round stage, units sold and the raise
-- [Join](https://fairround.xyz/citizen): verify a wallet (it must hold at least 0.0083 ETH on Arbitrum One; nothing is taken) and claim 1,000 INVEST test credits, once per wallet
+- [Listings](https://fairround.xyz/): all listed demo projects, their round stage, units sold and the raise
+- [Become an investor](https://fairround.xyz/invest): verify a wallet (it must hold at least 0.0083 ETH on Arbitrum One; nothing is taken) and claim 1,000 INVEST test credits, once per wallet
 - [Rules](https://fairround.xyz/rules): the rules the contracts enforce, in plain words
 - [White paper](https://fairround.xyz/whitepaper): how FairRound works and what isn't solved yet
 - [Market](https://fairround.xyz/market): units listed for sale by their holders
@@ -18,7 +18,7 @@ The site is available in English and Georgian (ქართული). Pages are
 - Rounds: up to 150 units a round, one-hour rounds with a one-hour pause between them. Everyone in a round pays the same clearing price. 99% of what is paid goes to the project treasury, 1% to FairRound. Units lock for 7 days.
 - Project lead: elections open at 50% of units sold. A lead wins with yes votes from 20% of the electorate and 51% of votes cast, serves 30 days, and holders can vote to remove them.
 - Treasury: every payment, sale or investment is a holder proposal with a 5-day delay before it runs. At most 20% of a bucket can be spent per term.
-- New members: at most 50 an hour.
+- New investors: at most 50 an hour.
 - Admin: every owner change goes through a public 48-hour timelock.
 
 ## Contracts (Arbitrum One, verified on Arbiscan)

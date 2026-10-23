@@ -7,7 +7,8 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 
 - **Name:** FairRound (one word, capital F and R)
 - **Domain:** fairround.xyz
-- **One line:** Fair token launches on Arbitrum: one clearing price per round, equal access for small buyers, and a raise held in a treasury only holders can spend.
+- **Category:** the on-chain IPO exchange for crypto projects.
+- **One line:** Crypto projects list on FairRound through fair rounds (one clearing price per round, equal access for small buyers, the raise held in a treasury only holders can spend), then their units trade on the market.
 - **Slogan:** Diversified ownership defines the price.
 - **Short tagline:** Launch without the rug.
 - **What we say about competitors:** "MetaDAO's protection, on Arbitrum, without whales taking the sale." Never attack Uniswap's auctions: they are the price-discovery standard; FairRound adds who gets filled and what happens to the money.
@@ -19,14 +20,14 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 - Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange) (rename the link in channel settings to fairround if free)
 - Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange) (same)
 
-Every bio: the one line, then `fairround.xyz`.
+Every bio: "The on-chain IPO exchange for crypto projects. Launch without the rug." then `fairround.xyz`.
 
 ## Two audiences, one call to action
 
 | Audience | What they care about | Hook |
 |---|---|---|
 | **Teams launching a token** (they pay) | Raising money, a wide holder base, not being called a rug | "Buyers have been rugged too often to trust a presale. Launch where the raise is provably safe, and more people buy in." |
-| **Buyers and testers** (they use it) | A fair shot, no snipers, no dump | "Same price as everyone. A real fill. A team that can't run off with the money." |
+| **Investors and testers** (they use it) | A fair shot, no snipers, no dump | "Same price as everyone. A real fill. A team that can't run off with the money." |
 
 **One call to action everywhere:** verify a wallet and bid in the next round.
 
@@ -35,8 +36,8 @@ Every bio: the one line, then `fairround.xyz`.
 | Don't say | Say |
 |---|---|
 | Sakartvelo Exchange, privatization, simulation of a country | FairRound, fair token launch |
-| state company | project, launch |
-| citizen | verified buyer, wallet |
+| state company | project; its sale is a listing |
+| citizen, member | investor |
 | shares | units (demo), tokens (real launches) |
 | company capital | the raise, project treasury |
 | CEO, governor | project lead |

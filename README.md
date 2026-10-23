@@ -1,12 +1,13 @@
 # FairRound
 
-**Launch without the rug.** Fair token launches on Arbitrum: one clearing
-price per round, equal access for small buyers, and a raise held in a
-treasury only holders can spend.
+**Launch without the rug.** The on-chain IPO exchange for crypto projects,
+on Arbitrum: projects list through fair rounds (one clearing price per
+round, equal access for small buyers, the raise held in a treasury only
+holders can spend), then their units trade on the market.
 
 Live at **[fairround.xyz](https://fairround.xyz)** as a working demo on
 Arbitrum One mainnet since 14 October 2026. Bids use INVEST, a free test
-credit with no value; the demo launches are fictional.
+credit with no value; the demo listings are fictional.
 
 ## How it works
 

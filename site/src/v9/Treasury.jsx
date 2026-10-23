@@ -335,7 +335,7 @@ function GovernorTools({ company, companies, holdings, gov }) {
 
       <Act title={t("Propose an investment in another project")}>
         <p className="small">{t("Bids the project's INVEST income ({n} available) in another project's unit auction, never its capital. If it wins, you personally receive 1% of the units it buys, locked for 60 days.", { n: fmt(invest?.income ?? 0n) })}</p>
-        <Field label={t("Launch")}>
+        <Field label={t("Listing")}>
           <Select value={iTarget} onChange={(e) => setITarget(e.target.value)}>
             <option value="">{t("Choose…")}</option>
             {others.filter((c) => !c.finalized).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -354,7 +354,7 @@ function GovernorTools({ company, companies, holdings, gov }) {
               {corpHoldings.map((h) => <li key={h.company.id}>{h.company.name}: {int(h.shares)}</li>)}
             </ul>
             <div className="input-row">
-              <Select aria-label={t("Launch")} value={cTarget} onChange={(e) => setCTarget(e.target.value)}>
+              <Select aria-label={t("Listing")} value={cTarget} onChange={(e) => setCTarget(e.target.value)}>
                 <option value="">{t("Choose…")}</option>
                 {corpHoldings.map((h) => <option key={h.company.id} value={h.company.id}>{h.company.name}</option>)}
               </Select>

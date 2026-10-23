@@ -166,9 +166,9 @@ export default function Portfolio() {
             <div><dt>INVEST</dt><dd>{fmt(data.invest)}</dd></div>
             <div><dt>{t("Units")}</dt><dd>{tn("{n} unit", "{n} units", shareTotal)} {t("in {n} projects", { n: data.holdings.length })}</dd></div>
             <div><dt>{t("Open bids")}</dt><dd>{int(data.bids.length)}</dd></div>
-            <div><dt>{t("Member")}</dt><dd>{data.claimed ? t("Yes, claimed") : data.isVerified ? t("Verified, not claimed yet") : t("No")}</dd></div>
+            <div><dt>{t("Investor")}</dt><dd>{data.claimed ? t("Yes, claimed") : data.isVerified ? t("Verified, not claimed yet") : t("No")}</dd></div>
           </dl>
-          {own && !data.claimed && <p className="small"><Link to="/citizen">{t("Join and get test credits")}</Link></p>}
+          {own && !data.claimed && <p className="small"><Link to="/invest">{t("Become an investor")}</Link></p>}
 
           <section className="section" style={{ marginTop: 40 }} aria-labelledby="p-todo">
             <div className="section-head"><h2 id="p-todo" className="h2">{own ? t("Waiting for you") : t("Waiting for this address")}</h2></div>
@@ -180,12 +180,12 @@ export default function Portfolio() {
           <section className="section" aria-labelledby="p-shares">
             <div className="section-head"><h2 id="p-shares" className="h2">{t("Units")}</h2></div>
             {data.holdings.length === 0 ? (
-              <Muted>{own ? <>{t("No units yet.")} <Link to="/">{t("Choose a launch on the Launches page")}</Link></> : t("No units.")}</Muted>
+              <Muted>{own ? <>{t("No units yet.")} <Link to="/">{t("Choose a listing on the Listings page")}</Link></> : t("No units.")}</Muted>
             ) : (
               <table className="ledger">
                 <thead>
                   <tr>
-                    <th scope="col">{t("Launch")}</th>
+                    <th scope="col">{t("Listing")}</th>
                     <th scope="col" className="num-cell">{t("Units")}</th>
                     <th scope="col" className="num-cell">{t("Of the project")}</th>
                     <th scope="col" className="hide-sm">{t("Stage")}</th>
@@ -213,7 +213,7 @@ export default function Portfolio() {
               <table className="ledger">
                 <thead>
                   <tr>
-                    <th scope="col">{t("Launch")}</th>
+                    <th scope="col">{t("Listing")}</th>
                     <th scope="col" className="num-cell">{t("Committed, INVEST")}</th>
                     <th scope="col" className="num-cell">{t("Up to, per unit")}</th>
                     <th scope="col">{t("Round closes")}</th>
