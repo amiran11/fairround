@@ -5,8 +5,7 @@ then on **Robinhood Chain**. Same contracts, same steps, same values; only
 the network in MetaMask changes. About 2 hours each with Claude guiding.
 
 The code is the audited v9 code with FairRound names written on-chain
-(unit NFTs "FairRound Unit" / FRUNIT, test credits "FairRound Test Credit"
-/ INVEST, the timelock "FairRoundTimelock"). **Tested:** 134 contract tests
+(unit NFTs "FairRound Unit" / FRUNIT, test credits "Unrig" / UNRIG, the timelock "FairRoundTimelock"). **Tested:** 134 contract tests
 and this exact sequence (`test/rehearse-fairround-deploy.mjs`, 29 checks)
 pass on a local chain with Arbitrum's limits.
 
@@ -64,7 +63,7 @@ owner wallet, the right network (Arbitrum One = 42161; Robinhood = 4663).
 
 Deploy in table order. After each one, copy the address into the table and
 check in **Deployed Contracts**:
-- #1 **name** = `FairRound Test Credit`, **symbol** = `INVEST`, **maxCitizens** = `10000`
+- #1 **name** = `Unrig`, **symbol** = `UNRIG`, **maxCitizens** = `10000`
 - #2 **name** = `FairRound Unit`, **symbol** = `FRUNIT`; has **placeCorporateBid**
 - #4 has **proposeInvest**
 - #6 **HOURLY_CAP** = `50`
@@ -124,7 +123,7 @@ is no v8 trading switch any more, so that second instant power is gone.)
    settings as Part 1. Arbitrum: Arbiscan. Robinhood: Blockscout (chain 4663).
 2. **Test yourself:** verify your wallet on OV, **claim** on IT, then
    **approve** RA and **placeBid**(0, `10000000000000000000`,
-   `10000000000000000000`) = 10 credits at most 10 each. After the round
+   `10000000000000000000`) = 10 UNRIG at most 10 each. After the round
    settles you hold one FairRound Unit.
 3. **Send Claude both tables** (14 addresses, two block numbers). Claude
    updates the site: a network switch (Arbitrum One / Robinhood Chain), the

@@ -19,7 +19,7 @@ const deploy = async (n, ...a) => { const c = await new ethers.ContractFactory(a
 
 console.log("Part 2 — deploy (7 contracts)");
 const IT = await deploy("InvestToken", 10000); const it = await IT.getAddress();
-ok((await IT.symbol()) === "INVEST" && (await IT.name()) === "FairRound Test Credit" && (await IT.maxCitizens()) === 10000n, "2.1 InvestToken: symbol INVEST, maxCitizens 10000");
+ok((await IT.symbol()) === "UNRIG" && (await IT.name()) === "Unrig" && (await IT.maxCitizens()) === 10000n, "2.1 InvestToken: name Unrig, symbol UNRIG, maxCitizens 10000");
 const RA9 = await deploy("RoundAuctionV9", it); const ra9 = await RA9.getAddress();
 const GOV9 = await deploy("GovernanceV9", ra9); const gov9 = await GOV9.getAddress();
 const CT9 = await deploy("CompanyTreasuryV9", it, ra9, gov9); const ct9 = await CT9.getAddress();
@@ -62,7 +62,7 @@ console.log("Smoke test — a new wallet uses it");
 const u = S[5];
 await w(OV2.connect(u).verifySelf());
 await w(IT.connect(u).claim());
-ok((await IT.balanceOf(u.address)) === E(1000), "wallet verified with OV2 and claimed 1,000 test credits");
+ok((await IT.balanceOf(u.address)) === E(1000), "wallet verified with OV2 and claimed 1,000 UNRIG test credits");
 threw = false; try { await w(IT.connect(u).transfer(S[6].address, E(1))); } catch { threw = true; }
 ok(threw, "test credits can't be sent wallet to wallet (closed loop, tradability unset)");
 await w(IT.connect(u).approve(ra9, ethers.MaxUint256));

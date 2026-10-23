@@ -101,7 +101,7 @@ contract InvestToken is ERC20, Ownable {
     event CitizenVerified(address indexed citizen, bool verified);
     event MaxCitizensSet(uint256 newMax);
 
-    constructor(uint256 _maxCitizens) ERC20("FairRound Test Credit", "INVEST") Ownable(msg.sender) {
+    constructor(uint256 _maxCitizens) ERC20("Unrig", "UNRIG") Ownable(msg.sender) {
         maxCitizens = _maxCitizens;
         emit MaxCitizensSet(_maxCitizens);
     }
