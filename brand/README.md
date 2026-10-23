@@ -34,3 +34,13 @@ Georgian. Both are free (SIL Open Font License).
 | `youtube-thumbnail-ka-1280x720.png` | 1280×720 | YouTube thumbnail (Georgian) |
 
 The site's link preview image is `site/public/og-image.png`.
+
+### X (@investtoken1), in `x/`
+
+| File | Size | Where |
+|---|---|---|
+| `x/x-profile-400.png` | 400×400 | Profile picture (full-bleed, survives the circle crop) |
+| `x/x-header-1500x500.png` | 1500×500 | Header. Text sits centre-right, clear of the profile picture |
+| `x/x-post-how-it-works-1600x900.png` | 1600×900 | Pinned post: the three rules |
+| `x/x-post-become-a-citizen-1600x900.png` | 1600×900 | Call to action (English) |
+| `x/x-post-become-a-citizen-ka-1600x900.png` | 1600×900 | Call to action (Georgian) |
