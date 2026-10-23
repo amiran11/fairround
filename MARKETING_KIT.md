@@ -1,5 +1,11 @@
 # Marketing kit
 
+## Identity
+
+- **Vision:** A fair, open launch mechanism on Arbitrum, running round after round, that any project can use and anyone can verify.
+- **Slogan:** Diversified ownership defines the price.
+- **Line for the idea and the paper:** Ownership first. Markets after.
+
 Two waves. **Wave 1 (now): millennial voice**, the generation that watched
 the 1990s voucher privatization happen to their parents. **Wave 2 (later):
 Gen Z voice**, crypto-native, tired of insiders and whales. Same product,
