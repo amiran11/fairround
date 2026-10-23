@@ -1,8 +1,6 @@
-# Deploy checklist: FairRound, fresh, on Arbitrum One and Robinhood Chain
+# Deploy checklist: FairRound, fresh, on Arbitrum One
 
-Saturday plan: run this whole checklist **twice**, first on **Arbitrum One**,
-then on **Robinhood Chain**. Same contracts, same steps, same values; only
-the network in MetaMask changes. About 2 hours each with Claude guiding.
+One chain only: **Arbitrum One** (decided 23 October: two separate UNRIG tokens on two chains would confuse people). About 2 hours with Claude guiding.
 
 The code is the audited v9 code with FairRound names written on-chain
 (unit NFTs "FairRound Unit" / FRUNIT, test credits "Unrig" / UNRIG, the timelock "FairRoundTimelock"). **Tested:** 134 contract tests (with the 5% treasury cap)
@@ -18,17 +16,17 @@ receipt has a real block number (not 1, 2, 3: that's the Remix VM).
 
 ## Address tables (fill in as you go)
 
-| # | Contract | Constructor input | Arbitrum One | Robinhood Chain |
-|---|---|---|---|---|
-| 1 | InvestToken (IT) | `_maxCitizens` = `10000` | | |
-| 2 | RoundAuctionV9 (RA) | `_investToken` = #1 | | |
-| 3 | GovernanceV9 (GOV) | `_shares` = #2 | | |
-| 4 | CompanyTreasuryV9 (CT) | #1, #2, #3 | | |
-| 5 | CompanyDividendsV9 (DV) | #1, #2, #3 | | |
-| 6 | OpenVerifierV2 (OV) | #1, your wallet | | |
-| 7 | FairRoundTimelock (TL) | your wallet | | |
+| # | Contract | Constructor input | Address (Arbitrum One) |
+|---|---|---|---|
+| 1 | InvestToken (IT) | `_maxCitizens` = `10000` | |
+| 2 | RoundAuctionV9 (RA) | `_investToken` = #1 | |
+| 3 | GovernanceV9 (GOV) | `_shares` = #2 | |
+| 4 | CompanyTreasuryV9 (CT) | #1, #2, #3 | |
+| 5 | CompanyDividendsV9 (DV) | #1, #2, #3 | |
+| 6 | OpenVerifierV2 (OV) | #1, your wallet | |
+| 7 | FairRoundTimelock (TL) | your wallet | |
 
-Also write down the **block number of #1** on each chain (the receipt
+Also write down the **block number of #1** (the receipt
 shows it).
 
 ---
@@ -37,15 +35,9 @@ shows it).
 
 1. **Merge pull request #7** on GitHub (the contracts in Remix must come
    from the merged `contracts/` folder).
-2. **Gas.** About 0.005 ETH on each chain in the owner wallet.
-   - Arbitrum One: you already have ETH there.
-   - Robinhood Chain: portal.arbitrum.io → Bridge → from **Arbitrum One**
-     to **Robinhood Chain** → 0.005 ETH. Arrives in minutes.
-3. **Robinhood Chain in MetaMask** (once): network menu → **Add a custom
-   network**: name `Robinhood Chain`, RPC `https://rpc.mainnet.chain.robinhood.com`,
-   chain ID `4663`, symbol `ETH`, explorer `https://robinhoodchain.blockscout.com`.
+2. **Gas.** About 0.005 ETH on Arbitrum One in the owner wallet.
 
-## Part 1 — Compile in Remix (once, for both chains)
+## Part 1 — Compile in Remix
 
 1. remix.ethereum.org → **File explorer** → new folder `fairround` → upload
    from the repo's `contracts/` folder: `InvestToken.sol`,
@@ -59,7 +51,7 @@ shows it).
 ## Part 2 — Deploy (7 transactions)
 
 **Deploy & run** → Environment **Injected Provider - MetaMask** → your
-owner wallet, the right network (Arbitrum One = 42161; Robinhood = 4663).
+owner wallet, network **Arbitrum One** (42161).
 
 Deploy in table order. After each one, copy the address into the table and
 check in **Deployed Contracts**:
@@ -114,7 +106,6 @@ no 48-hour wait later:
 | 3.10 | setApprovedToken | WETH, `true` | **approvedToken**(WETH) = true |
 
 - Arbitrum One: USDC `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`, WETH `0x82aF49447D8a07e3bd95BD0d56f35241523fBab1`.
-- Robinhood Chain: Claude looks up the official USDC and WETH addresses on Saturday morning; skip 3.9–3.10 there if they aren't confirmed.
 
 **Do NOT touch** on IT: **setRoundAuctionForTradability** and
 **setAuctionHouse** (leave unset: test credits stay closed-loop), and never
@@ -134,13 +125,13 @@ is no v8 trading switch any more, so that second instant power is gone.)
 
 ## Part 5 — Verify, test, send
 
-1. **Verify** all seven: Remix **Contract Verification** plugin, same
-   settings as Part 1. Arbitrum: Arbiscan. Robinhood: Blockscout (chain 4663).
+1. **Verify** all seven on Arbiscan: Remix **Contract Verification**
+   plugin, same settings as Part 1.
 2. **Test yourself:** verify your wallet on OV, **claim** on IT, then
    **approve** RA and **placeBid**(3, `10000000000000000000`,
    `10000000000000000000`) = 10 UNRIG at most 10 each, in Spartans. After
    the round settles you hold FairRound Units.
-3. **Send Claude both tables** (14 addresses, two block numbers). Claude
-   updates the site: a network switch (Arbitrum One / Robinhood Chain), the
-   new addresses, Rules page disclosures, README, llms.txt. You merge.
-4. **Resubmit on HackQuest** with both deployments.
+3. **Send Claude the table** (7 addresses and the block of #1). Claude
+   updates the site: the new addresses, UNRIG wording, Rules page
+   disclosures, README, llms.txt. You merge.
+4. **Resubmit on HackQuest.**
