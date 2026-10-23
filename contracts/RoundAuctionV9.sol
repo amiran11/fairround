@@ -18,7 +18,7 @@ interface IGovernanceV9Read {
 }
 
 /// @title RoundAuctionV9
-/// @notice Proportional, round-based privatization auction for share NFTs.
+/// @notice FairRound: proportional, round-based listing auction for unit NFTs.
 /// Rebuilt from v8 after the audit in SECURITY_REVIEW.md (Findings 30, 31,
 /// 38, 39, 40 and the lower-severity notes).
 ///
@@ -64,7 +64,7 @@ interface IGovernanceV9Read {
 contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     using Checkpoints for Checkpoints.Trace208;
 
-    string public constant DISCLAIMER = "FICTIONAL SIMULATION. Not a real financial product, security, or claim on any real-world asset. Any resemblance to real entities is a gamified rule-set only.";
+    string public constant DISCLAIMER = "DEMO WITH TEST CREDITS. Not a real financial product, security, or claim on any real-world asset. Demo listings are fictional.";
 
     IERC20 public immutable investToken;
     uint256 public nextTokenId;
@@ -151,7 +151,7 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
     event ShareSold(uint256 indexed tokenId, address seller, address indexed buyer, uint256 price);
     event ListingCancelled(uint256 indexed tokenId);
 
-    constructor(address _investToken) ERC721("Sovereign Share v9", "RSHARE9") Ownable(msg.sender) {
+    constructor(address _investToken) ERC721("FairRound Unit", "FRUNIT") Ownable(msg.sender) {
         require(_investToken != address(0), "RA: zero address");
         investToken = IERC20(_investToken);
         host = msg.sender;
@@ -719,16 +719,16 @@ contract RoundAuctionV9 is ERC721, Ownable, ReentrancyGuard {
         string memory total = Strings.toString(c.totalShares);
         string memory svg = string(abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">',
-            '<rect width="400" height="400" fill="#141B18"/>',
-            '<circle cx="200" cy="180" r="130" fill="none" stroke="#C98A3E" stroke-width="8"/>',
-            '<text x="200" y="140" font-family="serif" font-weight="bold" font-size="22" fill="#EDE6D6" text-anchor="middle">', c.name, '</text>',
-            '<text x="200" y="190" font-family="monospace" font-size="18" fill="#C98A3E" text-anchor="middle">SHARE ', ord, ' OF ', total, '</text>',
-            '<text x="200" y="360" font-family="monospace" font-size="10" fill="#EDE6D6" opacity="0.5" text-anchor="middle">FICTIONAL SIMULATION - NOT A REAL FINANCIAL PRODUCT</text>',
+            '<rect width="400" height="400" fill="#F4F4F1"/>',
+            '<circle cx="200" cy="180" r="130" fill="none" stroke="#3B3A9F" stroke-width="8"/>',
+            '<text x="200" y="140" font-family="sans-serif" font-weight="bold" font-size="22" fill="#1B1D21" text-anchor="middle">', c.name, '</text>',
+            '<text x="200" y="190" font-family="monospace" font-size="18" fill="#3B3A9F" text-anchor="middle">UNIT ', ord, ' OF ', total, '</text>',
+            '<text x="200" y="360" font-family="monospace" font-size="10" fill="#1B1D21" opacity="0.5" text-anchor="middle">FAIRROUND DEMO - NOT A FINANCIAL PRODUCT</text>',
             '</svg>'
         ));
         string memory json = string(abi.encodePacked(
-            '{"name":"', c.name, ' - Share ', ord, '/', total, '",',
-            '"description":"Sovereign Share NFT (v9) from a fictional privatization simulation. Not a real financial product, security, or claim on any real-world asset.",',
+            '{"name":"', c.name, ' - Unit ', ord, '/', total, '",',
+            '"description":"FairRound unit from a demo listing. Not a real financial product, security, or claim on any real-world asset.",',
             '"image":"data:image/svg+xml;base64,', Base64.encode(bytes(svg)), '"}'
         ));
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.sakartvelo-exchange.com/sitemap.xml
+Sitemap: https://fairround.xyz/sitemap.xml

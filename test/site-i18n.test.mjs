@@ -17,7 +17,7 @@ function scan(s, p) {
   if (p.endsWith("liveUtils.js")) for (const m of s.matchAll(new RegExp(String.raw`return ` + str, "g"))) keys.add(JSON.parse(`"${m[1]}"`));
 }
 walk(root);
-const extra = ["You cancelled the transaction in MetaMask."];
+const extra = ["You cancelled the transaction in MetaMask.", "Telegram channel", "Telegram group"]; // footer social labels, translated via t(label)
 extra.forEach((k) => keys.add(k));
 const ka = process.argv[3] ? (await import(path.resolve(process.argv[3]))).default : {};
 const NOISE = new Set(["", "0%", "…"]);

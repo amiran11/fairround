@@ -1,0 +1,36 @@
+Part 2 — deploy (7 contracts)
+  PASS 2.1 InvestToken: name Unrig, symbol UNRIG, maxCitizens 10000
+  PASS 2: InvestToken deployed, 5198 bytes
+  PASS 2: RoundAuctionV9 deployed, 23424 bytes
+  PASS 2: GovernanceV9 deployed, 15999 bytes
+  PASS 2: CompanyTreasuryV9 deployed, 20564 bytes
+  PASS 2: CompanyDividendsV9 deployed, 7857 bytes
+  PASS 2: OpenVerifierV2 deployed, 1736 bytes
+  PASS 2: FairRoundTimelock deployed, 5488 bytes
+  PASS 2.6 OV2 HOURLY_CAP = 50
+  PASS 2: constructor addresses read back
+Part 3 — wiring
+  PASS 3.1 governance = GOV9
+  PASS 3.2 treasury = CT9
+  PASS 3.3 dividends = DV9
+  PASS 3.4 all 10 tiers listed
+  PASS 3.5 RA9 sink
+  PASS 3.6 CT9 sink
+  PASS 3.7 DV9 sink
+  PASS 3.8 OV2 verifier
+  PASS do-not-touch: tradability and auctionHouse left unset
+Part 4 — timelock
+  PASS 4.1 RA9 owner = TL
+  PASS 4.2 CT9 owner = TL
+  PASS 4.3 InvestToken owner = TL
+  PASS 4: the deploying wallet can no longer list directly
+Smoke test — a new wallet uses it
+  PASS wallet verified with OV2 and claimed 1,000 UNRIG test credits
+  PASS test credits can't be sent wallet to wallet (closed loop, tradability unset)
+  PASS bid escrowed in RA9 (spending into a sink works)
+  PASS round settled: the wallet holds a unit
+  PASS unit NFT minted to the wallet
+  PASS unit metadata says FairRound: The Chosen One - Unit 1/1
+
+29 passed, 0 failed
+EXIT 0

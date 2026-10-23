@@ -77,7 +77,7 @@ Sakartvelo Exchange is a simulation of the privatization process on Arbitrum. Th
 Take part: https://www.sakartvelo-exchange.com/live
 White paper: https://www.sakartvelo-exchange.com/whitepaper
 Research paper (SSRN): https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7419018
-Experiment note: https://github.com/amiran11/sakartvelo-exchange/blob/main/EXPERIMENT_EARLY_TRADABILITY.md
+Experiment note: https://github.com/amiran11/fairround/blob/main/EXPERIMENT_EARLY_TRADABILITY.md
 Reddit: https://www.reddit.com/r/SakartveloExchange
 
 Chapters

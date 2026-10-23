@@ -37,14 +37,14 @@ function TodoItem({ item }) {
   const { t, tn } = useT();
   const n = item.weight ?? 0n;
   const text = {
-    acceptKey: t("The CEO named this wallet as the operating key. Accept it to act for the company."),
+    acceptKey: t("The project lead named this wallet as the operating key. Accept it to act for the project."),
     reveal: t("Reveal your sealed bid on proposal {id}. An unrevealed bid loses its deposit.", { id: item.proposal?.toString() }),
-    recall: tn("Vote on recalling the CEO with {n} share.", "Vote on recalling the CEO with {n} shares.", n),
-    elect: tn("Vote in the election with {n} share.", "Vote in the election with {n} shares.", n),
-    nominate: tn("Back a candidate in the election with {n} share.", "Back a candidate in the election with {n} shares.", n),
-    proposal: tn("Vote on proposal {id} with {n} share.", "Vote on proposal {id} with {n} shares.", n, { id: item.proposal?.toString() }),
-    dividendVote: tn("Vote on the dividend for term {term} with {n} share.", "Vote on the dividend for term {term} with {n} shares.", n, { term: item.term }),
-    dividend: t("Claim a {amount} INVEST dividend for term {term}.", { amount: fmt(item.amount ?? 0n, 18, 4), term: item.term }),
+    recall: tn("Vote on recalling the project lead with {n} unit.", "Vote on recalling the project lead with {n} units.", n),
+    elect: tn("Vote in the election with {n} unit.", "Vote in the election with {n} units.", n),
+    nominate: tn("Back a candidate in the election with {n} unit.", "Back a candidate in the election with {n} units.", n),
+    proposal: tn("Vote on proposal {id} with {n} unit.", "Vote on proposal {id} with {n} units.", n, { id: item.proposal?.toString() }),
+    dividendVote: tn("Vote on the dividend for term {term} with {n} unit.", "Vote on the dividend for term {term} with {n} units.", n, { term: item.term }),
+    dividend: t("Claim a {amount} UNRIG dividend for term {term}.", { amount: fmt(item.amount ?? 0n, 18, 4), term: item.term }),
     auctionClaim: item.won ? t("Claim what you won on proposal {id}.", { id: item.proposal?.toString() }) : t("Claim back your bid and deposit from proposal {id}.", { id: item.proposal?.toString() }),
   }[item.kind];
   return (
@@ -120,7 +120,7 @@ export default function Portfolio() {
   const { address: me, connect, connecting } = useSession();
   const target = params.address || me;
   const own = !!me && same(target, me);
-  usePageTitle(own || !target ? t("Your portfolio") : t("Portfolio"), t("Shares, bids and open votes of an address on Sakartvelo Exchange, read live from the chain."));
+  usePageTitle(own || !target ? t("Your portfolio") : t("Portfolio"), t("Units, bids and open votes of an address on FairRound, read live from the chain."));
 
   // Reject a malformed address in the URL before reading anything.
   const valid = !params.address || /^0x[0-9a-fA-F]{40}$/.test(params.address);
@@ -131,7 +131,7 @@ export default function Portfolio() {
     return (
       <div className="page stack" style={{ paddingTop: 48 }}>
         <h1 className="h1">{t("Your portfolio")}</h1>
-        <p className="lede">{t("Your shares, open bids and anything waiting for your vote or claim, in one place. Connect a wallet to see yours. Everything on the exchange is public, so you can also look up any address.")}</p>
+        <p className="lede">{t("Your units, open bids and anything waiting for your vote or claim, in one place. Connect a wallet to see yours. Everything on FairRound is public, so you can also look up any address.")}</p>
         <div><Button busy={connecting} onClick={connect}>{t("Connect wallet")}</Button></div>
         <div style={{ paddingTop: 24 }}><Lookup /></div>
       </div>
@@ -163,12 +163,12 @@ export default function Portfolio() {
       {!data ? !error && <div style={{ paddingTop: 32 }}><Loading /></div> : (
         <>
           <dl className="facts" style={{ margin: "40px 0 8px" }}>
-            <div><dt>INVEST</dt><dd>{fmt(data.invest)}</dd></div>
-            <div><dt>{t("Shares")}</dt><dd>{tn("{n} share", "{n} shares", shareTotal)} {t("in {n} companies", { n: data.holdings.length })}</dd></div>
+            <div><dt>UNRIG</dt><dd>{fmt(data.invest)}</dd></div>
+            <div><dt>{t("Units")}</dt><dd>{tn("{n} unit", "{n} units", shareTotal)} {t("in {n} projects", { n: data.holdings.length })}</dd></div>
             <div><dt>{t("Open bids")}</dt><dd>{int(data.bids.length)}</dd></div>
-            <div><dt>{t("Citizen")}</dt><dd>{data.claimed ? t("Yes, claimed") : data.isVerified ? t("Verified, not claimed yet") : t("No")}</dd></div>
+            <div><dt>{t("Investor")}</dt><dd>{data.claimed ? t("Yes, claimed") : data.isVerified ? t("Verified, not claimed yet") : t("No")}</dd></div>
           </dl>
-          {own && !data.claimed && <p className="small"><Link to="/citizen">{t("Become a citizen")}</Link></p>}
+          {own && !data.claimed && <p className="small"><Link to="/invest">{t("Become an investor")}</Link></p>}
 
           <section className="section" style={{ marginTop: 40 }} aria-labelledby="p-todo">
             <div className="section-head"><h2 id="p-todo" className="h2">{own ? t("Waiting for you") : t("Waiting for this address")}</h2></div>
@@ -178,16 +178,16 @@ export default function Portfolio() {
           </section>
 
           <section className="section" aria-labelledby="p-shares">
-            <div className="section-head"><h2 id="p-shares" className="h2">{t("Shares")}</h2></div>
+            <div className="section-head"><h2 id="p-shares" className="h2">{t("Units")}</h2></div>
             {data.holdings.length === 0 ? (
-              <Muted>{own ? <>{t("No shares yet.")} <Link to="/">{t("Choose a company in the register")}</Link></> : t("No shares.")}</Muted>
+              <Muted>{own ? <>{t("No units yet.")} <Link to="/">{t("Choose a listing on the Listings page")}</Link></> : t("No units.")}</Muted>
             ) : (
               <table className="ledger">
                 <thead>
                   <tr>
-                    <th scope="col">{t("Company")}</th>
-                    <th scope="col" className="num-cell">{t("Shares")}</th>
-                    <th scope="col" className="num-cell">{t("Of the company")}</th>
+                    <th scope="col">{t("Listing")}</th>
+                    <th scope="col" className="num-cell">{t("Units")}</th>
+                    <th scope="col" className="num-cell">{t("Of the project")}</th>
                     <th scope="col" className="hide-sm">{t("Stage")}</th>
                     <th scope="col">{t("Can be sold or moved")}</th>
                   </tr>
@@ -213,9 +213,9 @@ export default function Portfolio() {
               <table className="ledger">
                 <thead>
                   <tr>
-                    <th scope="col">{t("Company")}</th>
-                    <th scope="col" className="num-cell">{t("Committed, INVEST")}</th>
-                    <th scope="col" className="num-cell">{t("Up to, per share")}</th>
+                    <th scope="col">{t("Listing")}</th>
+                    <th scope="col" className="num-cell">{t("Committed, UNRIG")}</th>
+                    <th scope="col" className="num-cell">{t("Up to, per unit")}</th>
                     <th scope="col">{t("Round closes")}</th>
                   </tr>
                 </thead>
@@ -227,15 +227,15 @@ export default function Portfolio() {
 
           {(data.roles.length > 0 || data.listed.length > 0) && (
             <section className="section" aria-labelledby="p-roles">
-              <div className="section-head"><h2 id="p-roles" className="h2">{t("Roles and shares for sale")}</h2></div>
+              <div className="section-head"><h2 id="p-roles" className="h2">{t("Roles and units for sale")}</h2></div>
               <ul className="list">
                 {data.roles.map((r, i) => (
                   <li key={`r${i}`} className="spread">
                     <CompanyLink company={r.company} />
                     <span>
-                      {r.role === "governor" && t("CEO, term {n}.", { n: r.term.toString() })}
+                      {r.role === "governor" && t("Project lead, term {n}.", { n: r.term.toString() })}
                       {r.role === "key" && t("Operating key, term {n}.", { n: r.term.toString() })}
-                      {r.role === "candidate" && t("Candidate for CEO.")}
+                      {r.role === "candidate" && t("Candidate for project lead.")}
                       {r.role === "governor" && !r.hasKey && own && <span className="error-line" style={{ display: "block" }}>{t("No operating key registered yet.")}</span>}
                     </span>
                   </li>
@@ -243,7 +243,7 @@ export default function Portfolio() {
                 {data.listed.map((x) => (
                   <li key={`l${x.tokenId}`} className="spread">
                     <CompanyLink company={data.companies.find((c) => c.id === x.companyId) ?? { id: x.companyId, name: `#${x.companyId}` }} />
-                    <span>{t("Share #{id} offered for {price} INVEST.", { id: x.tokenId.toString(), price: fmt(x.listedAt) })} <Link to="/market">{t("Share market")}</Link></span>
+                    <span>{t("Unit #{id} offered for {price} UNRIG.", { id: x.tokenId.toString(), price: fmt(x.listedAt) })} <Link to="/market">{t("Unit market")}</Link></span>
                   </li>
                 ))}
               </ul>

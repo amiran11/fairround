@@ -19,6 +19,8 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<Register />} />
             <Route path="company/:id" element={<Company />} />
+            <Route path="invest" element={<Citizen />} />
+            {/* The old address of the investor page. */}
             <Route path="citizen" element={<Citizen />} />
             <Route path="market" element={<Market />} />
             <Route path="portfolio" element={<Portfolio />} />

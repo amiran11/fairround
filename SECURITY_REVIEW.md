@@ -82,7 +82,7 @@ spreading unbounded work across multiple calls rather than one.
 1** in our published mechanism-design paper, not just asserted in code
 comments.
 
-**Commit:** [`23424e7`](https://github.com/amiran11/sakartvelo-exchange/commit/23424e7)
+**Commit:** [`23424e7`](https://github.com/amiran11/fairround/commit/23424e7)
 
 ---
 
@@ -99,7 +99,7 @@ the same bid-cap protection every other bidding path enforced.
 RoundAuction's version before this code was ever deployed as the live
 mechanism.
 
-**Commit:** [`4017a70`](https://github.com/amiran11/sakartvelo-exchange/commit/4017a70)
+**Commit:** [`4017a70`](https://github.com/amiran11/fairround/commit/4017a70)
 
 ---
 
@@ -122,7 +122,7 @@ revealed bid amount, with no recovery path.
 **Fix:** `MAX_BIDDERS = 500` cap enforced in `commitBid()`, mirroring
 the existing `MAX_BIDS` pattern used elsewhere in the codebase.
 
-**Commit:** [`15d748f`](https://github.com/amiran11/sakartvelo-exchange/commit/15d748f)
+**Commit:** [`15d748f`](https://github.com/amiran11/fairround/commit/15d748f)
 
 ---
 
@@ -164,7 +164,7 @@ rounding dust from integer division may also go unclaimed in
 aggregate — negligible and bounded, not a fund-loss risk like the
 pattern this replaced.
 
-**Commit:** [`5e41fa5`](https://github.com/amiran11/sakartvelo-exchange/commit/5e41fa5)
+**Commit:** [`5e41fa5`](https://github.com/amiran11/fairround/commit/5e41fa5)
 
 **Later correction:** the "record date tradeoff" described above was
 understated. Reading live share counts at claim time let one holder
@@ -182,7 +182,7 @@ record date.
 
 **Fix:** `adjustCapital()` now enforces a real invariant: RoundAuction always physically holds INVEST tokens equal to the sum of every company's `capital` field. A negative delta (capital being spent) now pays the real tokens out to the treasury at the same moment the ledger updates. A positive delta (capital being credited, e.g. treasury-auction proceeds) requires the treasury to transfer the matching real tokens to RoundAuction earlier in the same transaction — every call site in `CompanyTreasury` that credits capital was updated to do this forwarding explicitly (`settleTreasuryAuction()`, `cancelInvestOffer()`).
 
-**Commit:** [`4756f41`](https://github.com/amiran11/sakartvelo-exchange/commit/4756f41)
+**Commit:** [`4756f41`](https://github.com/amiran11/fairround/commit/4756f41)
 
 ---
 
@@ -194,7 +194,7 @@ record date.
 
 **Fix:** Added a separate `reinvestableIncome` pool per company, entirely distinct from `capital`. `invest()` now draws exclusively from this pool. It is credited only when a company actually receives real income — currently, only via the new `claimDividendAsCorporation()` (Finding 7) — never from the original privatization capital.
 
-**Commit:** [`4756f41`](https://github.com/amiran11/sakartvelo-exchange/commit/4756f41)
+**Commit:** [`4756f41`](https://github.com/amiran11/fairround/commit/4756f41)
 
 ---
 
@@ -206,7 +206,7 @@ record date.
 
 **Fix:** Added `claimDividendAsCorporation(fromCompanyId, dividendCompanyId, term)`, restricted to the origin company's governor, mirroring `voteAsCorporation()`'s pattern. Proceeds are credited directly into the origin company's `reinvestableIncome` pool (Finding 6) — never sent to any individual wallet.
 
-**Commit:** [`4756f41`](https://github.com/amiran11/sakartvelo-exchange/commit/4756f41)
+**Commit:** [`4756f41`](https://github.com/amiran11/fairround/commit/4756f41)
 
 ---
 
@@ -216,7 +216,7 @@ record date.
 
 **Implementation:** Carved out inside `settleRound()`'s existing minting logic (now centralized in a new internal `_mintShares()` helper, used by both the main proportional pass and the stall-breaker fallback, so the rule can't silently apply in one path and not the other). The 1% is rounded down and applies only when the winning bid came from a recognized corporate holder address — ordinary citizen bids are completely unaffected.
 
-**Commit:** [`4756f41`](https://github.com/amiran11/sakartvelo-exchange/commit/4756f41)
+**Commit:** [`4756f41`](https://github.com/amiran11/fairround/commit/4756f41)
 
 ---
 
@@ -235,9 +235,9 @@ record date.
 
 **Fix:** When a round closes with zero votes cast, `tallyRound()` reopens the same round for a fresh voting window instead of reverting or eliminating anyone. Now in `Governance.sol`. Tested with two and with three candidates.
 
-**Commit:** [`96b44a7`](https://github.com/amiran11/sakartvelo-exchange/commit/96b44a7)
+**Commit:** [`96b44a7`](https://github.com/amiran11/fairround/commit/96b44a7)
 
-**Interim mitigation (frontend, commit [`eb734a6`](https://github.com/amiran11/sakartvelo-exchange/commit/eb734a6)):** the site warns before voting is opened and throughout any round with no votes yet, and explains the situation if a round has closed empty. This reduces accidental triggering; it cannot prevent deliberate griefing.
+**Interim mitigation (frontend, commit [`eb734a6`](https://github.com/amiran11/fairround/commit/eb734a6)):** the site warns before voting is opened and throughout any round with no votes yet, and explains the situation if a round has closed empty. This reduces accidental triggering; it cannot prevent deliberate griefing.
 
 ---
 
@@ -251,7 +251,7 @@ This is the same class as Findings 1 and 3, [SWC-128](https://swcregistry.io/doc
 
 **Fix:** `MAX_CANDIDATES` = 20 per election, and a candidate must hold at least 0.1% of the shares issued so far, so the capped slots cannot be cheaply filled with junk candidates. Candidacy also closes once voting opens, so a late entrant can't skip into a runoff. Tallying at the cap measured at 0.59M gas.
 
-**Commit:** [`96b44a7`](https://github.com/amiran11/sakartvelo-exchange/commit/96b44a7)
+**Commit:** [`96b44a7`](https://github.com/amiran11/fairround/commit/96b44a7)
 
 ---
 
@@ -281,7 +281,7 @@ round; bids copied to memory once and sorted there; share data packed
 into one storage slot (cheaper mints). Worst case measured: **22.1M of
 32M gas** (300 shares to 100 distinct new holders), with 31% headroom.
 
-**Commit:** [`0a17f6c`](https://github.com/amiran11/sakartvelo-exchange/commit/0a17f6c)
+**Commit:** [`0a17f6c`](https://github.com/amiran11/fairround/commit/0a17f6c)
 
 ---
 
@@ -299,7 +299,7 @@ bids.
 removed; the cap counts active bids only. A test places 701 bids over
 one company's lifetime.
 
-**Commit:** [`0a17f6c`](https://github.com/amiran11/sakartvelo-exchange/commit/0a17f6c)
+**Commit:** [`0a17f6c`](https://github.com/amiran11/fairround/commit/0a17f6c)
 
 ---
 
@@ -316,7 +316,7 @@ same share twice let a second buyer take it from the first.
 **Fix (v8):** `buyShare()` requires the listing's seller to still own the
 share. Both attacks are reproduced in the tests and now fail.
 
-**Commit:** [`0a17f6c`](https://github.com/amiran11/sakartvelo-exchange/commit/0a17f6c)
+**Commit:** [`0a17f6c`](https://github.com/amiran11/fairround/commit/0a17f6c)
 
 ---
 
@@ -331,7 +331,7 @@ synthetic address with no private key, so those INVEST were lost for good.
 **Fix (v8):** corporate refunds are credited back to the origin company's
 reinvestable income; the tokens never leave RoundAuction.
 
-**Commit:** [`0a17f6c`](https://github.com/amiran11/sakartvelo-exchange/commit/0a17f6c)
+**Commit:** [`0a17f6c`](https://github.com/amiran11/fairround/commit/0a17f6c)
 
 ---
 
@@ -345,7 +345,7 @@ would make every settlement of that company revert.
 
 **Fix (v8):** `_mint` (no receiver callback).
 
-**Commit:** [`0a17f6c`](https://github.com/amiran11/sakartvelo-exchange/commit/0a17f6c)
+**Commit:** [`0a17f6c`](https://github.com/amiran11/fairround/commit/0a17f6c)
 
 ---
 
@@ -364,7 +364,7 @@ ended: entitlement is the shares held then, whatever happens afterwards.
 Tested: shares moved after the record date still pay the original
 holder, and total claims never exceed the pool.
 
-**Commit:** [`96b44a7`](https://github.com/amiran11/sakartvelo-exchange/commit/96b44a7)
+**Commit:** [`96b44a7`](https://github.com/amiran11/fairround/commit/96b44a7)
 
 ---
 
@@ -381,7 +381,7 @@ verified safe" assessed only the missing-holder case and missed this.
 shareholder vote (Finding 16's record-date mechanism) is now the only
 dividend path.
 
-**Commit:** [`96b44a7`](https://github.com/amiran11/sakartvelo-exchange/commit/96b44a7)
+**Commit:** [`96b44a7`](https://github.com/amiran11/fairround/commit/96b44a7)
 
 ---
 
@@ -397,7 +397,7 @@ address (including their own) and approve it single-handedly.
 by shares held when the payment was proposed. Tested: the governor
 alone (10% turnout) fails and the funds return to the company.
 
-**Commit:** [`96b44a7`](https://github.com/amiran11/sakartvelo-exchange/commit/96b44a7)
+**Commit:** [`96b44a7`](https://github.com/amiran11/fairround/commit/96b44a7)
 
 ---
 
@@ -413,7 +413,7 @@ is constant-cost; each bidder claims their own refund or winnings.
 Commit hashes are now bound to the auction id, so a commit can't be
 reused across auctions.
 
-**Commit:** [`96b44a7`](https://github.com/amiran11/sakartvelo-exchange/commit/96b44a7)
+**Commit:** [`96b44a7`](https://github.com/amiran11/fairround/commit/96b44a7)
 
 ---
 
@@ -429,7 +429,7 @@ re-elected a governor.
 
 **Fix:** round ids keep counting up across all terms (`lastRoundId`).
 
-**Commit:** [`bbda6e6`](https://github.com/amiran11/sakartvelo-exchange/commit/bbda6e6)
+**Commit:** [`bbda6e6`](https://github.com/amiran11/fairround/commit/bbda6e6)
 
 ---
 
@@ -448,7 +448,7 @@ reinvested. An end-to-end test now runs the whole chain: asset sale,
 investment, corporate shares with the governor's 1%, corporate vote,
 corporate dividend.
 
-**Commit:** [`bbda6e6`](https://github.com/amiran11/sakartvelo-exchange/commit/bbda6e6)
+**Commit:** [`bbda6e6`](https://github.com/amiran11/fairround/commit/bbda6e6)
 
 ---
 
@@ -462,7 +462,7 @@ elected, possibly never.
 
 **Fix:** the term's end time is recorded when it is reset.
 
-**Commit:** [`96b44a7`](https://github.com/amiran11/sakartvelo-exchange/commit/96b44a7)
+**Commit:** [`96b44a7`](https://github.com/amiran11/fairround/commit/96b44a7)
 
 ---
 

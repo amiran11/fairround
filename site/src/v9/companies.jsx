@@ -6,9 +6,18 @@ import { useChain } from "../components/liveUtils.js";
 import { useT } from "../i18n.jsx";
 import { Stamp } from "../components/ui.jsx";
 import { kaName } from "../names.js";
+import { ACTIVE_NETWORK } from "../web3.js";
 
 export function useCompanies() {
   return useChain(getCompanies, []);
+}
+
+// The listings to show on the Listings page: the first experiment's
+// listings are hidden as soon as any newer listing exists.
+export function visibleListings(list) {
+  const legacy = new Set(ACTIVE_NETWORK.legacyListingIds || []);
+  if (!list || !list.some((c) => !legacy.has(c.id))) return list;
+  return list.filter((c) => !legacy.has(c.id));
 }
 
 export function useCompanyName() {
