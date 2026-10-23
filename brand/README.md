@@ -1,8 +1,8 @@
-# Brand
+# FairRound brand
 
-The site is a public register: plain paper, near-black type, and one ink,
-the violet-blue of an official rubber stamp. The mark is the nine-eyed sun
-(ცხრათვალა მზე).
+Plain paper, near-black type, and one ink: the violet-blue of an official
+stamp. The mark is a round cut into eight equal slices: everyone gets the
+same share of the round.
 
 ## Colours
 
@@ -18,29 +18,35 @@ the violet-blue of an official rubber stamp. The mark is the nine-eyed sun
 
 ## Type
 
-Archivo (variable, the `wdth` axis wide for headlines) and Noto Sans
-Georgian. Both are free (SIL Open Font License).
+Archivo (variable; the `wdth` axis wide for headlines). Noto Sans Georgian
+for Georgian text. Both SIL Open Font License.
+
+## Words
+
+- Name: **FairRound** (one word, capital F and R). Domain: fairround.xyz.
+- Tagline: **Launch without the rug.**
+- Slogan: **Diversified ownership defines the price.**
 
 ## Files
 
 | File | Size | Where |
 |---|---|---|
-| `sakartvelo-icon-256.png` | 256×256 | Profile pictures, app icon (same as the favicon) |
-| `invest-logo-200.png` | 200×200, round, transparent | Token logo for wallets, explorers and listings |
-| `facebook-cover-1640x624.png` | 1640×624 | Facebook page cover (Georgian) |
-| `launch-post-1080x1080.png` | 1080×1080 | Facebook / Instagram launch post (Georgian) |
-| `sakartvelo-banner-1920x384.png` | 1920×384 | X, LinkedIn, YouTube banner |
-| `youtube-thumbnail-1280x720.png` | 1280×720 | YouTube thumbnail (English) |
-| `youtube-thumbnail-ka-1280x720.png` | 1280×720 | YouTube thumbnail (Georgian) |
-
-The site's link preview image is `site/public/og-image.png`.
-
-### X (@investtoken1), in `x/`
-
-| File | Size | Where |
-|---|---|---|
-| `x/x-profile-400.png` | 400×400 | Profile picture (full-bleed, survives the circle crop) |
-| `x/x-header-1500x500.png` | 1500×500 | Header. Text sits centre-right, clear of the profile picture |
+| `fairround-icon-512.png` | 512×512 | App icon, profile pictures with rounded corners (same as the favicon) |
+| `fairround-mark-512.png` | 512×512, transparent | The mark alone, for light backgrounds |
+| `fairround-banner-1920x384.png` | 1920×384 | Reddit, LinkedIn, YouTube, Telegram banner |
+| `x/x-profile-400.png` | 400×400 | X profile picture (full-bleed for the circle crop) |
+| `x/x-header-1500x500.png` | 1500×500 | X header; text sits clear of the profile picture |
 | `x/x-post-how-it-works-1600x900.png` | 1600×900 | Pinned post: the three rules |
-| `x/x-post-become-a-citizen-1600x900.png` | 1600×900 | Call to action (English) |
-| `x/x-post-become-a-citizen-ka-1600x900.png` | 1600×900 | Call to action (Georgian) |
+| `x/x-post-call-for-testers-1600x900.png` | 1600×900 | Call for testers (Open House) |
+| `../site/public/og-image.png` | 1200×630 | Link preview for the site |
+| `../site/public/favicon.svg` | vector | Browser tab icon |
+
+Sakartvelo Exchange images are kept in `archive/`. Token logo
+`invest-logo-200.png` stays: it is the logo of the INVEST test-credit token
+on-chain.
+
+## Regenerating
+
+`make.mjs` renders every image with Playwright from `mark-lib.mjs` (the
+mark). Put `a.woff2` (Archivo) and `g.woff2` (Noto Sans Georgian) in a
+folder, then run `BRAND_TMP=<that folder> REPO=<repo root> node brand/make.mjs`.

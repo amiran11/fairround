@@ -1,226 +1,184 @@
-# Marketing kit
+# FairRound marketing kit
+
+The source for every word here is the FairRound Product Definition doc. The
+Sakartvelo Exchange kit is archived in `docs/archive/`.
 
 ## Identity
 
-- **Vision:** A fair, open launch mechanism on Arbitrum, running round after round, that any project can use and anyone can verify.
+- **Name:** FairRound (one word, capital F and R)
+- **Domain:** fairround.xyz
+- **One line:** Fair token launches on Arbitrum: one clearing price per round, equal access for small buyers, and a raise held in a treasury only holders can spend.
 - **Slogan:** Diversified ownership defines the price.
-- **Line for the idea and the paper:** Ownership first. Markets after.
+- **Short tagline:** Launch without the rug.
+- **What we say about competitors:** "MetaDAO's protection, on Arbitrum, without whales taking the sale." Never attack Uniswap's auctions: they are the price-discovery standard; FairRound adds who gets filled and what happens to the money.
 
 ## Official accounts
 
-- X: [@investtoken1](https://x.com/investtoken1)
-- Reddit: [r/sakartveloexchange](https://www.reddit.com/r/sakartveloexchange/)
-- Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange)
-- Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange)
+- X: [@investtoken1](https://x.com/investtoken1) (rename to @fairround or @fairroundxyz, whichever is free)
+- Reddit: [r/sakartveloexchange](https://www.reddit.com/r/sakartveloexchange/) (keep for now; create r/fairround when there is traffic)
+- Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange) (rename the link in channel settings to fairround if free)
+- Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange) (same)
 
-Put all four in every bio, and the site link in each account's bio.
+Every bio: the one line, then `fairround.xyz`.
 
-## Channel plan
+## Two audiences, one call to action
 
-**One rule for all of it:** every channel points to one action: *verify a wallet and bid in the next round*.
+| Audience | What they care about | Hook |
+|---|---|---|
+| **Teams launching a token** (they pay) | Raising money, a wide holder base, not being called a rug | "Buyers have been rugged too often to trust a presale. Launch where the raise is provably safe, and more people buy in." |
+| **Buyers and testers** (they use it) | A fair shot, no snipers, no dump | "Same price as everyone. A real fill. A team that can't run off with the money." |
 
-**Tier 1, now:** [to fill in from the original list, items 1–4]
+**One call to action everywhere:** verify a wallet and bid in the next round.
 
-**Tier 2, next 2–4 weeks:**
-5. **Farcaster.** Crypto-native, governance-minded, and smaller, so a good post gets noticed.
-6. **Telegram and Discord.** Georgian crypto groups, plus Arbitrum community channels.
-7. **Mirror or Paragraph (crypto-native blogs).** A long-form essay, "Why ICOs repeat the mistake of 1990s vouchers", linking the SSRN paper.
-8. **Mechanism-design and governance researchers.** The paper is a reason to email them; their reposts carry weight.
+## Vocabulary
 
-**Tier 3, once there's traction:**
-9. **Podcasts and Spaces** about governance and fair launches.
-10. **Georgian media and LinkedIn**, for the origin story once there's a number to tell ("X citizens from Y countries").
+| Don't say | Say |
+|---|---|
+| Sakartvelo Exchange, privatization, simulation of a country | FairRound, fair token launch |
+| state company | project, launch |
+| citizen | verified buyer, wallet |
+| shares | units (demo), tokens (real launches) |
+| company capital | the raise, project treasury |
+| CEO, governor | project lead |
+| shareholders | holders |
+| INVEST | test credits |
+| airdrop | (never) |
 
-Two waves. **Wave 1 (now): millennial voice**, the generation that watched
-the 1990s voucher privatization happen to their parents. **Wave 2 (later):
-Gen Z voice**, crypto-native, tired of insiders and whales. Same product,
-same rules, different grievance.
+## Rules for every post
 
-Rules for every post, both waves:
-- It's a simulation: the companies are fictional, the process and the votes are real.
-- Never promise or hint at price or profit (no 🚀, no "early = rich").
-- Don't say "airdrop" (it summons farming bots). Say "1,000 INVEST free, one per citizen".
-- Nobody from the project will ever ask for a secret phrase. Say so often.
-- Georgian Reddit is politically heated: keep politics out of the post itself.
+- Say what is live and what is a demo: today's rounds use free test credits; real-money launches are next.
+- Never hint at price or profit: no rockets, no "early = rich", no "100x".
+- Never say "airdrop": it summons farming bots.
+- Nobody from FairRound will ever ask for a secret phrase or DM first about money. Say so often.
+- Don't post into other projects' channels uninvited. Reply where launches are being discussed.
 
 ---
 
-## Wave 1: millennial
+## Launch posts (English first)
 
-### Facebook (Georgian, personal profile or page)
+Image for all of them: `brand/x/x-post-how-it-works-1600x900.png` (FairRound version).
 
-სტუდენტობიდან ერთ რამეზე ვოცნებობდი: რომ საქართველოს ჰქონოდა ნამდვილი საფონდო ბირჟა. ბირჟა, სადაც ჩვეულებრივი ადამიანი, მასწავლებელი, მძღოლი, სტუდენტი, ქვეყნის კომპანიების მეპატრონე ხდება და მათ ბედს თავად წყვეტს.
+### X: launch thread (6 posts)
 
-დღეს ტელეფონიდან ნიუ-იორკისა და ლონდონის აქციებს ვყიდულობთ, საკუთარი ქვეყნისას კი ვერა.
+1/ Token launches teach buyers to lose. Insiders get in cheap, bots snipe the open, and the team holds the raise. So everyone plays pump and dump.
 
-წლების განმავლობაში მეგობრებთან ერთად ვცდილობდით, დაგვერწმუნებინა საზოგადოება და ხელისუფლება, რომ საყოველთაო პრივატიზაცია სწორედ ამ ოცნებისკენ მიმავალი გზაა. კარები ერთმანეთის მიყოლებით იკეტებოდა.
+FairRound is a launch where the fair outcome is the default. Live on Arbitrum One. 🧵
 
-ამიტომ გადავწყვიტე, აღარ დამელოდა.
+2/ One clearing price per round. Bids collect for an hour, everyone filled pays the same. Being fastest gives you nothing.
 
-სამ თვეში, ეკონომიკის ცოდნით და ხელოვნური ინტელექტის დახმარებით, ავაშენე ვირტუალური საქართველო ბლოკჩეინზე. აქ შეგიძლია გახდე მოქალაქე, აუქციონზე შეიძინო რკინიგზის, ენგურჰესის, ბათუმის პორტის ან საფონდო ბირჟის წილი, აირჩიო კომპანიის აღმასრულებელი და ხმა მისცე, რაში დაიხარჯოს მისი ფული.
+3/ Small buyers actually get filled. Per-round caps and many rounds, so whales can't take the whole sale in one block.
 
-ჯერ ეს მხოლოდ სიმულაციაა. მაგრამ ყოველი ნამდვილი ბირჟა სადღაც, ვიღაცის ოცნებით იწყებოდა.
+4/ The raise isn't the team's wallet. 99% goes into a treasury holders control: every payment is a vote, with a 5-day delay and a spending cap.
 
-ვეძებ პირველ მოქალაქეებს. თუ შენც ასე ფიქრობ, მომწერე. 🇬🇪
+5/ Holders can remove the project lead. Accountability is a contract, not a promise.
 
-🌐 www.sakartvelo-exchange.com
+6/ Live as a working demo with test credits: 7 verified contracts behind a 48h timelock. Try to break it and tell us what you find.
 
-Image: `brand/launch-post-1080x1080.png`. Cover: `brand/facebook-cover-1640x624.png`.
+fairround.xyz
 
-### Reddit, r/Sakartvelo (posted 14 October 2026)
+### X: short call for testers
 
-Posted in Georgian with the "Research" flair. Lessons from the thread:
-- The strongest objection: "a failing factory needs consolidation and private management". Answer: consolidation is allowed (a buyer can reach a majority, publicly, over several rounds) and the buyer's money goes into the company, not the state budget, so privatization recapitalizes it.
-- The best idea: start a real pilot with one enterprise where workers are involved (employee ownership).
-- Everyone spots the weak point at once: people can sell a whole wallet. Proof of personhood is the first thing to fund.
+FairRound is competing at Arbitrum Open House Singapore.
 
-### X / Twitter thread (Georgian, 6 posts)
+Fair token launches: one price per round, small buyers filled, raise locked in a holder treasury.
 
-1/ სტუდენტობიდან ვოცნებობდი ქართულ საფონდო ბირჟაზე. ვერ დაველოდე და ავაშენე. 🧵
+We need 10 minutes: verify a wallet, place one bid, tell us what breaks.
 
-2/ 90-იანებში მშობლებს ვაუჩერები მისცეს. პურში და ჯინსებში გაცვალეს.
+fairround.xyz
+👇 Setup guide below
 
-3/ აქ ყველა იღებს 1,000 INVEST-ს. გაყიდვა შეუძლებელია, მხოლოდ აქციების აუქციონზე იხარჯება.
+### Setup guide (reply, Telegram, DMs)
 
-4/ რკინიგზა, ენგურჰესი, ბათუმის პორტი. საათობრივი აუქციონი, ყველა ერთ ფასს იხდის.
+How to test FairRound (10 minutes):
+1. Install MetaMask and create a wallet. Write the secret phrase on paper; never share it.
+2. Switch to Arbitrum One and hold at least 0.0083 ETH (about $25). It stays yours; nothing is taken, and fees are under a cent.
+3. Open fairround.xyz in MetaMask's browser → verify your wallet → claim your test credits.
+4. Pick a demo launch and bid in the current round.
+5. Tell us what worked and what broke: t.me/sakartveloexchange
 
-5/ ნახევარი გაიყიდა? აქციონერები ირჩევენ აღმასრულებელს. ფული მათი ხმის გარეშე არ გადის.
+It's a demo: test credits have no value. Nobody will ever ask for your secret phrase.
 
-6/ სიმულაციაა, მაგრამ ყოველი ბიდი და ხმა საჯაროა Arbitrum-ზე. გამოსცადე: sakartvelo-exchange.com
+### Telegram / Discord pinned message
+
+**FairRound: fair token launches on Arbitrum**
+One clearing price per round, per-round caps so small buyers get filled, and 99% of the raise in a treasury only holders can spend. Holders can vote out the project lead.
+Live as a demo with test credits. Break it and tell us: fairround.xyz
 
 ### LinkedIn (English)
 
-Since university I've wanted Georgia to have a real stock market: one where a teacher, a driver or a student can own a piece of the country's companies and have a say in how they're run.
+Crypto has a launch problem. Presales let insiders in cheap, bots win public sales, and the money raised sits in a wallet the team controls. Buyers have learned to expect a rug, and honest teams pay for that distrust.
 
-My parents' generation got vouchers in the 1990s. Most traded them for bread, and a few people ended up owning everything. For years, friends and I argued that a fair universal privatization was still the road to a real market. The doors kept closing.
+I built FairRound, a launch mechanism on Arbitrum where the fair outcome is the default:
+- every round clears at one price, so speed and gas wars give no edge;
+- per-round caps and many rounds, so small buyers are filled instead of crowded out;
+- 99% of the raise goes into a treasury holders control, with delays and spending limits;
+- holders can vote out the project lead.
 
-So I built it, as a working simulation on Arbitrum:
-- every citizen gets the same 1,000 INVEST, which can only be spent on share auctions;
-- state companies are sold in hourly public rounds, where everyone pays the same price and the money becomes the company's own capital;
-- once half a company is sold, shareholders elect a CEO, and nothing leaves the company without their vote.
+It's live on Arbitrum One as a working demo, and competing at Arbitrum Open House Singapore. I'm looking for testers, critics, and one team planning a token launch.
 
-The companies are fictional. The process is real, public and verifiable. The mechanism is described in my SSRN paper, "Monetization, Privatization, Capitalization".
+fairround.xyz
 
-I'm looking for testers, critics, researchers, and partners for a first real pilot.
+### Outreach DM to a team planning a launch
 
-sakartvelo-exchange.com
+Hi [name], saw you're planning the [project] token launch. I'm building FairRound on Arbitrum: clearing-price rounds, caps so small buyers get filled, and the raise held in a treasury your holders control, so nobody can call it a rug.
 
-### Discord / Telegram (short, can be pinned)
-
-🇬🇪 **Sakartvelo Exchange: a privatization simulation where citizens own the country**
-Every citizen gets the same 1,000 INVEST and bids for shares in the Railway, Enguri, Batumi Port and more, in public hourly auctions. Shareholders elect a CEO and vote on every lari spent. Everything is verifiable on-chain. It's a simulation: free, not an investment, fictional companies.
-Looking for the first testers who want to break it 👉 sakartvelo-exchange.com
-
-### How to join (paste in comments and private messages)
-
-**როგორ გავხდე ვირტუალური საქართველოს მოქალაქე (5 წუთი):**
-
-1️⃣ ტელეფონზე დააყენე **MetaMask** და შექმენი საფულე. **საიდუმლო ფრაზა ჩაიწერე ქაღალდზე და არავის აჩვენო.** მას არასდროს არავინ მოგთხოვს, არც მე.
-
-2️⃣ MetaMask-ში ქსელად აირჩიე **Arbitrum One**, დააჭირე **Buy** და ბარათით იყიდე დაახლოებით **$25-ის ETH**.
-
-3️⃣ MetaMask-ის ბრაუზერში გახსენი **www.sakartvelo-exchange.com** → **მოქალაქე** → დაადასტურე საფულე → მიიღე **1,000 INVEST**.
-
-4️⃣ აირჩიე კომპანია და გააკეთე პირველი ბიდი 🇬🇪
-
-ETH შენს საფულეში რჩება. ტრანზაქციები ცენტზე ნაკლები ღირს.
+It's live as a demo now. Would you look at it for 10 minutes and tell me what would stop you from launching this way? fairround.xyz
 
 ---
 
-## Wave 2: Gen Z (for later)
+## Georgian versions (for the existing Georgian network)
 
-What they're tired of: VC tokens where insiders dumped on them; launches sniped by bots; DAOs run by a few whales; never owning anything real.
+### Facebook / Telegram
 
-| Their pain | The answer |
-|---|---|
-| Insiders and VCs get in first | No presale, no team allocation. Everyone starts with the same 1,000 INVEST, the founder too. |
-| Bots snipe the launch | Hourly rounds, one price for everyone. Being fastest doesn't help. |
-| Whales run the DAO | Max 150 shares a round; takeovers are slow and public. Recall: vote the CEO out. |
-| Rug pulls | Admin powers on a public 48-hour timelock, every power disclosed, code verified. |
-| Owning nothing | Shares in a port, a railway, a power plant (simulated), with a real vote. |
+🇬🇪 ჩემი პროექტი ახლა FairRound-ია
 
-Hooks:
-- "Free 1,000 INVEST. No presale. No VCs. No insiders. Same bag for everyone."
-- "Your parents got vouchers. You get a wallet. Let's see who does better."
-- "Become CEO of a virtual Enguri. If the shareholders elect you."
-- "Whales welcome. Their money goes into the company, not your exit."
-- "Every bid on-chain. Every vote on-chain. Nobody can rug it, including me."
+წინა კვირებში ბევრმა გამოსცადა Sakartvelo Exchange. Arbitrum-ის Open House-ზე, სინგაპურში, მენტორებთან ერთად პროდუქტი უფრო ნათლად ჩამოვაყალიბე: FairRound არის სამართლიანი ტოკენების გაშვების მექანიზმი.
 
-Post (X / Instagram / Telegram, Georgian):
+როგორ მუშაობს:
+• ყოველ რაუნდში ყველა ერთ ფასს იხდის, ბოტები ვერ გასწრებენ
+• თითო რაუნდში ლიმიტია, ამიტომ მცირე მყიდველებიც იღებენ წილს
+• შეგროვებული თანხის 99% მიდის ხაზინაში, რომელსაც მფლობელები მართავენ, არა გუნდი
+• მფლობელებს შეუძლიათ გუნდის ლიდერის გადაყენება
 
-1,000 INVEST უფასოდ. პრესეილი არ არის, VC არ არის, ინსაიდერი არ არის. ყველას ერთნაირი ბეგი, მეც.
+დემო რეჟიმშია, სატესტო კრედიტებით. გამოსცადე 10 წუთში და მომწერე, რა არ მუშაობს: fairround.xyz
 
-ამ ფულით ყიდულობ ენგურჰესის, რკინიგზის თუ ბათუმის პორტის აქციებს. საათობრივ აუქციონზე, სადაც ყველა ერთ ფასს იხდის და ბოტი ვერ დაგასწრებს.
+⚠️ სატესტო კრედიტებს ფასი არ აქვს. საიდუმლო ფრაზას არავინ მოგთხოვს.
 
-ნახევარი გაიყიდა? აქციონერები ირჩევენ აღმასრულებელს. მოგეწონა? იყავი ის. ცუდად მართავს? გააგდეთ.
+### X (short)
 
-ყველაფერი on-chain-ზე, Arbitrum-ზე. ვერავინ დაარაგავს, ვერც მე.
+ჩემი პროექტი ახლა FairRound-ია: სამართლიანი ტოკენების გაშვება Arbitrum-ზე. ერთი ფასი ყველასთვის, ლიმიტი ვეილებისთვის, თანხა მფლობელების ხაზინაში.
 
-სიმულაციაა. კომპანიები გამოგონილია, ხმა ნამდვილია.
-🌐 sakartvelo-exchange.com
+გამოსცადე და მომწერე, რა არ მუშაობს 👇
+fairround.xyz
 
 ---
 
-## Open House Singapore: call for testers (October 2026)
+## Channel plan
 
-Images: `brand/x/x-post-become-a-citizen-ka-1600x900.png` (Georgian), `brand/x/x-post-become-a-citizen-1600x900.png` (English).
+**Tier 1, this week**
+1. **X (@investtoken1 → FairRound):** the launch thread, then one post a day from the five rules.
+2. **Arbitrum community:** Arbitrum Discord and the Open House cohort chat; reply where people discuss launches.
+3. **Telegram:** pin the message above; answer every tester within the hour.
+4. **Georgian network:** the Georgian post, once, explaining the rename.
 
-### Georgian, long (Facebook, Telegram, Reddit)
+**Tier 2, next 2–4 weeks**
+5. **Arbitrum DAO forum:** a post "A fair-launch standard for Arbitrum", with the contracts and the treasury rules.
+6. **Mirror or Paragraph essay:** "Why ICOs repeat the mistake of 1990s vouchers", linking the SSRN paper. This keeps the origin story as content.
+7. **Comparison pages on the site:** "FairRound vs MetaDAO", "FairRound vs Uniswap auctions". People search exactly these.
+8. **DefiLlama listing** in the Arbitrum launchpad category.
+9. **Researchers:** mechanism-design and governance people; the paper is the reason to email.
 
-🇬🇪 საქართველო სინგაპურში! დახმარება გვჭირდება
+**Tier 3, once there's a first real launch**
+10. **Podcasts and X Spaces** about fair launches.
+11. **Case study:** the first project's launch, with its numbers.
 
-Sakartvelo Exchange, ვირტუალური საქართველოს საფონდო ბირჟა, ამ დღეებში სინგაპურში, Arbitrum-ის Open House-ზე, მსოფლიოს სხვა პროექტებს ეჯიბრება.
+Farcaster is on hold: it changed owners twice in 2026 and new-user rules are still settling.
 
-ჟიური უყურებს არა მხოლოდ კოდს, არამედ იმას, იყენებენ თუ არა მას ნამდვილი ადამიანები. ამიტომ გთხოვთ: დაუთმეთ 10 წუთი, გახდით მოქალაქე, გააკეთეთ ერთი ბიდი და მოგვწერეთ, რა მოგეწონათ და სად გაგიჭირდათ. კრიტიკა ყველაზე ძვირფასია.
+---
 
-როგორ (10 წუთი):
-1️⃣ დააყენე MetaMask (ტელეფონზე ან Chrome-ში) და შექმენი საფულე. საიდუმლო ფრაზა ჩაიწერე ქაღალდზე და არავის აჩვენო.
-2️⃣ ქსელად აირჩიე Arbitrum One, დააჭირე Buy და ბარათით იყიდე დაახლოებით $25-ის ETH. საფულეში მინიმუმ 0.0083 ETH უნდა გქონდეს. ის შენთან რჩება, საკომისიო ცენტზე ნაკლებია.
-3️⃣ MetaMask-ის ბრაუზერში გახსენი sakartvelo-exchange.com → მოქალაქე → დაადასტურე საფულე → მიიღე 1,000 INVEST.
-4️⃣ აირჩიე კომპანია და გააკეთე ბიდი მიმდინარე რაუნდში.
-5️⃣ მოგვწერე შთაბეჭდილება: t.me/sakartveloexchange
+## Images
 
-დრო არ გაქვს? ასეც დაგვეხმარები:
-• გამოიწერე X-ზე: @investtoken1
-• გააზიარე ეს პოსტი
-• შემოგვიერთდი Telegram-ზე ან r/sakartveloexchange-ზე
-
-⚠️ ეს სიმულაციაა: კომპანიები გამოგონილია, INVEST უფასოა და გაცემისას ფასი არ აქვს. ეს ინვესტიცია არ არის. საიდუმლო ფრაზას არავინ მოგთხოვს, არც მე.
-
-### Georgian, X (202 characters; put the guide in a reply)
-
-🇬🇪 Sakartvelo Exchange სინგაპურში, Arbitrum-ის Open House-ზე ეჯიბრება!
-
-გვჭირდება შენი 10 წუთი: გახდი მოქალაქე, გააკეთე ერთი ბიდი და მოგვწერე, რა არ მუშაობს.
-
-sakartvelo-exchange.com
-👇 ინსტრუქცია ქვემოთ
-
-### English, long (LinkedIn, Telegram, Reddit, Discord)
-
-🇬🇪 Sakartvelo Exchange is competing at Arbitrum Open House in Singapore, and we need testers.
-
-Judges look at more than code: they want to see real people using it. So here's the ask: give us 10 minutes, become a citizen, place one bid, and tell us what worked and what broke. Honest criticism is worth the most.
-
-How (10 minutes):
-1️⃣ Install MetaMask (phone or Chrome) and create a wallet. Write the secret phrase on paper and never show it to anyone.
-2️⃣ Switch to Arbitrum One, tap Buy, and get about $25 of ETH with a card. The wallet needs at least 0.0083 ETH to verify; it stays yours, and fees are under a cent.
-3️⃣ Open sakartvelo-exchange.com in MetaMask's browser → Citizen → verify your wallet → claim 1,000 INVEST.
-4️⃣ Pick a company and bid in the current round.
-5️⃣ Tell us how it went: t.me/sakartveloexchange
-
-No time? You can still help:
-• Follow @investtoken1 on X
-• Share this post
-• Join us on Telegram or r/sakartveloexchange
-
-⚠️ It's a simulation: the companies are fictional, INVEST is free and has no value when issued. This is not an investment. Nobody from the project will ever ask for your secret phrase.
-
-### English, X (205 characters; put the guide in a reply)
-
-🇬🇪 Sakartvelo Exchange is competing at Arbitrum Open House in Singapore.
-
-We need 10 minutes of your time: become a citizen, place one bid, tell us what breaks.
-
-sakartvelo-exchange.com
-👇 Setup guide below
+All in `brand/`, made by the script in `brand/README.md`:
+- `brand/x/x-profile-400.png`, `brand/x/x-header-1500x500.png`
+- `brand/x/x-post-how-it-works-1600x900.png`, `brand/x/x-post-call-for-testers-1600x900.png`
+- `site/public/og-image.png` (link preview)
