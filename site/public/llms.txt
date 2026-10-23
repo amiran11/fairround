@@ -39,5 +39,5 @@ The site is available in English and Georgian (ქართული). Pages are
 
 ## Optional
 
-- [Source code](https://github.com/amiran11/sakartvelo-exchange)
-- [Security review](https://github.com/amiran11/sakartvelo-exchange/blob/main/SECURITY_REVIEW.md)
+- [Source code](https://github.com/amiran11/fairround)
+- [Security review](https://github.com/amiran11/fairround/blob/main/SECURITY_REVIEW.md)

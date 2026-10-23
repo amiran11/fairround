@@ -7,7 +7,7 @@ import { fmt, short } from "./liveUtils.js";
 import Mark from "./Mark.jsx";
 import ConsentBanner from "./ConsentBanner.jsx";
 
-const REPO = "https://github.com/amiran11/sakartvelo-exchange";
+const REPO = "https://github.com/amiran11/fairround";
 export const LINKS = {
   repo: REPO,
   security: `${REPO}/blob/main/SECURITY_REVIEW.md`,
