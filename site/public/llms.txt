@@ -6,12 +6,12 @@ The site is available in English and Georgian (ქართული). Pages are
 
 ## Pages
 
-- [Listings](https://fairround.xyz/): all listed demo projects, their round stage, units sold and the raise
-- [Become an investor](https://fairround.xyz/invest): verify a wallet (it must hold at least 0.0083 ETH on Arbitrum One; nothing is taken) and claim 1,000 UNRIG test credits, once per wallet
-- [Rules](https://fairround.xyz/rules): the rules the contracts enforce, in plain words
-- [White paper](https://fairround.xyz/whitepaper): how FairRound works and what isn't solved yet
-- [Market](https://fairround.xyz/market): units listed for sale by their holders
-- [Portfolio](https://fairround.xyz/portfolio): look up the units, bids, votes and roles of any address
+- [Listings](https://www.fairround.xyz/): all listed demo projects, their round stage, units sold and the raise
+- [Become an investor](https://www.fairround.xyz/invest): verify a wallet (it must hold at least 0.0083 ETH on Arbitrum One; nothing is taken) and claim 1,000 UNRIG test credits, once per wallet
+- [Rules](https://www.fairround.xyz/rules): the rules the contracts enforce, in plain words
+- [White paper](https://www.fairround.xyz/whitepaper): how FairRound works and what isn't solved yet
+- [Market](https://www.fairround.xyz/market): units listed for sale by their holders
+- [Portfolio](https://www.fairround.xyz/portfolio): look up the units, bids, votes and roles of any address
 
 ## Key rules
 
