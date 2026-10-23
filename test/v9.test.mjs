@@ -426,7 +426,7 @@ console.log("\nCorporate path: reinvest vote -> invest vote -> compensation -> c
   // term 3: invest by vote
   await elect(GOV, 0, cits[2], holders0.slice(0, 10));
   await setKey(GOV, 0, cits[2], cits[35]);
-  await w(RA.listCompany(1, "Target", 100, 10 * DAY));
+  await w(RA.listCompany(1, "Target", 20, 10 * DAY));
   const useAmt = (inc / 20n / E(1)) * E(1); // per-term cap: 5% of the income bucket
   ok(await reverts(async () => CT.connect(cits[35]).proposeInvest(0, 1, inc, E(1)), "over 5%"), "investing is capped at 5% of income per term too");
   const pid0 = await CT.nextProposalId();
