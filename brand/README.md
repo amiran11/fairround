@@ -40,6 +40,7 @@ for Georgian text. Both SIL Open Font License.
 | `x/x-post-call-for-testers-1600x900.png` | 1600×900 | Call for testers (Open House) |
 | `../site/public/og-image.png` | 1200×630 | Link preview for the site |
 | `../site/public/favicon.svg` | vector | Browser tab icon |
+| `unrig-token-logo.svg`, `-512.png`, `-256.png`, `-32.png` | round, transparent corners | UNRIG token logo for Arbiscan/Blockscout token info, CoinGecko, wallets (made by `make-token-logo.mjs`) |
 
 Sakartvelo Exchange images are kept in `archive/`. Token logo
 `invest-logo-200.png` stays: it is the logo of the INVEST test-credit token
