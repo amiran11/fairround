@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
-import { useCompanies, useCompanyName, stageOf, StageStamp } from "../v9/companies.jsx";
+import { useCompanies, useCompanyName, stageOf, StageStamp, visibleListings } from "../v9/companies.jsx";
 import { auctionPhase } from "../v9/chain.js";
 import { getPublicStats, ACTIVE_NETWORK, V9_LIVE } from "../web3.js";
 import { fmt, int, useChain, useCountdown } from "../components/liveUtils.js";
@@ -55,7 +55,8 @@ export default function Register() {
   usePageTitle(null, t("The on-chain IPO exchange for crypto projects, on Arbitrum One: every listing round clears at one price, small buyers get filled, and the raise sits in a treasury only holders can spend."));
   const navigate = useNavigate();
   const { signer, account } = useSession();
-  const [companies, error] = useCompanies();
+  const [allCompanies, error] = useCompanies();
+  const companies = visibleListings(allCompanies);
   const [stats] = useChain(getPublicStats, []);
   const name = useCompanyName();
   const needsCitizenship = !signer || (account && !account.alreadyClaimed);

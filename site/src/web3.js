@@ -20,6 +20,11 @@ export const NETWORKS = {
     // block, the first contract deployed, so no event can be earlier.
     deploymentBlock: 512862832, // InvestToken deploy, 8 Oct 2026
     v9DeploymentBlock: 514727826, // RoundAuctionV9 deploy, 14 Oct 2026
+    // Listing ids 0-19 belong to the project's first experiment (Georgian
+    // company names). FairRound listings start at id 20. Once any of those
+    // exists, the Listings page hides 0-19; their own pages, holdings and
+    // votes keep working.
+    legacyListingIds: Array.from({ length: 20 }, (_, i) => i),
     addresses: {
       InvestToken: "0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a",
       OpenVerifier: "0x444653dDbBb24B24bcD8D674e30b371800Cc2ad2",

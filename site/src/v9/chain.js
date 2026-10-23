@@ -37,7 +37,7 @@ export async function getRules(provider) {
 
 // ------------------------------------------------------------------ companies
 
-const PROBE = 24; // company ids 0..23; listings are by id, not by event index
+const PROBE = 32; // listing ids 0..31; listings are by id, not by event index
 
 export async function getCompanies(provider) {
   const [r, g] = await Promise.all([ra(provider), gov(provider)]);
