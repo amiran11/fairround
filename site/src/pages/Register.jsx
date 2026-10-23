@@ -52,7 +52,7 @@ function Issued({ c }) {
 
 export default function Register() {
   const { t } = useT();
-  usePageTitle(null, t("A simulation of privatization on Arbitrum One: citizens get equal INVEST, bid for shares in state companies in open rounds, and elect CEOs."));
+  usePageTitle(null, t("Fair token launches on Arbitrum One: every round clears at one price, small buyers get filled, and the raise sits in a treasury only holders can spend."));
   const navigate = useNavigate();
   const { signer, account } = useSession();
   const [companies, error] = useCompanies();
@@ -63,46 +63,46 @@ export default function Register() {
   return (
     <div className="page">
       <section style={{ padding: "56px 0 40px" }} className="stack">
-        <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("State companies, sold share by share to citizens.")}</h1>
+        <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("Launch without the rug.")}</h1>
         <p className="lede">
-          {t("Every citizen receives the same 1,000 INVEST and bids it for shares in open rounds. Once half of a company is sold, its shareholders elect a CEO for 30 days at a time, and nothing leaves the company without their vote.")}
+          {t("Every member receives the same 1,000 INVEST and bids it for units in open rounds. Once half of a project is sold, its holders elect a project lead for 30 days at a time, and nothing leaves the project without their vote.")}
         </p>
         <p className="lede muted">
-          {t("The process is real: the contracts run on {network} and every bid, vote and payment is public. The companies are fictional.", { network: ACTIVE_NETWORK.label })}
+          {t("The process is real: the contracts run on {network} and every bid, vote and payment is public. The demo launches are fictional, and bids use free test credits.", { network: ACTIVE_NETWORK.label })}
         </p>
         <div className="row" style={{ paddingTop: 8 }}>
-          {needsCitizenship && <Link to="/citizen" className="btn">{t("Become a citizen")}</Link>}
+          {needsCitizenship && <Link to="/citizen" className="btn">{t("Join and get test credits")}</Link>}
           <Link to="/rules" className="btn btn-secondary">{t("Read the rules")}</Link>
         </div>
       </section>
 
       <section aria-labelledby="register-title">
         <div className="spread" style={{ marginBottom: 12 }}>
-          <h2 id="register-title" className="h2">{t("The register")}</h2>
+          <h2 id="register-title" className="h2">{t("Launches")}</h2>
           {stats && (
             <p className="small muted num">
-              {t("{n} citizens have joined, of {max} places", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}
+              {t("{n} members have joined, of {max} places", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}
             </p>
           )}
         </div>
         {!V9_LIVE ? (
-          <p className="notice">{t("Version 9 is being deployed. The companies appear here once it's live.")}</p>
+          <p className="notice">{t("Version 9 is being deployed. The launches appear here once it's live.")}</p>
         ) : (
           <>
             <ErrorLine error={error} />
             {!companies ? (
               !error && <Loading />
             ) : companies.length === 0 ? (
-              <p className="muted">{t("No companies are listed yet.")}</p>
+              <p className="muted">{t("No launches are listed yet.")}</p>
             ) : (
               <table className="register">
-                <caption className="visually-hidden">{t("Listed companies, their stage, shares sold and capital")}</caption>
+                <caption className="visually-hidden">{t("Listed launches, their stage, units sold and the raise")}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">{t("Company")}</th>
+                    <th scope="col">{t("Launch")}</th>
                     <th scope="col">{t("Stage")}</th>
-                    <th scope="col">{t("Shares sold")}</th>
-                    <th scope="col" className="num-cell">{t("Capital, INVEST")}</th>
+                    <th scope="col">{t("Units sold")}</th>
+                    <th scope="col" className="num-cell">{t("Raised, INVEST")}</th>
                     <th scope="col">{t("Next")}</th>
                   </tr>
                 </thead>
@@ -117,7 +117,7 @@ export default function Register() {
                         </td>
                         <td className="cell-stage"><StageStamp company={c} /></td>
                         <td className="cell-issued"><Issued c={c} /></td>
-                        <td className="num-cell" data-label={t("Capital, INVEST")}>{fmt(c.capital, 18, 0)}</td>
+                        <td className="num-cell" data-label={t("Raised, INVEST")}>{fmt(c.capital, 18, 0)}</td>
                         <td className="cell-next small"><Next c={c} /></td>
                       </tr>
                     );

@@ -20,8 +20,8 @@ function YourPosition({ company }) {
     <div className="stack-sm">
       <h2 className="h3">{t("You")}</h2>
       <dl className="facts-list">
-        <dt>{t("Your shares")}</dt>
-        <dd>{shares === null ? "…" : `${tn("{n} share", "{n} shares", shares)}${shares > 0n ? ` (${pct(shares, company.sharesIssued)})` : ""}`}</dd>
+        <dt>{t("Your units")}</dt>
+        <dd>{shares === null ? "…" : `${tn("{n} unit", "{n} units", shares)}${shares > 0n ? ` (${pct(shares, company.sharesIssued)})` : ""}`}</dd>
         <dt>{t("Your INVEST")}</dt>
         <dd>{account ? fmt(account.invest) : "…"}</dd>
       </dl>
@@ -41,7 +41,7 @@ function CompanyView({ company, companies, n }) {
 
   return (
     <div className="page">
-      <p style={{ paddingTop: 24 }} className="small"><Link to="/">{t("Register")}</Link> <span className="muted">/ {t("Company {id}", { id: company.id })}</span></p>
+      <p style={{ paddingTop: 24 }} className="small"><Link to="/">{t("Launches")}</Link> <span className="muted">/ {t("Project {id}", { id: company.id })}</span></p>
       <header className="stack-sm" style={{ padding: "16px 0 40px" }}>
         <div className="row" style={{ alignItems: "center" }}>
           <h1 className="h1" lang={n.mainLang} style={{ fontSize: "var(--t-3xl)" }}>{n.main}</h1>
@@ -53,11 +53,11 @@ function CompanyView({ company, companies, n }) {
       <div className="with-rail">
         <div>
           <section className="section" id="s-auction" aria-labelledby="s-auction-h">
-            <div className="section-head"><h2 id="s-auction-h" className="h2">{t("Share auction")}</h2></div>
+            <div className="section-head"><h2 id="s-auction-h" className="h2">{t("Unit auction")}</h2></div>
             <Auction company={company} />
           </section>
           <section className="section" id="s-election" aria-labelledby="s-election-h">
-            <div className="section-head"><h2 id="s-election-h" className="h2">{t("Election and CEO")}</h2></div>
+            <div className="section-head"><h2 id="s-election-h" className="h2">{t("Election and project lead")}</h2></div>
             <Election company={company} />
           </section>
           <section className="section" id="s-treasury" aria-labelledby="s-treasury-h">
@@ -70,13 +70,13 @@ function CompanyView({ company, companies, n }) {
           <div className="stack-sm">
             <h2 className="h3">{t("At a glance")}</h2>
             <dl className="facts-list">
-              <dt>{t("Shares sold")}</dt>
+              <dt>{t("Units sold")}</dt>
               <dd>{t("{a} of {b}", { a: int(company.sharesIssued), b: int(company.totalShares) })} ({pct(company.sharesIssued, company.totalShares)})</dd>
               <dt>{t("Capital")}</dt>
               <dd>{fmt(company.capital)} INVEST</dd>
               <dt>{t("Income")}</dt>
               <dd>{fmt(company.income)} INVEST</dd>
-              <dt>{t("CEO")}</dt>
+              <dt>{t("Project lead")}</dt>
               <dd>{g.active && g.governor !== ZERO ? <Address value={g.governor} /> : t("None yet")}</dd>
               <dt>{t("Round length")}</dt>
               <dd>{t("{n} min", { n: int(company.roundDuration / 60n) })}</dd>
@@ -101,8 +101,8 @@ export default function Company() {
   if (!company) {
     return (
       <div className="page stack" style={{ paddingTop: 48 }}>
-        <h1 className="h2">{t("No company with this number")}</h1>
-        <p><Link to="/">{t("Back to the register")}</Link></p>
+        <h1 className="h2">{t("No project with this number")}</h1>
+        <p><Link to="/">{t("Back to the launches")}</Link></p>
       </div>
     );
   }

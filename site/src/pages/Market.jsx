@@ -52,20 +52,20 @@ function SellForm({ companies }) {
   const name = (id) => companies?.find((c) => c.id === id)?.name ?? `#${id}`;
 
   const submit = async () => {
-    if (!tokenId) return tx.setError("Choose a share.");
+    if (!tokenId) return tx.setError("Choose a unit.");
     let raw;
     try { raw = await parseAmount(price, 18); } catch { return tx.setError("Enter a price in INVEST."); }
     await tx.run(() => listShare(signer, BigInt(tokenId), raw), () => { setPrice(""); setTokenId(""); });
   };
 
   return (
-    <Act title={t("Sell a share")}>
-      {mine.length === 0 ? <p className="small">{t("This wallet holds no shares.")}</p> : (
+    <Act title={t("Sell a unit")}>
+      {mine.length === 0 ? <p className="small">{t("This wallet holds no units.")}</p> : (
         <>
-          <p className="small">{t("You set the price in INVEST. The share stays in your wallet until someone buys it; if you move it, the offer ends.")}</p>
-          {free.length === 0 ? <p className="small muted">{t("None of your shares can be sold yet.")}</p> : (
+          <p className="small">{t("You set the price in INVEST. The unit stays in your wallet until someone buys it; if you move it, the offer ends.")}</p>
+          {free.length === 0 ? <p className="small muted">{t("None of your units can be sold yet.")}</p> : (
             <>
-              <Field label={t("Share")}>
+              <Field label={t("Unit")}>
                 <Select value={tokenId} onChange={(e) => setTokenId(e.target.value)}>
                   <option value="">{t("Choose…")}</option>
                   {free.map((s) => <option key={s.tokenId.toString()} value={s.tokenId.toString()}>{name(s.companyId)}, #{s.tokenId.toString()}</option>)}
@@ -76,7 +76,7 @@ function SellForm({ companies }) {
             </>
           )}
           {locked.length > 0 && (
-            <p className="small muted">{t("{n} of your shares are still locked; the first can be sold from {date}.", { n: locked.length, date: fmtDate(Math.min(...locked.map((s) => s.lockedUntil)), lang) })}</p>
+            <p className="small muted">{t("{n} of your units are still locked; the first can be sold from {date}.", { n: locked.length, date: fmtDate(Math.min(...locked.map((s) => s.lockedUntil)), lang) })}</p>
           )}
         </>
       )}
@@ -87,7 +87,7 @@ function SellForm({ companies }) {
 
 export default function Market() {
   const { t } = useT();
-  usePageTitle(t("Share market"), t("Shares offered for sale by their holders, priced in INVEST, read live from Arbitrum One."));
+  usePageTitle(t("Unit market"), t("Units offered for sale by their holders, priced in INVEST, read live from Arbitrum One."));
   const { signer } = useSession();
   const [companies] = useCompanies();
   const [listings, err] = useChain((p) => (V9_LIVE ? getListings(p) : Promise.resolve([])), []);
@@ -95,20 +95,20 @@ export default function Market() {
   return (
     <div className="page" style={{ paddingTop: 48 }}>
       <div className="prose stack">
-        <h1 className="h1">{t("Share market")}</h1>
-        <p className="lede">{t("Shares that holders offer for sale, at a price in INVEST they set. Buying one moves it straight to your wallet.")}</p>
-        <p className="muted">{t("A share can be sold 7 days after it was issued. Shares a company holds in another company can't be sold here.")}</p>
+        <h1 className="h1">{t("Unit market")}</h1>
+        <p className="lede">{t("Units that holders offer for sale, at a price in INVEST they set. Buying one moves it straight to your wallet.")}</p>
+        <p className="muted">{t("A unit can be sold 7 days after it was issued. Units a project holds in another project can't be sold here.")}</p>
       </div>
 
       <section className="section" style={{ marginTop: 40 }} aria-labelledby="offers">
-        <div className="section-head"><h2 id="offers" className="h2">{t("Shares for sale")}</h2></div>
+        <div className="section-head"><h2 id="offers" className="h2">{t("Units for sale")}</h2></div>
         <ErrorLine error={err} />
-        {!listings ? !err && <Loading /> : listings.length === 0 ? <Muted>{t("No shares are offered right now.")}</Muted> : (
+        {!listings ? !err && <Loading /> : listings.length === 0 ? <Muted>{t("No units are offered right now.")}</Muted> : (
           <table className="ledger">
             <thead>
               <tr>
-                <th scope="col">{t("Company")}</th>
-                <th scope="col" className="num-cell">{t("Share")}</th>
+                <th scope="col">{t("Launch")}</th>
+                <th scope="col" className="num-cell">{t("Unit")}</th>
                 <th scope="col" className="num-cell">{t("Price, INVEST")}</th>
                 <th scope="col">{t("Seller")}</th>
                 <th scope="col"><span className="visually-hidden">{t("Action")}</span></th>
@@ -119,8 +119,8 @@ export default function Market() {
         )}
       </section>
 
-      <section className="section" style={{ marginTop: 40, maxWidth: 560 }} aria-label={t("Sell a share")}>
-        {signer ? <SellForm companies={companies} /> : <ConnectToAct what={t("Connect a wallet to buy or sell shares.")} />}
+      <section className="section" style={{ marginTop: 40, maxWidth: 560 }} aria-label={t("Sell a unit")}>
+        {signer ? <SellForm companies={companies} /> : <ConnectToAct what={t("Connect a wallet to buy or sell units.")} />}
       </section>
     </div>
   );

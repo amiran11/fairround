@@ -2,11 +2,11 @@
 // say what the page is.
 import { useEffect } from "react";
 
-const SITE = "Sakartvelo Exchange";
+const SITE = "FairRound";
 
 export function usePageTitle(title, description) {
   useEffect(() => {
-    document.title = title ? `${title} — ${SITE}` : `${SITE} — a privatization simulation on Arbitrum`;
+    document.title = title ? `${title} — ${SITE}` : `${SITE} — fair token launches on Arbitrum`;
     if (description) {
       const tag = document.querySelector('meta[name="description"]');
       if (tag) tag.setAttribute("content", description);

@@ -60,9 +60,9 @@ function ConnectProblem() {
 export default function Layout() {
   const { t, lang, setLang } = useT();
   const nav = [
-    ["/", t("Register")],
+    ["/", t("Launches")],
     ["/portfolio", t("Portfolio")],
-    ["/citizen", t("Citizenship")],
+    ["/citizen", t("Join")],
     ["/market", t("Market")],
     ["/rules", t("Rules")],
     ["/whitepaper", t("White paper")],
@@ -75,7 +75,7 @@ export default function Layout() {
         <div className="page masthead-inner">
           <Link to="/" className="brand">
             <Mark size={30} />
-            Sakartvelo Exchange
+            FairRound
           </Link>
           <nav className="nav" aria-label={t("Main")}>
             {nav.map(([to, label]) => (
@@ -105,7 +105,7 @@ export default function Layout() {
         <div className="page colophon-grid">
           <div className="stack-sm prose">
             <p>
-              {t("Sakartvelo Exchange simulates a privatization. The process is real: every auction, vote and payment is a transaction on {network} that anyone can check. The companies are fictional. INVEST is given free and has no value when issued; if it becomes freely tradable, any price it gets comes from demand alone, and nobody guarantees one.", { network: ACTIVE_NETWORK.label })}
+              {t("FairRound is a fair token launch mechanism, live as a demo. The process is real: every round, vote and payment is a transaction on {network} that anyone can check. The demo launches are fictional. INVEST is a free test credit with no value when issued; if it becomes freely tradable, any price it gets comes from demand alone, and nobody guarantees one.", { network: ACTIVE_NETWORK.label })}
             </p>
             <p className="row">
               <a href={LINKS.repo} target="_blank" rel="noreferrer">{t("Source code")}</a>

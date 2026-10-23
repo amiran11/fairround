@@ -1,26 +1,29 @@
-# Sakartvelo Exchange
+# FairRound
 
-> A privatization simulation running on Arbitrum One. Every citizen receives the same 1,000 INVEST and bids it for shares in state companies in open hourly auctions. Once half of a company is sold, its shareholders elect a CEO for 30 days, and nothing leaves the company without a shareholder vote. The process is real and public on-chain; the companies are fictional. INVEST is given free and has no value when issued.
+> Fair token launches on Arbitrum One. A sale runs in hourly rounds; everyone filled in a round pays the same clearing price, at most 150 units sell per round, and oversubscribed rounds fill every bid pro rata. 99% of what buyers pay goes into a project treasury that holders control: every payment is a holder vote with a 5-day delay and a per-term cap, and holders can remove the project lead. Live as a demo: bids use INVEST, a free test credit with no value; the demo launches are fictional.
 
 The site is available in English and Georgian (ქართული). Pages are rendered in the browser and read live data from the contracts.
 
 ## Pages
 
-- [Register](https://www.sakartvelo-exchange.com/): all listed companies, their auction stage, shares sold and capital
-- [Citizenship](https://www.sakartvelo-exchange.com/citizen): verify a wallet (it must hold at least 0.0083 ETH on Arbitrum One; nothing is taken) and claim 1,000 INVEST, once per wallet
-- [Rules](https://www.sakartvelo-exchange.com/rules): the rules the contracts enforce, in plain words
-- [White paper](https://www.sakartvelo-exchange.com/whitepaper): the idea behind the simulation
-- [Market](https://www.sakartvelo-exchange.com/market): shares listed for sale by their holders
-- [Portfolio](https://www.sakartvelo-exchange.com/portfolio): look up the shares, votes and roles of any address
+- [Launches](https://fairround.xyz/): all listed demo launches, their round stage, units sold and the raise
+- [Join](https://fairround.xyz/citizen): verify a wallet (it must hold at least 0.0083 ETH on Arbitrum One; nothing is taken) and claim 1,000 INVEST test credits, once per wallet
+- [Rules](https://fairround.xyz/rules): the rules the contracts enforce, in plain words
+- [White paper](https://fairround.xyz/whitepaper): how FairRound works and what isn't solved yet
+- [Market](https://fairround.xyz/market): units listed for sale by their holders
+- [Portfolio](https://fairround.xyz/portfolio): look up the units, bids, votes and roles of any address
 
 ## Key rules
 
-- Auctions: up to 150 shares a round, one-hour rounds with a one-hour pause between them. Everyone in a round pays the same clearing price. 99% of what is paid becomes company capital, 1% goes to the host.
-- Elections open at 50% of shares sold. A CEO wins with yes votes from 20% of the electorate and 51% of votes cast; shareholders can vote to remove the CEO.
-- Treasury: every payment, sale or investment is a shareholder proposal with a 5-day delay before it runs. At most 20% of a bucket can be spent per term.
-- New citizens: at most 50 an hour.
+- Rounds: up to 150 units a round, one-hour rounds with a one-hour pause between them. Everyone in a round pays the same clearing price. 99% of what is paid goes to the project treasury, 1% to FairRound. Units lock for 7 days.
+- Project lead: elections open at 50% of units sold. A lead wins with yes votes from 20% of the electorate and 51% of votes cast, serves 30 days, and holders can vote to remove them.
+- Treasury: every payment, sale or investment is a holder proposal with a 5-day delay before it runs. At most 20% of a bucket can be spent per term.
+- New members: at most 50 an hour.
+- Admin: every owner change goes through a public 48-hour timelock.
 
 ## Contracts (Arbitrum One, verified on Arbiscan)
+
+The contract names are from the project's first version, Sakartvelo Exchange.
 
 - InvestToken: 0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a
 - RoundAuctionV9: 0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f
