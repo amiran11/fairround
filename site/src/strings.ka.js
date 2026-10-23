@@ -599,4 +599,8 @@ export default {
   "Read the full security review": "სრული უსაფრთხოების მიმოხილვა",
   "Everything you do is public.": "ყველაფერი, რასაც აკეთებთ, საჯაროა.",
   "Anyone can look up any wallet on the Portfolio page and see its shares, bids, votes and roles, including every CEO's and every large buyer's. That works both ways: your own holdings and votes are public too, and anyone who links your wallet to your name can see them. Use a wallet you're comfortable being seen.": "პორტფელის გვერდზე ნებისმიერს შეუძლია ნებისმიერი საფულის ნახვა: მისი აქციები, ბიდები, ხმები და როლები, მათ შორის ყველა აღმასრულებლისა და ყველა მსხვილი მყიდველის. ეს ორმხრივია: თქვენი აქციები და ხმებიც საჯაროა, და ვინც თქვენს საფულეს თქვენს სახელთან დააკავშირებს, მათ დაინახავს. გამოიყენეთ საფულე, რომლის ხილვადობაც არ გაწუხებთ.",
+  "Official community": "ოფიციალური საზოგადოება",
+  "Telegram channel": "Telegram არხი",
+  "Telegram group": "Telegram ჯგუფი",
+  "These are our only official accounts. Nobody from the project will ever ask for your secret phrase or message you first about money.": "ეს ჩვენი ერთადერთი ოფიციალური ანგარიშებია. პროექტიდან არავინ არასდროს მოგთხოვთ საიდუმლო ფრაზას და არ მოგწერთ პირველი ფულთან დაკავშირებით.",
 };
