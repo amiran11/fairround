@@ -6,7 +6,7 @@ round, equal access for small buyers, the raise held in a treasury only
 holders can spend), then their units trade on the market.
 
 Live at **[fairround.xyz](https://fairround.xyz)** as a working demo on
-Arbitrum One mainnet since 14 October 2026. Bids use INVEST, a free test
+Arbitrum One mainnet since 23 October 2026. Bids use UNRIG, a free test
 credit with no value; the demo listings are fictional.
 
 ## How it works
@@ -31,13 +31,13 @@ Bought units lock for 7 days. Every admin change goes through a public
 
 | Contract | Address |
 |---|---|
-| InvestToken (test credits) | `0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a` |
-| RoundAuctionV9 | `0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f` |
-| GovernanceV9 | `0x044213A8c8b7C83E6A00cac1BbC8962B4b0Ebe85` |
-| CompanyTreasuryV9 | `0x70ffEeAabAaE49cB969ADC8137A3DeD94c8F1B75` |
-| CompanyDividendsV9 | `0x641f3864F7dcbD6630D21247e8DA123A2A138023` |
-| OpenVerifierV2 | `0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A` |
-| SakartveloTimelock (owner, 48h) | `0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f` |
+| InvestToken (UNRIG test credits) | `0xbc780aeB45FdDA0258aB163a99fE92f97209E2c0` |
+| RoundAuctionV9 | `0xb08631827d87C69Ff44d692EEFF32E1b22E4c503` |
+| GovernanceV9 | `0x2fd99a2328866E458Cbc38266c9ff49319A7613b` |
+| CompanyTreasuryV9 | `0xD2107dEE7EA2E8038F7778f63Cf6Eee659dB1F29` |
+| CompanyDividendsV9 | `0x91B05614ae7c6cA516820317aDf3D03cCa056C73` |
+| OpenVerifierV2 | `0x0d07CB79b17229d6301E96dBfEDf09e76c9d68C7` |
+| FairRoundTimelock (owner, 48h) | `0x15FC689FD5ba86D3FC052E6E1E7b48623c17732A` |
 
 Contract names come from the project's first version, Sakartvelo Exchange,
 a privatization simulation; the code is product-neutral.

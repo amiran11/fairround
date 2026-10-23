@@ -44,7 +44,7 @@ function TodoItem({ item }) {
     nominate: tn("Back a candidate in the election with {n} unit.", "Back a candidate in the election with {n} units.", n),
     proposal: tn("Vote on proposal {id} with {n} unit.", "Vote on proposal {id} with {n} units.", n, { id: item.proposal?.toString() }),
     dividendVote: tn("Vote on the dividend for term {term} with {n} unit.", "Vote on the dividend for term {term} with {n} units.", n, { term: item.term }),
-    dividend: t("Claim a {amount} INVEST dividend for term {term}.", { amount: fmt(item.amount ?? 0n, 18, 4), term: item.term }),
+    dividend: t("Claim a {amount} UNRIG dividend for term {term}.", { amount: fmt(item.amount ?? 0n, 18, 4), term: item.term }),
     auctionClaim: item.won ? t("Claim what you won on proposal {id}.", { id: item.proposal?.toString() }) : t("Claim back your bid and deposit from proposal {id}.", { id: item.proposal?.toString() }),
   }[item.kind];
   return (
@@ -163,7 +163,7 @@ export default function Portfolio() {
       {!data ? !error && <div style={{ paddingTop: 32 }}><Loading /></div> : (
         <>
           <dl className="facts" style={{ margin: "40px 0 8px" }}>
-            <div><dt>INVEST</dt><dd>{fmt(data.invest)}</dd></div>
+            <div><dt>UNRIG</dt><dd>{fmt(data.invest)}</dd></div>
             <div><dt>{t("Units")}</dt><dd>{tn("{n} unit", "{n} units", shareTotal)} {t("in {n} projects", { n: data.holdings.length })}</dd></div>
             <div><dt>{t("Open bids")}</dt><dd>{int(data.bids.length)}</dd></div>
             <div><dt>{t("Investor")}</dt><dd>{data.claimed ? t("Yes, claimed") : data.isVerified ? t("Verified, not claimed yet") : t("No")}</dd></div>
@@ -214,7 +214,7 @@ export default function Portfolio() {
                 <thead>
                   <tr>
                     <th scope="col">{t("Listing")}</th>
-                    <th scope="col" className="num-cell">{t("Committed, INVEST")}</th>
+                    <th scope="col" className="num-cell">{t("Committed, UNRIG")}</th>
                     <th scope="col" className="num-cell">{t("Up to, per unit")}</th>
                     <th scope="col">{t("Round closes")}</th>
                   </tr>
@@ -243,7 +243,7 @@ export default function Portfolio() {
                 {data.listed.map((x) => (
                   <li key={`l${x.tokenId}`} className="spread">
                     <CompanyLink company={data.companies.find((c) => c.id === x.companyId) ?? { id: x.companyId, name: `#${x.companyId}` }} />
-                    <span>{t("Unit #{id} offered for {price} INVEST.", { id: x.tokenId.toString(), price: fmt(x.listedAt) })} <Link to="/market">{t("Unit market")}</Link></span>
+                    <span>{t("Unit #{id} offered for {price} UNRIG.", { id: x.tokenId.toString(), price: fmt(x.listedAt) })} <Link to="/market">{t("Unit market")}</Link></span>
                   </li>
                 ))}
               </ul>

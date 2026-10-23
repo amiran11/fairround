@@ -34,7 +34,7 @@ function Account() {
   return (
     <Link to={account && !account.alreadyClaimed ? "/invest" : "/portfolio"} className="btn btn-secondary btn-small" title={address}>
       <span className="addr">{short(address)}</span>
-      {account && <span className="num muted">{fmt(account.invest, 18, 0)} INVEST</span>}
+      {account && <span className="num muted">{fmt(account.invest, 18, 0)} UNRIG</span>}
     </Link>
   );
 }
@@ -105,7 +105,7 @@ export default function Layout() {
         <div className="page colophon-grid">
           <div className="stack-sm prose">
             <p>
-              {t("FairRound is an on-chain IPO exchange for crypto projects, live as a demo. The process is real: every round, vote and payment is a transaction on {network} that anyone can check. The demo listings are fictional. INVEST is a free test credit with no value when issued; if it becomes freely tradable, any price it gets comes from demand alone, and nobody guarantees one.", { network: ACTIVE_NETWORK.label })}
+              {t("FairRound is an on-chain IPO exchange for crypto projects, live as a demo. The process is real: every round, vote and payment is a transaction on {network} that anyone can check. The demo listings are fictional. UNRIG is a free test credit with no value, and it can't be traded between wallets.", { network: ACTIVE_NETWORK.label })}
             </p>
             <p className="row">
               <a href={LINKS.repo} target="_blank" rel="noreferrer">{t("Source code")}</a>
@@ -122,7 +122,7 @@ export default function Layout() {
           </div>
           <div>
             {[
-              [t("Version 9 contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "SakartveloTimelock"]],
+              [t("FairRound contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "FairRoundTimelock"]],
             ].map(([title, names]) => (
               <div key={title} style={{ marginBottom: 16 }}>
                 <p className="strong" style={{ color: "var(--ink)", marginBottom: 8 }}>{title}</p>

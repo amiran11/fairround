@@ -61,7 +61,7 @@ bids again.
 | company capital | the raise, project treasury |
 | CEO, governor | project lead |
 | shareholders | holders |
-| INVEST | test credits |
+| INVEST | UNRIG (the test credits) |
 | airdrop | (never) |
 
 ## Rules for every post

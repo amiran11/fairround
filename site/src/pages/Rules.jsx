@@ -18,25 +18,25 @@ export default function Rules() {
       <article className="prose">
         <h1 className="h1">{t("Rules")}</h1>
         <p className="lede">{t("These are the rules the contracts enforce, in plain words. If this page and the contracts ever disagree, the contracts win; their source is public and verified.")}</p>
-        <p className="muted">{t("This is version 9, live since 14 October 2026.")}</p>
+        <p className="muted">{t("These are the version 9 contracts, deployed fresh for FairRound on 23 October 2026.")}</p>
 
         <h2 className="h2">{t("What is real")}</h2>
-        <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The demo listings are fictional; the first twelve on Arbitrum One carry the names of Georgian public companies from the project's first experiment. INVEST is a free test credit with no value when issued. If it later becomes freely tradable, it may get a market price set by demand alone; nobody guarantees that, and it is not an investment product.", { network: ACTIVE_NETWORK.label })}</p>
-        <p>{t("No single person can move value out of a project, and nobody, the site administrator included, can move anyone's INVEST or units.")}</p>
+        <p>{t("The process is real. Every claim, bid, vote and payment is a transaction on {network} that anyone can check. The ten demo listings are fictional tiers, from The Chosen One (1 unit) to Xerxes' Host (300,000). UNRIG is a free test credit with no value. It only moves between your wallet and the FairRound contracts, so it can't be traded, and it is not an investment product.", { network: ACTIVE_NETWORK.label })}</p>
+        <p>{t("No single person can move value out of a project, and nobody, the site administrator included, can move anyone's UNRIG or units.")}</p>
 
         <h2 className="h2">{t("What the site administrator can do")}</h2>
-        <p>{t("The site administrator can list projects, approve tokens for project treasuries, change the investor limit, choose who may verify investors, and switch whether INVEST can be sent between wallets, including freezing it. Because the administrator chooses the verifiers, they could also, in principle, create new investors and with them new INVEST.")}</p>
+        <p>{t("The site administrator can list projects, approve tokens for project treasuries, change the investor limit, choose who may verify investors, and switch whether UNRIG can be sent between wallets, including freezing it. Because the administrator chooses the verifiers, they could also, in principle, create new investors and with them new UNRIG.")}</p>
         <p>{t("These powers go through a public timelock: a change is scheduled first, anyone can see it, and it can only take effect 48 hours later.")}</p>
-        <p>{t("Two powers are instant. The administrator can pause new investors, which stops new wallets from verifying and touches nothing else. And through the contracts of the earlier version 8, which still hold INVEST's trading switch, the administrator can make INVEST freely transferable for everyone at once; that can't be undone the same way.")}</p>
-        {CONTRACT_ADDRESSES.SakartveloTimelock && (
-          <p><a href={`${ACTIVE_NETWORK.blockExplorerUrls[0]}/address/${CONTRACT_ADDRESSES.SakartveloTimelock}`} target="_blank" rel="noreferrer">{t("See every scheduled change on Arbiscan")}</a></p>
+        <p>{t("One power is instant: the administrator can pause new investors, which stops new wallets from verifying and touches nothing else.")}</p>
+        {CONTRACT_ADDRESSES.FairRoundTimelock && (
+          <p><a href={`${ACTIVE_NETWORK.blockExplorerUrls[0]}/address/${CONTRACT_ADDRESSES.FairRoundTimelock}`} target="_blank" rel="noreferrer">{t("See every scheduled change on Arbiscan")}</a></p>
         )}
 
         <h2 className="h2">{t("Risks, and how they are handled")}</h2>
         <dl className="stack-sm">
           <div><dt className="strong">{t("One person, many wallets.")}</dt><dd style={{ margin: 0 }}>{t("Verification checks a wallet's balance, not who owns it, so one person can verify several wallets. To slow this down, only ordinary wallets can verify, each needs 0.0083 ETH, at most 50 can verify an hour, and new verifications can be paused. Real-money launches will need proof of personhood.")}</dd></div>
-          <div><dt className="strong">{t("A rich buyer taking over a project.")}</dt><dd style={{ margin: 0 }}>{t("Someone with a lot of INVEST can buy a majority. They can't do it quickly or quietly: a round sells at most 150 units, every bid is public, and everyone in a round pays the same price. Whatever they pay becomes the project's capital, which they can't take back out without the holders' vote.")}</dd></div>
-          <div><dt className="strong">{t("A project lead misusing project money.")}</dt><dd style={{ margin: 0 }}>{t("The project lead can only propose. Every payment, sale or investment is voted on by holders, the project lead can't vote on their own proposal, an approved proposal waits 5 days before it runs, at most 20% of a bucket can be spent per term, and holders can vote the project lead out.")}</dd></div>
+          <div><dt className="strong">{t("A rich buyer taking over a project.")}</dt><dd style={{ margin: 0 }}>{t("Someone with a lot of UNRIG can buy a majority. They can't do it quickly or quietly: a round sells at most 150 units, every bid is public, and everyone in a round pays the same price. Whatever they pay becomes the project's capital, which they can't take back out without the holders' vote.")}</dd></div>
+          <div><dt className="strong">{t("A project lead misusing project money.")}</dt><dd style={{ margin: 0 }}>{t("The project lead can only propose. Every payment, sale or investment is voted on by holders, the project lead can't vote on their own proposal, an approved proposal waits 5 days before it runs, at most 5% of a bucket can be spent per term, and holders can vote the project lead out.")}</dd></div>
           <div><dt className="strong">{t("Bugs in the contracts.")}</dt><dd style={{ margin: 0 }}>{t("The contracts were reviewed in several rounds by AI agents, every finding was fixed and tested, and the full record is public. There has been no paid external audit. The contracts can't be upgraded, so the code you see on Arbiscan is the code that runs.")}</dd></div>
           <div><dt className="strong">{t("Losing your wallet, or being scammed.")}</dt><dd style={{ margin: 0 }}>{t("Nobody can recover a lost wallet or reverse a transaction, the site administrator included. Keep your secret phrase offline. Nobody from this project will ever ask for it.")}</dd></div>
           <div><dt className="strong">{t("Everything you do is public.")}</dt><dd style={{ margin: 0 }}>{t("Anyone can look up any wallet on the Portfolio page and see its units, bids, votes and roles, including every project lead's and every large buyer's. That works both ways: your own holdings and votes are public too, and anyone who links your wallet to your name can see them. Use a wallet you're comfortable being seen.")}</dd></div>
@@ -52,13 +52,13 @@ export default function Rules() {
           <li>{t("After every term, holders vote on a dividend, and a new election can start.")}</li>
         </ol>
 
-        <h2 className="h2">{t("Investors and INVEST test credits")}</h2>
-        <p>{t("A wallet becomes a investor by verifying itself: only ordinary wallets can, the contract checks that it holds at least 0.0083 ETH on {network} (nothing is taken), and at most 50 wallets an hour can verify. Each investor then claims 1,000 INVEST, once. There are {max} investor places.", { network: ACTIVE_NETWORK.label, max: maxCit })}</p>
+        <h2 className="h2">{t("Investors and UNRIG test credits")}</h2>
+        <p>{t("A wallet becomes a investor by verifying itself: only ordinary wallets can, the contract checks that it holds at least 0.0083 ETH on {network} (nothing is taken), and at most 50 wallets an hour can verify. Each investor then claims 1,000 UNRIG, once. There are {max} investor places.", { network: ACTIVE_NETWORK.label, max: maxCit })}</p>
         <p>{t("This makes creating wallets cost something, but one person can still verify several. Telling people apart needs real identity checks, which this demo doesn't have yet.")}</p>
-        <p>{t("INVEST can be sent between wallets. That was unlocked on 9 October 2026, in an experiment with version 8 whose plan and results are published.")} <a href={LINKS.experiment} target="_blank" rel="noreferrer">{t("Read about the experiment")}</a></p>
+        <p>{t("UNRIG can't be sent between wallets. It only moves between your wallet and the FairRound contracts: you bid with it, get refunds and dividends in it, and projects hold it.")}</p>
 
         <h2 className="h2">{t("Unit auctions")}</h2>
-        <p>{t("Each project sells its units in rounds of a fixed length, up to 150 units a round. A bid is an amount of INVEST plus, if you want, the most you'll pay for one unit. Each wallet has one bid per project, of at least 1 INVEST, and a project holds at most 100 bids. When the book is full, a new bid must offer a higher price per unit than the lowest, which is refunded.")}</p>
+        <p>{t("Each project sells its units in rounds of a fixed length, up to 150 units a round. A bid is an amount of UNRIG plus, if you want, the most you'll pay for one unit. Each wallet has one bid per project, of at least 1 UNRIG, and a project holds at most 100 bids. When the book is full, a new bid must offer a higher price per unit than the lowest, which is refunded.")}</p>
         <p>{t("When a round ends, anyone can settle it:")}</p>
         <ul>
           <li>{t("If every bid fits, the lowest bid's price per unit is the price, and every bid buys as many whole units as it can at that price.")}</li>
@@ -90,11 +90,11 @@ export default function Rules() {
           <li>{t("a sale at a sealed-bid auction with a minimum price (2 days of sealed bids, 1 day to reveal, the highest bid wins; 1% of the winning bid goes to the host);")}</li>
           <li>{t("an investment of income in another project's unit auction, with a maximum price per unit. The project lead then receives 1% of the units it buys, locked for 60 days.")}</li>
         </ul>
-        <p>{t("A proposal is voted on for 3 days. It passes with yes votes from at least 20% of the units that can vote and 51% of the votes cast; once this term's proposals pass 5% of the balance, it needs 40%. The project lead, the operating key and the recipient can't vote. No more than 20% of a balance can go out in one term.")}</p>
+        <p>{t("A proposal is voted on for 3 days. It passes with yes votes from at least 20% of the units that can vote and 51% of the votes cast. The project lead, the operating key and the recipient can't vote. No more than 5% of a balance can go out in one term.")}</p>
         <p>{t("An approved proposal waits 5 days before it can be carried out, so holders can recall the project lead first. A recall, or the end of the term, cancels anything not yet carried out.")}</p>
 
         <h2 className="h2">{t("Dividends")}</h2>
-        <p>{t("After each term, anyone can open a 3-day vote on 1% of the project's INVEST capital: pay it to holders as a dividend, or move it to income for reinvesting. The winning side needs 20% of the units that can vote; otherwise nothing happens. Voting and payout use the units held when the term ended, and that term's project lead can't vote.")}</p>
+        <p>{t("After each term, anyone can open a 3-day vote on 1% of the project's UNRIG capital: pay it to holders as a dividend, or move it to income for reinvesting. The winning side needs 20% of the units that can vote; otherwise nothing happens. Voting and payout use the units held when the term ended, and that term's project lead can't vote.")}</p>
 
         <h2 className="h2">{t("How this was checked")}</h2>
         <p>{t("Version 9 was written to fix the weaknesses found in version 8 and reviewed three times by AI auditors that had not written it, with attack tests on a local chain that copies Arbitrum's limits. Every problem they confirmed was fixed and has a test. It has not been audited by a paid external firm.")} <a href={LINKS.security} target="_blank" rel="noreferrer">{t("Read the security review")}</a></p>

@@ -54,7 +54,7 @@ function SellForm({ companies }) {
   const submit = async () => {
     if (!tokenId) return tx.setError("Choose a unit.");
     let raw;
-    try { raw = await parseAmount(price, 18); } catch { return tx.setError("Enter a price in INVEST."); }
+    try { raw = await parseAmount(price, 18); } catch { return tx.setError("Enter a price in UNRIG."); }
     await tx.run(() => listShare(signer, BigInt(tokenId), raw), () => { setPrice(""); setTokenId(""); });
   };
 
@@ -62,7 +62,7 @@ function SellForm({ companies }) {
     <Act title={t("Sell a unit")}>
       {mine.length === 0 ? <p className="small">{t("This wallet holds no units.")}</p> : (
         <>
-          <p className="small">{t("You set the price in INVEST. The unit stays in your wallet until someone buys it; if you move it, the offer ends.")}</p>
+          <p className="small">{t("You set the price in UNRIG. The unit stays in your wallet until someone buys it; if you move it, the offer ends.")}</p>
           {free.length === 0 ? <p className="small muted">{t("None of your units can be sold yet.")}</p> : (
             <>
               <Field label={t("Unit")}>
@@ -71,7 +71,7 @@ function SellForm({ companies }) {
                   {free.map((s) => <option key={s.tokenId.toString()} value={s.tokenId.toString()}>{name(s.companyId)}, #{s.tokenId.toString()}</option>)}
                 </Select>
               </Field>
-              <Field label={t("Price")}><AmountInput unit="INVEST" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
+              <Field label={t("Price")}><AmountInput unit="UNRIG" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
               <Button busy={tx.busy} onClick={submit}>{t("Offer for sale")}</Button>
             </>
           )}
@@ -87,7 +87,7 @@ function SellForm({ companies }) {
 
 export default function Market() {
   const { t } = useT();
-  usePageTitle(t("Unit market"), t("Units offered for sale by their holders, priced in INVEST, read live from Arbitrum One."));
+  usePageTitle(t("Unit market"), t("Units offered for sale by their holders, priced in UNRIG, read live from Arbitrum One."));
   const { signer } = useSession();
   const [companies] = useCompanies();
   const [listings, err] = useChain((p) => (V9_LIVE ? getListings(p) : Promise.resolve([])), []);
@@ -96,7 +96,7 @@ export default function Market() {
     <div className="page" style={{ paddingTop: 48 }}>
       <div className="prose stack">
         <h1 className="h1">{t("Unit market")}</h1>
-        <p className="lede">{t("Units that holders offer for sale, at a price in INVEST they set. Buying one moves it straight to your wallet.")}</p>
+        <p className="lede">{t("Units that holders offer for sale, at a price in UNRIG they set. Buying one moves it straight to your wallet.")}</p>
         <p className="muted">{t("A unit can be sold 7 days after it was issued. Units a project holds in another project can't be sold here.")}</p>
       </div>
 
@@ -109,7 +109,7 @@ export default function Market() {
               <tr>
                 <th scope="col">{t("Listing")}</th>
                 <th scope="col" className="num-cell">{t("Unit")}</th>
-                <th scope="col" className="num-cell">{t("Price, INVEST")}</th>
+                <th scope="col" className="num-cell">{t("Price, UNRIG")}</th>
                 <th scope="col">{t("Seller")}</th>
                 <th scope="col"><span className="visually-hidden">{t("Action")}</span></th>
               </tr>

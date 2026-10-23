@@ -22,7 +22,7 @@ function YourPosition({ company }) {
       <dl className="facts-list">
         <dt>{t("Your units")}</dt>
         <dd>{shares === null ? "…" : `${tn("{n} unit", "{n} units", shares)}${shares > 0n ? ` (${pct(shares, company.sharesIssued)})` : ""}`}</dd>
-        <dt>{t("Your INVEST")}</dt>
+        <dt>{t("Your UNRIG")}</dt>
         <dd>{account ? fmt(account.invest) : "…"}</dd>
       </dl>
     </div>
@@ -73,9 +73,9 @@ function CompanyView({ company, companies, n }) {
               <dt>{t("Units sold")}</dt>
               <dd>{t("{a} of {b}", { a: int(company.sharesIssued), b: int(company.totalShares) })} ({pct(company.sharesIssued, company.totalShares)})</dd>
               <dt>{t("Capital")}</dt>
-              <dd>{fmt(company.capital)} INVEST</dd>
+              <dd>{fmt(company.capital)} UNRIG</dd>
               <dt>{t("Income")}</dt>
-              <dd>{fmt(company.income)} INVEST</dd>
+              <dd>{fmt(company.income)} UNRIG</dd>
               <dt>{t("Project lead")}</dt>
               <dd>{g.active && g.governor !== ZERO ? <Address value={g.governor} /> : t("None yet")}</dd>
               <dt>{t("Round length")}</dt>

@@ -103,7 +103,7 @@ export default function Register() {
                     <th scope="col">{t("Listing")}</th>
                     <th scope="col">{t("Stage")}</th>
                     <th scope="col">{t("Units sold")}</th>
-                    <th scope="col" className="num-cell">{t("Raised, INVEST")}</th>
+                    <th scope="col" className="num-cell">{t("Raised, UNRIG")}</th>
                     <th scope="col">{t("Next")}</th>
                   </tr>
                 </thead>
@@ -118,7 +118,7 @@ export default function Register() {
                         </td>
                         <td className="cell-stage"><StageStamp company={c} /></td>
                         <td className="cell-issued"><Issued c={c} /></td>
-                        <td className="num-cell" data-label={t("Raised, INVEST")}>{fmt(c.capital, 18, 0)}</td>
+                        <td className="num-cell" data-label={t("Raised, UNRIG")}>{fmt(c.capital, 18, 0)}</td>
                         <td className="cell-next small"><Next c={c} /></td>
                       </tr>
                     );

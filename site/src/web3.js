@@ -16,28 +16,20 @@ export const NETWORKS = {
     blockExplorerUrls: ["https://arbiscan.io"],
     label: "Arbitrum One",
     isTestnet: false,
-    // From REDEPLOY_V8.md step 14. deploymentBlock = InvestToken's deploy
-    // block, the first contract deployed, so no event can be earlier.
-    deploymentBlock: 512862832, // InvestToken deploy, 8 Oct 2026
-    v9DeploymentBlock: 514727826, // RoundAuctionV9 deploy, 14 Oct 2026
-    // Listing ids 0-19 belong to the project's first experiment (Georgian
-    // company names). FairRound listings start at id 20. Once any of those
-    // exists, the Listings page hides 0-19; their own pages, holdings and
-    // votes keep working.
-    legacyListingIds: Array.from({ length: 20 }, (_, i) => i),
+    // FairRound, a fresh deployment on Arbitrum One on 23 October 2026
+    // (DEPLOY_FAIRROUND.md). deploymentBlock = InvestToken's deploy block,
+    // the first contract deployed, so no event can be earlier. The
+    // earlier Sakartvelo Exchange contracts stay on-chain but the site no
+    // longer uses them.
+    deploymentBlock: 517570759, // InvestToken (UNRIG) deploy, 23 Oct 2026
     addresses: {
-      InvestToken: "0x99ED3761F8416342D814ad4CCAe81993c2Ab7e4a",
-      OpenVerifier: "0x444653dDbBb24B24bcD8D674e30b371800Cc2ad2",
-      RoundAuction: "0x9739e5dCcc76BD424BcD12e7f1ce56143e77b796",
-      Governance: "0x5668F72F3dB11c4DA6aF682604d1184763bB971d",
-      CompanyTreasury: "0xaD50c4726E78a8e8a18a1A188bd60E7ef0A501e8",
-      // v9, deployed alongside v8 on 14 October 2026 (DEPLOY_V9.md).
-      RoundAuctionV9: "0x65D37C51ec85584222aBA16e6B60B3Cd4BD6090f",
-      GovernanceV9: "0x044213A8c8b7C83E6A00cac1BbC8962B4b0Ebe85",
-      CompanyTreasuryV9: "0x70ffEeAabAaE49cB969ADC8137A3DeD94c8F1B75",
-      CompanyDividendsV9: "0x641f3864F7dcbD6630D21247e8DA123A2A138023",
-      OpenVerifierV2: "0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A",
-      SakartveloTimelock: "0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f",
+      InvestToken: "0xbc780aeB45FdDA0258aB163a99fE92f97209E2c0",
+      RoundAuctionV9: "0xb08631827d87C69Ff44d692EEFF32E1b22E4c503",
+      GovernanceV9: "0x2fd99a2328866E458Cbc38266c9ff49319A7613b",
+      CompanyTreasuryV9: "0xD2107dEE7EA2E8038F7778f63Cf6Eee659dB1F29",
+      CompanyDividendsV9: "0x91B05614ae7c6cA516820317aDf3D03cCa056C73",
+      OpenVerifierV2: "0x0d07CB79b17229d6301E96dBfEDf09e76c9d68C7",
+      FairRoundTimelock: "0x15FC689FD5ba86D3FC052E6E1E7b48623c17732A",
     },
   },
 };
@@ -110,7 +102,7 @@ export const ABIS = {
 export const V9_LIVE = !!CONTRACT_ADDRESSES.RoundAuctionV9;
 
 // Just the ERC-20 functions the treasury screens need, for any token a
-// company holds (not only INVEST).
+// company holds (not only UNRIG).
 const ERC20_ABI = [
   "function symbol() view returns (string)",
   "function decimals() view returns (uint8)",
@@ -195,15 +187,13 @@ export async function getReadProvider() {
   return readProvider;
 }
 
-// Citizen numbers and whether INVEST can move freely between wallets.
+// Citizen numbers and whether UNRIG can move freely between wallets.
 export async function getPublicStats(provider) {
-  const [it, ra] = await Promise.all([getContract("InvestToken", provider), getContract("RoundAuction", provider)]);
-  const [citizenCount, maxCitizens, tradable] = await Promise.all([
-    it.citizenCount(),
-    it.maxCitizens(),
-    ra.globalTradabilityUnlocked().catch(() => false),
-  ]);
-  const verifyOpen = await it.verifier(CONTRACT_ADDRESSES.OpenVerifier).catch(() => true);
+  const it = await getContract("InvestToken", provider);
+  const [citizenCount, maxCitizens] = await Promise.all([it.citizenCount(), it.maxCitizens()]);
+  // UNRIG is closed-loop on this deployment: never freely tradable.
+  const tradable = false;
+  const verifyOpen = await it.verifier(CONTRACT_ADDRESSES.OpenVerifierV2).catch(() => true);
   return { citizenCount, maxCitizens, tradable, verifyOpen };
 }
 
@@ -250,7 +240,7 @@ export async function sendTx(contract, method, ...args) {
 const ERROR_TEXT = [
   ["RA: cooldown, round not open yet", "The next round hasn't opened yet. Bidding opens an hour after each settlement."],
   ["RA: book full, bid must beat the lowest", "The book is full. To get in, your bid needs a higher price per unit than the lowest bid."],
-  ["RA: max price below 1 INVEST", "The price limit must be at least 1 INVEST a unit."],
+  ["RA: max price below 1 UNRIG", "The price limit must be at least 1 UNRIG a unit."],
   ["RA: withdraw only during cooldown", "A bid can only be withdrawn in the hour between rounds."],
   ["RA: no active bid", "This wallet has no active bid on this project."],
   ["RA: share still locked", "This unit can't be moved or sold yet: a unit is locked for 7 days after it is issued."],
@@ -294,7 +284,7 @@ const ERROR_TEXT = [
   ["OV2: already verified", "This wallet is already verified."],
   ["already have active bid", "You already have an active bid on this project. It carries into every round until it wins or the project sells out."],
   ["active bid cap reached", "This project already has 100 active bids, the maximum. Try again after the next settlement."],
-  ["bid below 1 INVEST", "The minimum bid is 1 INVEST."],
+  ["bid below 1 UNRIG", "The minimum bid is 1 UNRIG."],
   ["RA: round closed", "This round has closed. Settle it to open the next round, then bid."],
   ["RA: round still open", "This round is still open. It can be settled once the countdown ends."],
   ["stake below 0.1%", "To stand as a candidate you need at least 0.1% of the units issued so far."],
@@ -314,8 +304,8 @@ const ERROR_TEXT = [
   ["already claimed", "Already claimed."],
   ["insufficient balance", "The project doesn't hold that much of this token (or some of it is reserved by an auction or payment)."],
   ["no reinvest income", "The project doesn't have that much reinvestable income."],
-  ["payment token not approved", "That payment token isn't accepted on the INVEST market."],
-  ["closed loop", "INVEST can't be sent there yet: it can only go into the auction or treasury until trading unlocks."],
+  ["payment token not approved", "That payment token isn't accepted on the UNRIG market."],
+  ["closed loop", "UNRIG can't be sent there yet: it can only go into the auction or treasury until trading unlocks."],
 ];
 
 export function friendlyError(err) {
@@ -334,7 +324,7 @@ export function friendlyError(err) {
 // live rather than hardcoded, since MIN_BALANCE could change if
 // OpenVerifier is ever redeployed with a different threshold.
 export async function getVerifySelfEligibility(address, provider) {
-  const openVerifier = await getContract("OpenVerifier", provider);
+  const openVerifier = await getContract("OpenVerifierV2", provider);
   const [minBalance, currentBalance] = await Promise.all([
     openVerifier.MIN_BALANCE(),
     provider.getBalance(address),
@@ -352,7 +342,7 @@ export async function getVerifySelfEligibility(address, provider) {
 // once mined; callers should re-check getClaimEligibility() afterward
 // since verifiedCitizen only flips true once this is actually mined.
 export async function verifySelfReal(signer) {
-  const openVerifier = await getContract("OpenVerifier", signer);
+  const openVerifier = await getContract("OpenVerifierV2", signer);
   const tx = await openVerifier.verifySelf();
   const receipt = await tx.wait();
   return receipt;
@@ -569,8 +559,8 @@ export async function parseAmount(text, decimals = 18) {
 }
 
 // Makes sure `spender` may move at least `needed` of a token from the
-// signer. INVEST gets a one-time unlimited approval, the same pattern as
-// bidding (INVEST is closed-loop until tradability unlocks). Any other
+// signer. UNRIG gets a one-time unlimited approval, the same pattern as
+// bidding (UNRIG is closed-loop until tradability unlocks). Any other
 // token is approved for exactly what this transaction needs.
 export async function ensureAllowance(signer, tokenAddress, spender, needed) {
   const { Contract, MaxUint256 } = await getEthers();
@@ -583,7 +573,7 @@ export async function ensureAllowance(signer, tokenAddress, spender, needed) {
   await tx.wait();
 }
 
-// ---- INVEST balance ----
+// ---- UNRIG balance ----
 
 export async function getInvestBalance(address, provider) {
   return (await getContract("InvestToken", provider)).balanceOf(address);

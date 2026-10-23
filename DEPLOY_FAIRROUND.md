@@ -14,17 +14,17 @@ The old Sakartvelo Exchange contracts on Arbitrum stay where they are
 receipt is not proof. Check MetaMask shows the right network and the
 receipt has a real block number (not 1, 2, 3: that's the Remix VM).
 
-## Address tables (fill in as you go)
+## Addresses (deployed 23 October 2026; Parts 2–4 done, wiring confirmed by events)
 
 | # | Contract | Constructor input | Address (Arbitrum One) |
 |---|---|---|---|
-| 1 | InvestToken (IT) | `_maxCitizens` = `10000` | |
-| 2 | RoundAuctionV9 (RA) | `_investToken` = #1 | |
-| 3 | GovernanceV9 (GOV) | `_shares` = #2 | |
-| 4 | CompanyTreasuryV9 (CT) | #1, #2, #3 | |
-| 5 | CompanyDividendsV9 (DV) | #1, #2, #3 | |
-| 6 | OpenVerifierV2 (OV) | #1, your wallet | |
-| 7 | FairRoundTimelock (TL) | your wallet | |
+| 1 | InvestToken (IT) | `_maxCitizens` = `10000` | `0xbc780aeB45FdDA0258aB163a99fE92f97209E2c0` (block 517570759; deployed with maxCitizens 300000, kept) |
+| 2 | RoundAuctionV9 (RA) | `_investToken` = #1 | `0xb08631827d87C69Ff44d692EEFF32E1b22E4c503` |
+| 3 | GovernanceV9 (GOV) | `_shares` = #2 | `0x2fd99a2328866E458Cbc38266c9ff49319A7613b` |
+| 4 | CompanyTreasuryV9 (CT) | #1, #2, #3 | `0xD2107dEE7EA2E8038F7778f63Cf6Eee659dB1F29` |
+| 5 | CompanyDividendsV9 (DV) | #1, #2, #3 | `0x91B05614ae7c6cA516820317aDf3D03cCa056C73` |
+| 6 | OpenVerifierV2 (OV) | #1, your wallet | `0x0d07CB79b17229d6301E96dBfEDf09e76c9d68C7` |
+| 7 | FairRoundTimelock (TL) | your wallet | `0x15FC689FD5ba86D3FC052E6E1E7b48623c17732A` |
 
 Also write down the **block number of #1** (the receipt
 shows it).

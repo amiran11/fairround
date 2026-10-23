@@ -87,7 +87,7 @@ function ProposalTitle({ p, companies }) {
   if (p.kind === "Sale") {
     return <>{t("Sell {amount} {symbol} {from} for {pay}, at least {reserve} {pay}", { amount: fmt(p.amount, p.token.decimals, 4), symbol: p.token.symbol, from: fromBucket(t, p.bucket), pay: p.payToken?.symbol, reserve: fmt(p.reserve, p.payToken?.decimals ?? 18, 4) })}</>;
   }
-  return <>{t("Bid {amount} INVEST of income in {company}, at most {max} INVEST a unit", { amount: fmt(p.amount), company: target ? target.name : `#${p.target}`, max: fmt(p.reserve) })}</>;
+  return <>{t("Bid {amount} UNRIG of income in {company}, at most {max} UNRIG a unit", { amount: fmt(p.amount), company: target ? target.name : `#${p.target}`, max: fmt(p.reserve) })}</>;
 }
 
 function SaleAuction({ p }) {
@@ -334,15 +334,15 @@ function GovernorTools({ company, companies, holdings, gov }) {
       </Act>
 
       <Act title={t("Propose an investment in another project")}>
-        <p className="small">{t("Bids the project's INVEST income ({n} available) in another project's unit auction, never its capital. If it wins, you personally receive 1% of the units it buys, locked for 60 days.", { n: fmt(invest?.income ?? 0n) })}</p>
+        <p className="small">{t("Bids the project's UNRIG income ({n} available) in another project's unit auction, never its capital. If it wins, you personally receive 1% of the units it buys, locked for 60 days.", { n: fmt(invest?.income ?? 0n) })}</p>
         <Field label={t("Listing")}>
           <Select value={iTarget} onChange={(e) => setITarget(e.target.value)}>
             <option value="">{t("Choose…")}</option>
             {others.filter((c) => !c.finalized).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </Select>
         </Field>
-        <Field label={t("INVEST to bid")}><AmountInput unit="INVEST" value={iAmt} onChange={(e) => setIAmt(e.target.value)} /></Field>
-        <Field label={t("Highest price per unit")}><AmountInput unit="INVEST" value={iMax} onChange={(e) => setIMax(e.target.value)} /></Field>
+        <Field label={t("UNRIG to bid")}><AmountInput unit="UNRIG" value={iAmt} onChange={(e) => setIAmt(e.target.value)} /></Field>
+        <Field label={t("Highest price per unit")}><AmountInput unit="UNRIG" value={iMax} onChange={(e) => setIMax(e.target.value)} /></Field>
         <Button busy={inv.busy} disabled={late} onClick={doInvest}>{t("Propose the investment")}</Button>
         <ErrorLine error={inv.error} />
       </Act>
@@ -386,7 +386,7 @@ function TermItem({ company, tm }) {
       <span className="strong">{t("Term {n}, ended {date}", { n: tm.term, date: fmtDate(tm.endTime, lang) })}</span>
       {tm.voteEnd === 0n && (
         <>
-          <Muted small>{t("Holders decide what happens to 1% of the INVEST capital: paid out as a dividend, or moved to income for reinvesting. Anyone can open the 3-day vote.")}</Muted>
+          <Muted small>{t("Holders decide what happens to 1% of the UNRIG capital: paid out as a dividend, or moved to income for reinvesting. Anyone can open the 3-day vote.")}</Muted>
           {signer && <div><Button kind="secondary" busy={tx.busy} onClick={() => tx.run(() => openPolicyVote(signer, company.id, tm.term))}>{t("Open the vote")}</Button></div>}
         </>
       )}
@@ -408,8 +408,8 @@ function TermItem({ company, tm }) {
       {signer && toCount && <div><Button kind="secondary" busy={tx.busy} onClick={() => tx.run(() => resolvePolicyVote(signer, company.id, tm.term))}>{t("Count the vote")}</Button></div>}
       {tm.resolved && (tm.perShare > 0n ? (
         <>
-          <p className="small">{t("Dividend paid: {n} INVEST per unit held when the term ended.", { n: fmt(tm.perShare / 10n ** 18n, 18, 6) })}</p>
-          {signer && tm.owed > 0n && !tm.claimed && <div><Button busy={tx.busy} onClick={() => tx.run(() => claimDividend(signer, company.id, tm.term))}>{t("Claim {n} INVEST", { n: fmt(tm.owed, 18, 4) })}</Button></div>}
+          <p className="small">{t("Dividend paid: {n} UNRIG per unit held when the term ended.", { n: fmt(tm.perShare / 10n ** 18n, 18, 6) })}</p>
+          {signer && tm.owed > 0n && !tm.claimed && <div><Button busy={tx.busy} onClick={() => tx.run(() => claimDividend(signer, company.id, tm.term))}>{t("Claim {n} UNRIG", { n: fmt(tm.owed, 18, 4) })}</Button></div>}
           {signer && tm.claimed && <Muted small>{t("You've claimed your dividend.")}</Muted>}
         </>
       ) : <Muted small>{t("No dividend this term: either reinvesting won, or neither side reached 20%.")}</Muted>)}
@@ -426,7 +426,7 @@ function Dividends({ company }) {
   const termOver = governancePhase(company) === "termOver";
   return (
     <div className="stack">
-      <Muted small>{t("After every term, holders vote on 1% of the project's INVEST capital: pay it out as a dividend, or move it to income for reinvesting. The vote and the payout use the units held when the term ended, and that term's project lead can't vote.")}</Muted>
+      <Muted small>{t("After every term, holders vote on 1% of the project's UNRIG capital: pay it out as a dividend, or move it to income for reinvesting. The vote and the payout use the units held when the term ended, and that term's project lead can't vote.")}</Muted>
       {termOver && signer && (
         <Act title={t("Record the end of term {n}", { n: company.gov.termNum.toString() })}>
           <p className="small">{t("The term is over but hasn't been recorded yet. Recording it lets the dividend vote open. Opening the next election records it too.")}</p>

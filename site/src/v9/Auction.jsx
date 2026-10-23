@@ -17,7 +17,7 @@ function BidForm({ company, full, rules, lowestEff }) {
   if (account && account.invest === 0n) {
     return (
       <Act title={t("Bid for units")}>
-        <p className="small">{t("This wallet holds no INVEST. Investors claim 1,000 INVEST once.")}</p>
+        <p className="small">{t("This wallet holds no UNRIG. Investors claim 1,000 UNRIG once.")}</p>
         <Link to="/invest" className="btn btn-secondary btn-small">{t("Become an investor")}</Link>
       </Act>
     );
@@ -25,26 +25,26 @@ function BidForm({ company, full, rules, lowestEff }) {
 
   const submit = async () => {
     let b, m;
-    try { b = await parseAmount(budget, 18); } catch { return setError("Enter how much INVEST to bid, for example 25."); }
+    try { b = await parseAmount(budget, 18); } catch { return setError("Enter how much UNRIG to bid, for example 25."); }
     try { m = cap.trim() ? await parseAmount(cap, 18) : b; } catch { return setError("Enter the highest price per unit as a number, or leave it empty."); }
     if (m > b) m = b;
-    if (account && b > account.invest) return setError(t("You have {n} INVEST.", { n: fmt(account.invest) }));
+    if (account && b > account.invest) return setError(t("You have {n} UNRIG.", { n: fmt(account.invest) }));
     if (full && lowestEff !== null && (b < m ? b : m) <= lowestEff) {
-      return setError(t("The book is full. To get in, your bid and your price per unit must both be above {n} INVEST.", { n: fmt(lowestEff) }));
+      return setError(t("The book is full. To get in, your bid and your price per unit must both be above {n} UNRIG.", { n: fmt(lowestEff) }));
     }
     await run(() => placeBid(signer, company.id, b, m), () => { setBudget(""); setCap(""); });
   };
 
   return (
     <Act title={t("Bid for units")}>
-      <Field label={t("How much INVEST to commit")} hint={account ? t("You have {n} INVEST. Whatever isn't spent on units comes back to you.", { n: fmt(account.invest) }) : undefined}>
-        <AmountInput unit="INVEST" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="100" />
+      <Field label={t("How much UNRIG to commit")} hint={account ? t("You have {n} UNRIG. Whatever isn't spent on units comes back to you.", { n: fmt(account.invest) }) : undefined}>
+        <AmountInput unit="UNRIG" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="100" />
       </Field>
       <Field label={t("Highest price you'll pay per unit (optional)")} hint={t("If the round's price ends up higher, your bid buys nothing this round and stays for the next. Leave empty for no limit.")}>
-        <AmountInput unit="INVEST" value={cap} onChange={(e) => setCap(e.target.value)} placeholder={t("no limit")} />
+        <AmountInput unit="UNRIG" value={cap} onChange={(e) => setCap(e.target.value)} placeholder={t("no limit")} />
       </Field>
       {full && <p className="small">{t("The book is full ({n} bids). A new bid replaces the lowest one if it offers a higher price per unit.", { n: int(rules.maxBids) })}</p>}
-      <p className="small muted">{t("One bid per wallet. You can withdraw it in the hour between rounds. The first time, MetaMask asks you to allow the auction to use your INVEST.")}</p>
+      <p className="small muted">{t("One bid per wallet. You can withdraw it in the hour between rounds. The first time, MetaMask asks you to allow the auction to use your UNRIG.")}</p>
       <Button busy={busy} onClick={submit}>{t("Place bid")}</Button>
       <ErrorLine error={error} />
     </Act>
@@ -82,7 +82,7 @@ export default function Auction({ company }) {
         {phase === "settle" && t("Round {n} has closed. Anyone can settle it: units are issued and the next round opens an hour later.", { n })}{" "}
         {rules && t("{left} units are left; up to {max} are sold per round.", { left: int(left), max: int(rules.perRound) })}
       </p>
-      {last && <p className="small muted num">{t("Last price: {price} INVEST a unit, in round {round} ({shares} sold).", { price: fmt(last.price), round: last.round.toString(), shares: int(last.shares) })}</p>}
+      {last && <p className="small muted num">{t("Last price: {price} UNRIG a unit, in round {round} ({shares} sold).", { price: fmt(last.price), round: last.round.toString(), shares: int(last.shares) })}</p>}
 
       {phase === "settle" && (signer ? (
         <div>
@@ -100,7 +100,7 @@ export default function Auction({ company }) {
           <thead>
             <tr>
               <th scope="col">{t("Bidder")}</th>
-              <th scope="col" className="num-cell">{t("Committed, INVEST")}</th>
+              <th scope="col" className="num-cell">{t("Committed, UNRIG")}</th>
               <th scope="col" className="num-cell">{t("Up to, per unit")}</th>
             </tr>
           </thead>
@@ -122,8 +122,8 @@ export default function Auction({ company }) {
       {!signer ? (phase !== "settle" && <ConnectToAct what={t("Connect a wallet to bid for units.")} />)
         : mine ? (
           <div className="notice">
-            <strong>{t("Your bid: {n} INVEST", { n: fmt(mine.amount) })}</strong>
-            {mine.maxPrice < mine.amount ? t("At most {p} INVEST a unit.", { p: fmt(mine.maxPrice) }) : t("No price limit.")}{" "}
+            <strong>{t("Your bid: {n} UNRIG", { n: fmt(mine.amount) })}</strong>
+            {mine.maxPrice < mine.amount ? t("At most {p} UNRIG a unit.", { p: fmt(mine.maxPrice) }) : t("No price limit.")}{" "}
             {phase === "cooldown" ? (
               <span className="row-tight" style={{ marginTop: 8 }}>
                 <Button kind="secondary" small busy={wd.busy} onClick={() => wd.run(() => withdrawBid(signer, company.id))}>{t("Withdraw my bid")}</Button>
