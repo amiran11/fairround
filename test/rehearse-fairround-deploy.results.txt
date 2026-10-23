@@ -13,7 +13,7 @@ Part 3 — wiring
   PASS 3.1 governance = GOV9
   PASS 3.2 treasury = CT9
   PASS 3.3 dividends = DV9
-  PASS 3.4 all 6 demo launches listed
+  PASS 3.4 all 10 tiers listed
   PASS 3.5 RA9 sink
   PASS 3.6 CT9 sink
   PASS 3.7 DV9 sink
@@ -30,7 +30,7 @@ Smoke test — a new wallet uses it
   PASS bid escrowed in RA9 (spending into a sink works)
   PASS round settled: the wallet holds a unit
   PASS unit NFT minted to the wallet
-  PASS unit metadata says FairRound: Demo Project Alpha - Unit 1/12000
+  PASS unit metadata says FairRound: The Chosen One - Unit 1/1
 
 29 passed, 0 failed
 EXIT 0

@@ -22,6 +22,25 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 
 Every bio: "The on-chain IPO exchange for crypto projects. Launch without the rug." then `fairround.xyz`.
 
+## The ten listings (demo tiers)
+
+| Units | Name | Rounds to sell out (150 a round) | Time at full demand (2 h per round) |
+|---|---|---|---|
+| 1 | The Chosen One | 1 | 2 hours |
+| 3 | The Musketeers | 1 | 2 hours |
+| 9 | The Fellowship | 1 | 2 hours |
+| 300 | Spartans | 2 | 4 hours |
+| 1,000 | The Thousand | 7 | 14 hours |
+| 10,000 | The Immortals | 67 | about 6 days |
+| 12,000 | Camelot | 80 | about 7 days |
+| 30,000 | 30K Corp | 200 | about 17 days |
+| 100,000 | Hundred K Guild | 667 | about 2 months |
+| 300,000 | Xerxes' Host | 2,000 | about 5½ months |
+
+Story line: the Spartans and Xerxes' Host, the few against the whale. Even
+the founder can't take The Thousand in one round: 150 units, then everyone
+bids again.
+
 ## Two audiences, one call to action
 
 | Audience | What they care about | Hook |

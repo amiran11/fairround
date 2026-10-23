@@ -77,20 +77,24 @@ On **RA** (#2):
 | 3.1 | setGovernance | GOV | **governance** = GOV |
 | 3.2 | setTreasury | CT | **treasury** = CT |
 | 3.3 | setDividends | DV | **dividends** = DV |
-| 3.4 | listCompany ×6 | table below | **companies**(id) shows the name and size |
+| 3.4 | listCompany ×10 | table below | **companies**(id) shows the name and size |
 
 Each of 3.1–3.3 can be set **once only**.
 
-**Demo listings** (round length `3600` = 1 hour for all):
+**Listings** (round length `3600` = 1 hour for all; type the names exactly):
 
 | id | name | totalShares |
 |---|---|---|
-| 0 | Demo Project Alpha | 12000 |
-| 1 | Demo Project Beta | 30000 |
-| 2 | Demo Project Gamma | 60000 |
-| 3 | Demo Project Delta | 120000 |
-| 4 | Demo Project Epsilon | 300000 |
-| 5 | Demo Project Zeta | 12000 |
+| 0 | The Chosen One | 1 |
+| 1 | The Musketeers | 3 |
+| 2 | The Fellowship | 9 |
+| 3 | Spartans | 300 |
+| 4 | The Thousand | 1000 |
+| 5 | The Immortals | 10000 |
+| 6 | Camelot | 12000 |
+| 7 | 30K Corp | 30000 |
+| 8 | Hundred K Guild | 100000 |
+| 9 | Xerxes' Host | 300000 |
 
 On **IT** (#1):
 
@@ -133,9 +137,9 @@ is no v8 trading switch any more, so that second instant power is gone.)
 1. **Verify** all seven: Remix **Contract Verification** plugin, same
    settings as Part 1. Arbitrum: Arbiscan. Robinhood: Blockscout (chain 4663).
 2. **Test yourself:** verify your wallet on OV, **claim** on IT, then
-   **approve** RA and **placeBid**(0, `10000000000000000000`,
-   `10000000000000000000`) = 10 UNRIG at most 10 each. After the round
-   settles you hold one FairRound Unit.
+   **approve** RA and **placeBid**(3, `10000000000000000000`,
+   `10000000000000000000`) = 10 UNRIG at most 10 each, in Spartans. After
+   the round settles you hold FairRound Units.
 3. **Send Claude both tables** (14 addresses, two block numbers). Claude
    updates the site: a network switch (Arbitrum One / Robinhood Chain), the
    new addresses, Rules page disclosures, README, llms.txt. You merge.

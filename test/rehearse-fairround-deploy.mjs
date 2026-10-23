@@ -38,13 +38,21 @@ await w(RA9.setGovernance(gov9)); ok((await RA9.governance()) === gov9, "3.1 gov
 await w(RA9.setTreasury(ct9)); ok((await RA9.treasury()) === ct9, "3.2 treasury = CT9");
 await w(RA9.setDividends(dv9)); ok((await RA9.dividends()) === dv9, "3.3 dividends = DV9");
 const LAUNCHES = [
-  [0, "Demo Project Alpha", 12000], [1, "Demo Project Beta", 30000], [2, "Demo Project Gamma", 60000],
-  [3, "Demo Project Delta", 120000], [4, "Demo Project Epsilon", 300000], [5, "Demo Project Zeta", 12000],
+  [0, 'The Chosen One', 1],
+  [1, 'The Musketeers', 3],
+  [2, 'The Fellowship', 9],
+  [3, 'Spartans', 300],
+  [4, 'The Thousand', 1000],
+  [5, 'The Immortals', 10000],
+  [6, 'Camelot', 12000],
+  [7, '30K Corp', 30000],
+  [8, 'Hundred K Guild', 100000],
+  [9, "Xerxes' Host", 300000],
 ];
 for (const [id, name, n] of LAUNCHES) await w(RA9.listCompany(id, name, n, HOUR));
 let allListed = true;
 for (const [id, name, n] of LAUNCHES) { const c = await RA9.companies(id); allListed &&= c.name === name && c.totalShares === BigInt(n); }
-ok(allListed, "3.4 all 6 demo launches listed");
+ok(allListed, "3.4 all 10 tiers listed");
 await w(IT.setAuthorizedSink(ra9, true)); ok(await IT.authorizedSink(ra9), "3.5 RA9 sink");
 await w(IT.setAuthorizedSink(ct9, true)); ok(await IT.authorizedSink(ct9), "3.6 CT9 sink");
 await w(IT.setAuthorizedSink(dv9, true)); ok(await IT.authorizedSink(dv9), "3.7 DV9 sink");
@@ -75,7 +83,7 @@ await w(RA9.settleRound(0, { gasLimit: 32_000_000 }));
 ok((await RA9.companyShareCount(0, u.address)) === 1n, "round settled: the wallet holds a unit");
 ok((await RA9.ownerOf(0n)) === u.address, "unit NFT minted to the wallet");
 { const uri = await RA9.tokenURI(0n); const j = JSON.parse(Buffer.from(uri.split(",")[1], "base64").toString());
-  ok(j.name === "Demo Project Alpha - Unit 1/12000" && j.description.startsWith("FairRound unit") && (await RA9.name()) === "FairRound Unit" && (await RA9.symbol()) === "FRUNIT", "unit metadata says FairRound: " + j.name); }
+  ok(j.name === "The Chosen One - Unit 1/1" && j.description.startsWith("FairRound unit") && (await RA9.name()) === "FairRound Unit" && (await RA9.symbol()) === "FRUNIT", "unit metadata says FairRound: " + j.name); }
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
