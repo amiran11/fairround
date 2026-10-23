@@ -1,5 +1,5 @@
 Part 2 — deploy (7 contracts)
-  PASS 2.1 InvestToken: symbol INVEST, maxCitizens 10000
+  PASS 2.1 InvestToken: name Unrig, symbol UNRIG, maxCitizens 10000
   PASS 2: InvestToken deployed, 5198 bytes
   PASS 2: RoundAuctionV9 deployed, 23424 bytes
   PASS 2: GovernanceV9 deployed, 15999 bytes
@@ -25,7 +25,7 @@ Part 4 — timelock
   PASS 4.3 InvestToken owner = TL
   PASS 4: the deploying wallet can no longer list directly
 Smoke test — a new wallet uses it
-  PASS wallet verified with OV2 and claimed 1,000 test credits
+  PASS wallet verified with OV2 and claimed 1,000 UNRIG test credits
   PASS test credits can't be sent wallet to wallet (closed loop, tradability unset)
   PASS bid escrowed in RA9 (spending into a sink works)
   PASS round settled: the wallet holds a unit
