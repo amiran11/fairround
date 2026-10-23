@@ -1,8 +1,8 @@
 # FairRound brand
 
 Plain paper, near-black type, and one ink: the violet-blue of an official
-stamp. The mark is a round cut into eight equal slices: everyone gets the
-same share of the round.
+stamp. The mark is a ring cut into eight equal slices (everyone gets the same
+share of the round) around balanced scales (one fair price for all).
 
 ## Colours
 
