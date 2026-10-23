@@ -260,7 +260,7 @@ console.log("\nTreasury v9: no free exits (F23, F26)");
   await elect(GOV, 11, cits[0]);
   await setKey(GOV, 11, cits[0], cits[1]);
   const cap = (await RA.companies(11)).capital;
-  ok(await reverts(async () => CT.connect(cits[1]).proposePayment(11, await IT.getAddress(), 0, cits[2].address, cap), "over 20%"), "CT-3: no proposal can take more than 20% of a bucket per term");
+  ok(await reverts(async () => CT.connect(cits[1]).proposePayment(11, await IT.getAddress(), 0, cits[2].address, cap), "over 5%"), "CT-3: no proposal can take more than 5% of a bucket per term");
   const pid = await CT.nextProposalId();
   await w(CT.connect(cits[1]).proposePayment(11, await IT.getAddress(), 0, cits[2].address, cap / 10n));
   ok(await reverts(async () => CT.connect(cits[0]).vote(pid, true), "proposer can't vote"), "F26: governor can't vote on own proposal");
@@ -282,25 +282,25 @@ console.log("\nTreasury v9: payment by vote, snapshot, quorum, failed transfer (
   await setKey(GOV, 0, cits[0], cits[10]);
   await w(usdc.mint(owner.address, 1000n)); await w(usdc.approve(ct, 1000n)); await w(CT.depositToken(0, u, 1000n));
   ok((await CT.balanceOf(0, u, 0)) === 1000n, "deposit credited to capital");
-  // small payment (5%): yes votes must reach 20% of eligible (9 shares) -> 2 yes
+  // small payment (3%): yes votes must reach 20% of eligible (9 shares) -> 2 yes
   let pid = await CT.nextProposalId();
-  await w(CT.connect(cits[10]).proposePayment(0, u, 0, cits[11].address, 50n));
-  ok((await CT.proposals(pid)).quorumBps === 2000n, "5% payment needs 20% quorum");
+  await w(CT.connect(cits[10]).proposePayment(0, u, 0, cits[11].address, 30n));
+  ok((await CT.proposals(pid)).quorumBps === 2000n, "3% payment needs 20% quorum");
   await w(CT.connect(cits[1]).vote(pid, true)); await w(CT.connect(cits[2]).vote(pid, true));
   await warp(3 * DAY + 1);
   ok(await reverts(async () => CT.executePayment(pid), "execution delay"), "approved payment waits 5 days (longer than a recall vote)");
   await warp(5 * DAY);
   await w(CT.executePayment(pid));
-  ok((await usdc.balanceOf(cits[11].address)) === 50n, "approved payment executed after the delay");
-  // second payment: cumulative 5% + 10% = 15% of the term's base -> large (40%); then a blocked recipient
+  ok((await usdc.balanceOf(cits[11].address)) === 30n, "approved payment executed after the delay");
+  // second payment: cumulative 3% + 2% = 5% of the term's base, the cap; then a blocked recipient
   pid = await CT.nextProposalId();
-  await w(CT.connect(cits[10]).proposePayment(0, u, 0, cits[12].address, 100n));
-  ok((await CT.proposals(pid)).quorumBps === 4000n, "CT-3: splitting doesn't dodge the 40% quorum (counted cumulatively per term)");
-  ok(await reverts(async () => CT.connect(cits[10]).proposePayment(0, u, 0, cits[13].address, 60n), "over 20%"), "CT-3: per-term cap of 20% of the bucket");
+  await w(CT.connect(cits[10]).proposePayment(0, u, 0, cits[12].address, 20n));
+  ok((await CT.proposals(pid)).quorumBps === 2000n, "with the 5% cap every proposal needs the 20% quorum");
+  ok(await reverts(async () => CT.connect(cits[10]).proposePayment(0, u, 0, cits[13].address, 1n), "over 5%"), "CT-3: per-term cap of 5% of the bucket, counted cumulatively (splitting doesn't help)");
   for (let i = 1; i < 5; i++) await w(CT.connect(cits[i]).vote(pid, true));
   await w(usdc.setBlocked(cits[12].address));
   await warp(EXEC); await w(CT.executePayment(pid));
-  ok((await CT.proposals(pid)).status === 3n && (await CT.balanceOf(0, u, 0)) === 950n, "blocked recipient: transfer fails, money returns to the company");
+  ok((await CT.proposals(pid)).status === 3n && (await CT.balanceOf(0, u, 0)) === 970n, "blocked recipient: transfer fails, money returns to the company");
 }
 
 console.log("\nTreasury v9: snapshot one day before the proposal (F34)");
@@ -331,15 +331,15 @@ console.log("\nTreasury v9: sales by vote + sealed-bid auction with reserve (F25
   await elect(GOV, 0, cits[0], cits.slice(0, 5));
   await setKey(GOV, 0, cits[0], cits[10]);
   const cap0 = (await RA.companies(0)).capital;
-  // sell 10 INVEST of capital for USDC, reserve 1000
+  // sell 2 INVEST of capital (~99) for USDC, reserve 1000
   let pid = await CT.nextProposalId();
-  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(10), u, 1000n));
-  ok((await RA.companies(0)).capital === cap0 - E(10), "asset reserved while the vote runs");
+  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(2), u, 1000n));
+  ok((await RA.companies(0)).capital === cap0 - E(2), "asset reserved while the vote runs");
   const pidB = pid + 1n, pidC = pid + 2n;   // proposed now: one will go unsold, one rejected
-  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(4), u, 100n));
-  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(4), u, 100n));
-  ok(await reverts(async () => CT.connect(cits[10]).proposeSale(0, inv, 0, E(2), u, 100n), "over 20%"), "CT-M2: sales count toward the 20%-per-term cap");
-  ok((await CT.proposals(pidB)).quorumBps === 4000n, "CT-M2: sales count cumulatively for the 40% quorum");
+  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(1), u, 100n));
+  await w(CT.connect(cits[10]).proposeSale(0, inv, 0, E(1), u, 100n));
+  ok(await reverts(async () => CT.connect(cits[10]).proposeSale(0, inv, 0, E(1), u, 100n), "over 5%"), "CT-M2: sales count toward the 5%-per-term cap");
+  ok((await CT.proposals(pidB)).quorumBps === 2000n, "sales need the 20% quorum");
   for (let i = 1; i < 5; i++) { await w(CT.connect(cits[i]).vote(pid, true)); await w(CT.connect(cits[i]).vote(pidB, true)); }
   await warp(EXEC); await w(CT.startAuction(pid));
   const a = await CT.auctions(pid);
@@ -359,17 +359,17 @@ console.log("\nTreasury v9: sales by vote + sealed-bid auction with reserve (F25
   ok((await CT.balanceOf(0, u, 1)) === 0n && (await RA.reinvestableIncome(0)) === 0n, "F33: capital never becomes reinvestable income");
   const ib = await IT.balanceOf(cits[11].address);
   await w(CT.connect(cits[11]).claimAuction(pid));
-  ok((await IT.balanceOf(cits[11].address)) - ib === E(10) && (await usdc.balanceOf(cits[11].address)) === 10000n - 1500n, "winner gets the asset and the deposit back");
+  ok((await IT.balanceOf(cits[11].address)) - ib === E(2) && (await usdc.balanceOf(cits[11].address)) === 10000n - 1500n, "winner gets the asset and the deposit back");
   ok(await reverts(async () => CT.connect(cits[1]).withdrawHostFees(u), "not host"), "only the host collects the fee");
   await w(CT.withdrawHostFees(u));
   ok((await usdc.balanceOf(owner.address)) === 15n, "host collected the 15");
   // unsold: no valid bid -> asset returns
   await w(CT.startAuction(pidB));
   await warp(3 * DAY + 1); await w(CT.settleAuction(pidB));
-  ok((await RA.companies(0)).capital === cap0 - E(10) - E(4), "F25: unsold asset returns to the company");
+  ok((await RA.companies(0)).capital === cap0 - E(2) - E(1), "F25: unsold asset returns to the company");
   // rejected sale returns too
   await w(CT.startAuction(pidC));
-  ok((await CT.proposals(pidC)).status === 1n && (await RA.companies(0)).capital === cap0 - E(10), "rejected sale: asset returns");
+  ok((await CT.proposals(pidC)).status === 1n && (await RA.companies(0)).capital === cap0 - E(2), "rejected sale: asset returns");
 }
 
 console.log("\nTreasury v9: proposals die with the term; corporate voting");
@@ -427,11 +427,11 @@ console.log("\nCorporate path: reinvest vote -> invest vote -> compensation -> c
   await elect(GOV, 0, cits[2], holders0.slice(0, 10));
   await setKey(GOV, 0, cits[2], cits[35]);
   await w(RA.listCompany(1, "Target", 100, 10 * DAY));
-  const useAmt = (inc / 5n / E(1)) * E(1); // per-term cap: 20% of the income bucket
-  ok(await reverts(async () => CT.connect(cits[35]).proposeInvest(0, 1, inc, E(1)), "over 20%"), "investing is capped at 20% of income per term too");
+  const useAmt = (inc / 20n / E(1)) * E(1); // per-term cap: 5% of the income bucket
+  ok(await reverts(async () => CT.connect(cits[35]).proposeInvest(0, 1, inc, E(1)), "over 5%"), "investing is capped at 5% of income per term too");
   const pid0 = await CT.nextProposalId();
   await w(CT.connect(cits[35]).proposeInvest(0, 1, useAmt, E(1)));
-  ok((await CT.proposals(pid0)).quorumBps === 4000n, "a 20%-of-income investment is 'large': 40% quorum");
+  ok((await CT.proposals(pid0)).quorumBps === 2000n, "a 5%-of-income investment needs the 20% quorum");
   for (let i = 3; i < 15; i++) await w(CT.connect(cits[i]).vote(pid0, true)); // 12 of 29
   await warp(EXEC);
   ok(await reverts(async () => CT.connect(cits[3]).executeInvest(pid0), "not operating key"), "only the operating key picks when to place the approved bid");

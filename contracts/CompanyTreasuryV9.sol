@@ -78,7 +78,7 @@ interface IGovernanceV9 {
 contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    string public constant DISCLAIMER = "FICTIONAL SIMULATION. Not a real financial product, security, or claim on any real-world asset. Any resemblance to real entities is a gamified rule-set only.";
+    string public constant DISCLAIMER = "DEMO WITH TEST CREDITS. Not a real financial product, security, or claim on any real-world asset. Demo listings are fictional.";
 
     uint8 public constant CAPITAL = 0;
     uint8 public constant INCOME = 1;
@@ -90,8 +90,8 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
     uint256 public constant MAJORITY_BPS = 5100;
     uint256 public constant QUORUM_BPS = 2000;        // yes >= 20% of the base
     uint256 public constant LARGE_QUORUM_BPS = 4000;  // 40% when large
-    uint256 public constant LARGE_AMOUNT_BPS = 500;   // large = over 5% of the bucket this term
-    uint256 public constant TERM_CAP_BPS = 2000;      // payments + investments + sales <= 20% of a bucket per term
+    uint256 public constant LARGE_AMOUNT_BPS = 500;   // large = over 5% of the bucket this term (with the 5% cap this tier no longer triggers)
+    uint256 public constant TERM_CAP_BPS = 500;       // payments + investments + sales <= 5% of a bucket per term (FairRound)
     uint256 public constant COMMIT_WINDOW = 2 days;
     uint256 public constant REVEAL_WINDOW = 1 days;
     uint256 public constant DEPOSIT_BPS = 1000;       // bid deposit = 10% of reserve
@@ -278,7 +278,7 @@ contract CompanyTreasuryV9 is Ownable, ReentrancyGuard {
         // (v9 audit CT-3, CT-M2).
         uint256 already = outflowThisTerm[companyId][term][token][bucket];
         uint256 base = bal + already; // the bucket as it was before this term's proposals
-        require((already + amount) * 10_000 <= base * TERM_CAP_BPS, "CT: over 20% of the bucket this term");
+        require((already + amount) * 10_000 <= base * TERM_CAP_BPS, "CT: over 5% of the bucket this term");
         bool large = (already + amount) * 10_000 > base * LARGE_AMOUNT_BPS;
         outflowThisTerm[companyId][term][token][bucket] = already + amount;
         _debit(companyId, token, bucket, amount); // reserved until decided

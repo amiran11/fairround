@@ -101,6 +101,17 @@ On **IT** (#1):
 | 3.7 | setAuthorizedSink | DV, `true` | **authorizedSink**(DV) = true |
 | 3.8 | setVerifier | OV, `true` | **verifier**(OV) = true |
 
+On **CT** (#4), so projects can sell UNRIG for these assets by vote, with
+no 48-hour wait later:
+
+| Step | Click | Input | Read back |
+|---|---|---|---|
+| 3.9 | setApprovedToken | USDC, `true` | **approvedToken**(USDC) = true |
+| 3.10 | setApprovedToken | WETH, `true` | **approvedToken**(WETH) = true |
+
+- Arbitrum One: USDC `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`, WETH `0x82aF49447D8a07e3bd95BD0d56f35241523fBab1`.
+- Robinhood Chain: Claude looks up the official USDC and WETH addresses on Saturday morning; skip 3.9–3.10 there if they aren't confirmed.
+
 **Do NOT touch** on IT: **setRoundAuctionForTradability** and
 **setAuctionHouse** (leave unset: test credits stay closed-loop), and never
 **renounceOwnership**.
