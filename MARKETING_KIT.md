@@ -15,6 +15,22 @@
 
 Put all four in every bio, and the site link in each account's bio.
 
+## Channel plan
+
+**One rule for all of it:** every channel points to one action: *verify a wallet and bid in the next round*.
+
+**Tier 1, now:** [to fill in from the original list, items 1–4]
+
+**Tier 2, next 2–4 weeks:**
+5. **Farcaster.** Crypto-native, governance-minded, and smaller, so a good post gets noticed.
+6. **Telegram and Discord.** Georgian crypto groups, plus Arbitrum community channels.
+7. **Mirror or Paragraph (crypto-native blogs).** A long-form essay, "Why ICOs repeat the mistake of 1990s vouchers", linking the SSRN paper.
+8. **Mechanism-design and governance researchers.** The paper is a reason to email them; their reposts carry weight.
+
+**Tier 3, once there's traction:**
+9. **Podcasts and Spaces** about governance and fair launches.
+10. **Georgian media and LinkedIn**, for the origin story once there's a number to tell ("X citizens from Y countries").
+
 Two waves. **Wave 1 (now): millennial voice**, the generation that watched
 the 1990s voucher privatization happen to their parents. **Wave 2 (later):
 Gen Z voice**, crypto-native, tired of insiders and whales. Same product,
@@ -142,3 +158,69 @@ Post (X / Instagram / Telegram, Georgian):
 
 სიმულაციაა. კომპანიები გამოგონილია, ხმა ნამდვილია.
 🌐 sakartvelo-exchange.com
+
+---
+
+## Open House Singapore: call for testers (October 2026)
+
+Images: `brand/x/x-post-become-a-citizen-ka-1600x900.png` (Georgian), `brand/x/x-post-become-a-citizen-1600x900.png` (English).
+
+### Georgian, long (Facebook, Telegram, Reddit)
+
+🇬🇪 საქართველო სინგაპურში! დახმარება გვჭირდება
+
+Sakartvelo Exchange, ვირტუალური საქართველოს საფონდო ბირჟა, ამ დღეებში სინგაპურში, Arbitrum-ის Open House-ზე, მსოფლიოს სხვა პროექტებს ეჯიბრება.
+
+ჟიური უყურებს არა მხოლოდ კოდს, არამედ იმას, იყენებენ თუ არა მას ნამდვილი ადამიანები. ამიტომ გთხოვთ: დაუთმეთ 10 წუთი, გახდით მოქალაქე, გააკეთეთ ერთი ბიდი და მოგვწერეთ, რა მოგეწონათ და სად გაგიჭირდათ. კრიტიკა ყველაზე ძვირფასია.
+
+როგორ (10 წუთი):
+1️⃣ დააყენე MetaMask (ტელეფონზე ან Chrome-ში) და შექმენი საფულე. საიდუმლო ფრაზა ჩაიწერე ქაღალდზე და არავის აჩვენო.
+2️⃣ ქსელად აირჩიე Arbitrum One, დააჭირე Buy და ბარათით იყიდე დაახლოებით $25-ის ETH. საფულეში მინიმუმ 0.0083 ETH უნდა გქონდეს. ის შენთან რჩება, საკომისიო ცენტზე ნაკლებია.
+3️⃣ MetaMask-ის ბრაუზერში გახსენი sakartvelo-exchange.com → მოქალაქე → დაადასტურე საფულე → მიიღე 1,000 INVEST.
+4️⃣ აირჩიე კომპანია და გააკეთე ბიდი მიმდინარე რაუნდში.
+5️⃣ მოგვწერე შთაბეჭდილება: t.me/sakartveloexchange
+
+დრო არ გაქვს? ასეც დაგვეხმარები:
+• გამოიწერე X-ზე: @investtoken1
+• გააზიარე ეს პოსტი
+• შემოგვიერთდი Telegram-ზე ან r/sakartveloexchange-ზე
+
+⚠️ ეს სიმულაციაა: კომპანიები გამოგონილია, INVEST უფასოა და გაცემისას ფასი არ აქვს. ეს ინვესტიცია არ არის. საიდუმლო ფრაზას არავინ მოგთხოვს, არც მე.
+
+### Georgian, X (202 characters; put the guide in a reply)
+
+🇬🇪 Sakartvelo Exchange სინგაპურში, Arbitrum-ის Open House-ზე ეჯიბრება!
+
+გვჭირდება შენი 10 წუთი: გახდი მოქალაქე, გააკეთე ერთი ბიდი და მოგვწერე, რა არ მუშაობს.
+
+sakartvelo-exchange.com
+👇 ინსტრუქცია ქვემოთ
+
+### English, long (LinkedIn, Telegram, Reddit, Discord)
+
+🇬🇪 Sakartvelo Exchange is competing at Arbitrum Open House in Singapore, and we need testers.
+
+Judges look at more than code: they want to see real people using it. So here's the ask: give us 10 minutes, become a citizen, place one bid, and tell us what worked and what broke. Honest criticism is worth the most.
+
+How (10 minutes):
+1️⃣ Install MetaMask (phone or Chrome) and create a wallet. Write the secret phrase on paper and never show it to anyone.
+2️⃣ Switch to Arbitrum One, tap Buy, and get about $25 of ETH with a card. The wallet needs at least 0.0083 ETH to verify; it stays yours, and fees are under a cent.
+3️⃣ Open sakartvelo-exchange.com in MetaMask's browser → Citizen → verify your wallet → claim 1,000 INVEST.
+4️⃣ Pick a company and bid in the current round.
+5️⃣ Tell us how it went: t.me/sakartveloexchange
+
+No time? You can still help:
+• Follow @investtoken1 on X
+• Share this post
+• Join us on Telegram or r/sakartveloexchange
+
+⚠️ It's a simulation: the companies are fictional, INVEST is free and has no value when issued. This is not an investment. Nobody from the project will ever ask for your secret phrase.
+
+### English, X (205 characters; put the guide in a reply)
+
+🇬🇪 Sakartvelo Exchange is competing at Arbitrum Open House in Singapore.
+
+We need 10 minutes of your time: become a citizen, place one bid, tell us what breaks.
+
+sakartvelo-exchange.com
+👇 Setup guide below
