@@ -1,4 +1,4 @@
-// Rehearsal of DEPLOY_ROBINHOOD.md on a local chain with Arbitrum's limits.
+// Rehearsal of DEPLOY_FAIRROUND.md on a local chain with Arbitrum's limits.
 // A fresh, standalone FairRound set: InvestToken (test credits) plus the v9
 // contracts, no v8. Follows the checklist step by step and reads every value
 // back, then a new wallet verifies, claims, bids and receives a unit.
@@ -19,14 +19,14 @@ const deploy = async (n, ...a) => { const c = await new ethers.ContractFactory(a
 
 console.log("Part 2 — deploy (7 contracts)");
 const IT = await deploy("InvestToken", 10000); const it = await IT.getAddress();
-ok((await IT.symbol()) === "INVEST" && (await IT.maxCitizens()) === 10000n, "2.1 InvestToken: symbol INVEST, maxCitizens 10000");
+ok((await IT.symbol()) === "INVEST" && (await IT.name()) === "FairRound Test Credit" && (await IT.maxCitizens()) === 10000n, "2.1 InvestToken: symbol INVEST, maxCitizens 10000");
 const RA9 = await deploy("RoundAuctionV9", it); const ra9 = await RA9.getAddress();
 const GOV9 = await deploy("GovernanceV9", ra9); const gov9 = await GOV9.getAddress();
 const CT9 = await deploy("CompanyTreasuryV9", it, ra9, gov9); const ct9 = await CT9.getAddress();
 const DV9 = await deploy("CompanyDividendsV9", it, ra9, gov9); const dv9 = await DV9.getAddress();
 const OV2 = await deploy("OpenVerifierV2", it, me.address); const ov2 = await OV2.getAddress();
-const TL = await deploy("SakartveloTimelock", me.address); const tl = await TL.getAddress();
-for (const [n, c] of [["InvestToken", IT], ["RoundAuctionV9", RA9], ["GovernanceV9", GOV9], ["CompanyTreasuryV9", CT9], ["CompanyDividendsV9", DV9], ["OpenVerifierV2", OV2], ["SakartveloTimelock", TL]]) {
+const TL = await deploy("FairRoundTimelock", me.address); const tl = await TL.getAddress();
+for (const [n, c] of [["InvestToken", IT], ["RoundAuctionV9", RA9], ["GovernanceV9", GOV9], ["CompanyTreasuryV9", CT9], ["CompanyDividendsV9", DV9], ["OpenVerifierV2", OV2], ["FairRoundTimelock", TL]]) {
   const len = ((await P.getCode(await c.getAddress())).length - 2) / 2;
   ok(len > 0 && len <= 24576, `2: ${n} deployed, ${len} bytes`);
 }
@@ -74,6 +74,8 @@ const c2 = await RA9.companies(0); await warp(Number(c2.roundEnd) - (await P.get
 await w(RA9.settleRound(0, { gasLimit: 32_000_000 }));
 ok((await RA9.companyShareCount(0, u.address)) === 1n, "round settled: the wallet holds a unit");
 ok((await RA9.ownerOf(0n)) === u.address, "unit NFT minted to the wallet");
+{ const uri = await RA9.tokenURI(0n); const j = JSON.parse(Buffer.from(uri.split(",")[1], "base64").toString());
+  ok(j.name === "Demo Project Alpha - Unit 1/12000" && j.description.startsWith("FairRound unit") && (await RA9.name()) === "FairRound Unit" && (await RA9.symbol()) === "FRUNIT", "unit metadata says FairRound: " + j.name); }
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

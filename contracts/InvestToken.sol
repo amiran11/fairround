@@ -32,7 +32,7 @@ contract InvestToken is ERC20, Ownable {
     /// to real countries, governments, companies, agencies, or assets is
     /// fictional and exists solely as a gamified rule-set. Nothing here is a
     /// real financial product, security, or claim on any real-world asset.
-    string public constant DISCLAIMER = "FICTIONAL SIMULATION. Not a real financial product, security, or claim on any real-world asset. Any resemblance to real entities is a gamified rule-set only.";
+    string public constant DISCLAIMER = "DEMO WITH TEST CREDITS. Not a real financial product, security, or claim on any real-world asset. Demo listings are fictional.";
 
     uint256 public constant CITIZEN_ALLOCATION = 1000 * 10 ** 18;
 
@@ -101,7 +101,7 @@ contract InvestToken is ERC20, Ownable {
     event CitizenVerified(address indexed citizen, bool verified);
     event MaxCitizensSet(uint256 newMax);
 
-    constructor(uint256 _maxCitizens) ERC20("Invest", "INVEST") Ownable(msg.sender) {
+    constructor(uint256 _maxCitizens) ERC20("FairRound Test Credit", "INVEST") Ownable(msg.sender) {
         maxCitizens = _maxCitizens;
         emit MaxCitizensSet(_maxCitizens);
     }

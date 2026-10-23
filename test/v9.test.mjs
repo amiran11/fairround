@@ -78,7 +78,7 @@ async function soldCompany(RA, id, holders, perHolder = 1, total = null) {
 
 // =================================================================
 console.log("Sizes (Arbitrum limit 24,576 bytes)");
-for (const n of ["RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "SakartveloTimelock"]) {
+for (const n of ["RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "FairRoundTimelock"]) {
   const len = (JSON.parse(fs.readFileSync(`./art9/${n}.art.json`)).bytecode.length - 2) / 2;
   const code = await P.getCode(await (await deploy(...(n === "RoundAuctionV9" ? [n, owner.address] : n === "GovernanceV9" ? [n, owner.address] : (n === "CompanyTreasuryV9" || n === "CompanyDividendsV9") ? [n, owner.address, owner.address, owner.address] : n === "OpenVerifierV2" ? [n, owner.address, owner.address] : [n, owner.address]))).getAddress());
   ok((code.length - 2) / 2 <= 24576, `${n}: ${(code.length - 2) / 2} bytes deployed`);
@@ -667,7 +667,7 @@ console.log("\nOpenVerifier v2 (F32)");
 console.log("\nTimelock on owner powers (F36)");
 {
   const IT = await deploy("InvestToken", 1000);
-  const TL = await deploy("SakartveloTimelock", owner.address);
+  const TL = await deploy("FairRoundTimelock", owner.address);
   const tl = await TL.getAddress();
   await w(IT.transferOwnership(tl));
   ok(await reverts(async () => IT.setMaxCitizens(5), "0x118cdaa7"), "F36: owner wallet can no longer act directly");
