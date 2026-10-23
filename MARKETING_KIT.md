@@ -15,6 +15,22 @@
 
 Put all four in every bio, and the site link in each account's bio.
 
+## Channel plan
+
+**One rule for all of it:** every channel points to one action: *verify a wallet and bid in the next round*.
+
+**Tier 1, now:** [to fill in from the original list, items 1–4]
+
+**Tier 2, next 2–4 weeks:**
+5. **Farcaster.** Crypto-native, governance-minded, and smaller, so a good post gets noticed.
+6. **Telegram and Discord.** Georgian crypto groups, plus Arbitrum community channels.
+7. **Mirror or Paragraph (crypto-native blogs).** A long-form essay, "Why ICOs repeat the mistake of 1990s vouchers", linking the SSRN paper.
+8. **Mechanism-design and governance researchers.** The paper is a reason to email them; their reposts carry weight.
+
+**Tier 3, once there's traction:**
+9. **Podcasts and Spaces** about governance and fair launches.
+10. **Georgian media and LinkedIn**, for the origin story once there's a number to tell ("X citizens from Y countries").
+
 Two waves. **Wave 1 (now): millennial voice**, the generation that watched
 the 1990s voucher privatization happen to their parents. **Wave 2 (later):
 Gen Z voice**, crypto-native, tired of insiders and whales. Same product,
