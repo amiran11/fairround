@@ -30,6 +30,13 @@ The site is available in English and Georgian (ქართული). Pages are
 - OpenVerifierV2: 0xB055dB6E1291Ac08f581D3ce0a48791b4633AD5A
 - SakartveloTimelock (owner, 48-hour delay): 0xBD357971d9935c68c39a2B7e4Fbf33ffC23adF6f
 
+## Official community
+
+- [X: @investtoken1](https://x.com/investtoken1)
+- [Reddit: r/sakartveloexchange](https://www.reddit.com/r/sakartveloexchange/)
+- [Telegram channel](https://t.me/sakartvelo_exchange)
+- [Telegram group](https://t.me/sakartveloexchange)
+
 ## Optional
 
 - [Source code](https://github.com/amiran11/sakartvelo-exchange)

@@ -6,6 +6,15 @@
 - **Slogan:** Diversified ownership defines the price.
 - **Line for the idea and the paper:** Ownership first. Markets after.
 
+## Official accounts
+
+- X: [@investtoken1](https://x.com/investtoken1)
+- Reddit: [r/sakartveloexchange](https://www.reddit.com/r/sakartveloexchange/)
+- Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange)
+- Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange)
+
+Put all four in every bio, and the site link in each account's bio.
+
 Two waves. **Wave 1 (now): millennial voice**, the generation that watched
 the 1990s voucher privatization happen to their parents. **Wave 2 (later):
 Gen Z voice**, crypto-native, tired of insiders and whales. Same product,

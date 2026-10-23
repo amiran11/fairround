@@ -16,6 +16,15 @@ export const LINKS = {
   paper: "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7419018",
 };
 
+// Official community accounts. Shown in the footer so visitors can tell
+// the real ones from impostors.
+export const SOCIAL = [
+  ["X", "https://x.com/investtoken1"],
+  ["Reddit", "https://www.reddit.com/r/sakartveloexchange/"],
+  ["Telegram channel", "https://t.me/sakartvelo_exchange"],
+  ["Telegram group", "https://t.me/sakartveloexchange"],
+];
+
 function Account() {
   const { t } = useT();
   const { connected, address, account, connect, connecting } = useSession();
@@ -103,6 +112,13 @@ export default function Layout() {
               <a href={LINKS.security} target="_blank" rel="noreferrer">{t("Security review")}</a>
               <a href={LINKS.paper} target="_blank" rel="noreferrer">{t("Research paper (SSRN)")}</a>
             </p>
+            <p className="row" aria-label={t("Official community")}>
+              <span className="strong" style={{ color: "var(--ink)" }}>{t("Official community")}:</span>
+              {SOCIAL.map(([label, href]) => (
+                <a key={href} href={href} target="_blank" rel="noreferrer me">{t(label)}</a>
+              ))}
+            </p>
+            <p>{t("These are our only official accounts. Nobody from the project will ever ask for your secret phrase or message you first about money.")}</p>
           </div>
           <div>
             {[
