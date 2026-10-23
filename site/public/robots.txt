@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fairround.xyz/sitemap.xml
+Sitemap: https://www.fairround.xyz/sitemap.xml
