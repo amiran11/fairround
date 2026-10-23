@@ -5,7 +5,7 @@ then on **Robinhood Chain**. Same contracts, same steps, same values; only
 the network in MetaMask changes. About 2 hours each with Claude guiding.
 
 The code is the audited v9 code with FairRound names written on-chain
-(unit NFTs "FairRound Unit" / FRUNIT, test credits "Unrig" / UNRIG, the timelock "FairRoundTimelock"). **Tested:** 134 contract tests
+(unit NFTs "FairRound Unit" / FRUNIT, test credits "Unrig" / UNRIG, the timelock "FairRoundTimelock"). **Tested:** 134 contract tests (with the 5% treasury cap)
 and this exact sequence (`test/rehearse-fairround-deploy.mjs`, 29 checks)
 pass on a local chain with Arbitrum's limits.
 
