@@ -567,7 +567,9 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 }
 
 /* ---- Home: welcome picture and live round ticket ---- */
-.trust-strip { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.trust-strip { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); max-width: 560px; }
+.trust-strip li > * { width: 100%; box-sizing: border-box; height: 100%; }
+@media (max-width: 420px) { .trust-strip { grid-template-columns: 1fr; } }
 .trust-strip li > * { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-sm); padding: 6px 12px; border: 1px solid var(--rule); border-radius: 999px; background: var(--paper-raised); color: var(--ink); text-decoration: none; }
 .trust-strip li svg { color: var(--stamp); }
 .trust-strip a:hover { border-color: var(--stamp); }
@@ -586,7 +588,7 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 .hero-chip-b { bottom: 10%; left: -4%; animation-delay: -3s; }
 @keyframes chip-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .round-ticket { position: relative; width: min(340px, 100%); margin-top: -36px; background: var(--paper-raised); border: 1px solid var(--rule); border-top: 4px solid var(--stamp); border-radius: var(--r-panel); padding: var(--space-4) var(--space-5); box-shadow: 0 10px 30px rgba(27, 29, 33, 0.10); display: flex; flex-direction: column; gap: var(--space-2); }
-.ticket-tag { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ok); }
+.ticket-tag { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--stamp); }
 .ticket-name { font-size: var(--t-xl); }
 .ticket-bar { height: 8px; border-radius: 999px; background: var(--paper-sunk); overflow: hidden; }
 .ticket-bar span { display: block; height: 100%; background: var(--stamp); border-radius: 999px; }
