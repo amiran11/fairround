@@ -8,6 +8,7 @@ import { LockIcon, ShieldCheckIcon, ClockIcon, VaultIcon, KeyIcon } from "../com
 import { fmt, int, useChain, useCountdown } from "../components/liveUtils.js";
 import { ErrorLine, Loading } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
+import { ArrowRight, ArrowDown, HandCoins, Timer, Scale, Landmark } from "lucide-react";
 
 function Next({ c }) {
   const { t } = useT();
@@ -72,7 +73,6 @@ function TrustPanel() {
             <span className="trust-icon"><Icon /></span>
             <div>
               <strong>{title}</strong>
-              <p className="small muted">{body}</p>
               {href && (href.startsWith("/")
                 ? <Link className="small" to={href}>{linkText}</Link>
                 : <a className="small" href={href} target="_blank" rel="noreferrer">{linkText} ↗</a>)}
@@ -99,23 +99,41 @@ export default function Register() {
   return (
     <div className="page">
       <section className="hero">
-        <div className="stack">
-        <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("Own the price discovery.")}</h1>
-        <p className="lede">
-          {t("The on-chain IPO exchange for crypto projects. Projects list through fair rounds: everyone pays the same clearing price, small buyers get filled, and the raise sits in a treasury holders control. Then units trade on the market.")}
-        </p>
-        <p className="lede muted">
-          {t("The process is real: the contracts run on {network} and every bid, vote and payment is public. The demo listings are fictional, and bids use free test credits.", { network: ACTIVE_NETWORK.label })}
-        </p>
-        <div className="row" style={{ paddingTop: 8 }}>
-          {needsCitizenship && <Link to="/invest" className="btn">{t("Become an investor")}</Link>}
-          <Link to="/rules" className="btn btn-secondary">{t("Read the rules")}</Link>
-        </div>
+        <div className="hero-main">
+          <p className="eyebrow">{t("The on-chain IPO exchange for crypto projects")}</p>
+          <h1 className="h1 hero-title">{t("Own the price discovery.")}</h1>
+          <p className="lede">{t("Everyone pays the same price. Small buyers get filled. Holders keep the raise.")}</p>
+          <div className="row hero-cta">
+            {needsCitizenship
+              ? <Link to="/invest" className="btn btn-large">{t("Get 1,000 free UNRIG")} <ArrowRight size={18} /></Link>
+              : <a href="#listings" className="btn btn-large">{t("Pick a listing")} <ArrowDown size={18} /></a>}
+            <a href="#how" className="btn btn-secondary btn-large">{t("How it works")}</a>
+          </div>
+          <p className="small muted hero-note"><span className="live-dot" aria-hidden="true" /> {t("Live demo on {network} · free test credits · fictional listings", { network: ACTIVE_NETWORK.label })}</p>
         </div>
         <TrustPanel />
       </section>
 
-      <section aria-labelledby="register-title">
+      <section id="how" className="how" aria-labelledby="how-title">
+        <h2 id="how-title" className="h2">{t("How a round works")}</h2>
+        <ol className="how-steps">
+          {[
+            [HandCoins, t("Bid"), t("Commit UNRIG and the most you'll pay per unit.")],
+            [Timer, t("Wait one hour"), t("Bids collect for the hour, in public. Being first gives no edge.")],
+            [Scale, t("One price for all"), t("Everyone filled pays the same clearing price.")],
+            [Landmark, t("Own and vote"), t("Units land in your wallet. Holders control the raise.")],
+          ].map(([Icon, title, body], i) => (
+            <li key={title} className="how-step">
+              <span className="how-icon"><Icon size={26} /></span>
+              <span className="how-num">{i + 1}</span>
+              <strong>{title}</strong>
+              <p className="small muted">{body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="listings" aria-labelledby="register-title">
         <div className="spread" style={{ marginBottom: 12 }}>
           <h2 id="register-title" className="h2">{t("Listings")}</h2>
           {stats && (

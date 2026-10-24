@@ -542,3 +542,26 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 .nextstep-action .btn { gap: var(--space-2); }
 .nextstep-here { color: var(--stamp); font-weight: 600; }
 @media (max-width: 600px) { .nextstep-action { width: 100%; } .nextstep-action .btn { width: 100%; justify-content: center; } }
+
+/* ---- Home: lighter hero, visual "how a round works" band ---- */
+.eyebrow { font-size: var(--t-sm); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--stamp); margin: 0 0 var(--space-3); }
+.hero-title { max-width: 14ch; margin: 0; }
+.hero-main .lede { font-size: var(--t-xl); margin-top: var(--space-4); max-width: 30ch; }
+.hero-cta { margin-top: var(--space-6); }
+.btn-large { padding: 14px 22px; font-size: var(--t-md); gap: var(--space-2); }
+.hero-note { margin-top: var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-wash); flex: none; }
+.trust-list li { align-items: center; }
+.how { padding: var(--space-6) 0 var(--space-7); }
+.how-steps { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); counter-reset: none; }
+.how-step { position: relative; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: var(--r-panel); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+.how-step strong { font-size: var(--t-lg); }
+.how-step p { margin: 0; }
+.how-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--stamp-wash); color: var(--stamp); display: grid; place-items: center; margin-bottom: var(--space-2); }
+.how-num { position: absolute; top: var(--space-4); right: var(--space-4); font-size: var(--t-2xl); font-weight: 800; color: var(--rule-strong); line-height: 1; }
+@media (max-width: 600px) {
+  .how-steps { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .how-step { padding: var(--space-4); }
+  .how-icon { width: 40px; height: 40px; }
+  .how-num { font-size: var(--t-xl); top: var(--space-3); right: var(--space-3); }
+}
