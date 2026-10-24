@@ -52,7 +52,7 @@ function Holdings({ company, holdings }) {
         </tbody>
       </table>
       <Muted small>
-        {t("Capital is what the project raised by selling units and what it is given. Income is what holders chose to reinvest at the end of a term; only income can be bid in other projects. Nothing leaves either without a holder vote, and no more than 20% of each per term.")}
+        {t("Capital is what the project raised by selling units and what it is given. Income is what holders chose to reinvest at the end of a term; only income can be bid in other projects. Nothing leaves either without a holder vote, and no more than 5% of each per term.")}
       </Muted>
       {signer && !giving && <div><Button kind="secondary" small onClick={() => setGiving(true)}>{t("Give tokens to this project")}</Button></div>}
       {signer && giving && (
