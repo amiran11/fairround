@@ -2,12 +2,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
 import { useCompanies, useCompanyName, stageOf, StageStamp, visibleListings } from "../v9/companies.jsx";
-import { auctionPhase } from "../v9/chain.js";
+import { auctionPhase, getMyProgress } from "../v9/chain.js";
 import { getPublicStats, ACTIVE_NETWORK, CONTRACT_ADDRESSES, V9_LIVE } from "../web3.js";
-import { LockIcon, ShieldCheckIcon, ClockIcon, VaultIcon, KeyIcon } from "../components/Icons.jsx";
+import { ShieldCheckIcon, ClockIcon, VaultIcon, KeyIcon } from "../components/Icons.jsx";
 import { fmt, int, useChain, useCountdown } from "../components/liveUtils.js";
 import { ErrorLine, Loading } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
+import { ArrowRight, ArrowDown, HandCoins, Timer, Scale, Landmark, UserRound, Sparkles } from "lucide-react";
+import Mark from "../components/Mark.jsx";
 
 function Next({ c }) {
   const { t } = useT();
@@ -51,37 +53,77 @@ function Issued({ c }) {
   );
 }
 
-// The "why your bid is safe" panel beside the headline: each line is a
-// fact the contracts enforce, with a link to check it.
-function TrustPanel() {
+// Four safety facts as a slim row of badges under the headline; the
+// first two link to the proof on Arbiscan.
+function TrustStrip() {
   const { t } = useT();
   const explorer = ACTIVE_NETWORK.blockExplorerUrls[0];
   const scan = (name) => (explorer && CONTRACT_ADDRESSES[name] ? `${explorer}/address/${CONTRACT_ADDRESSES[name]}#code` : null);
   const items = [
-    [ShieldCheckIcon, t("7 contracts, source-verified"), t("Anyone can read the exact code that runs every round."), scan("RoundAuctionV9"), t("Check on Arbiscan")],
-    [ClockIcon, t("48-hour timelock"), t("Every admin change is public two days before it can happen."), scan("FairRoundTimelock"), t("See scheduled changes")],
-    [VaultIcon, t("The raise stays with holders"), t("99% goes to a treasury only holders can spend, at most 5% a term."), "/rules", t("Read the rules")],
-    [KeyIcon, t("Your keys never leave your wallet"), t("You confirm every step in MetaMask. Nobody can move your UNRIG or units."), null, null],
+    [ShieldCheckIcon, t("7 contracts, source-verified"), scan("RoundAuctionV9")],
+    [ClockIcon, t("48-hour timelock"), scan("FairRoundTimelock")],
+    [VaultIcon, t("The raise stays with holders"), null],
+    [KeyIcon, t("Your keys never leave your wallet"), null],
   ];
   return (
-    <aside className="trust" aria-labelledby="trust-title">
-      <h2 id="trust-title" className="trust-title"><LockIcon /> {t("Why your bid is safe")}</h2>
-      <ul className="trust-list">
-        {items.map(([Icon, title, body, href, linkText]) => (
-          <li key={title}>
-            <span className="trust-icon"><Icon /></span>
-            <div>
-              <strong>{title}</strong>
-              <p className="small muted">{body}</p>
-              {href && (href.startsWith("/")
-                ? <Link className="small" to={href}>{linkText}</Link>
-                : <a className="small" href={href} target="_blank" rel="noreferrer">{linkText} ↗</a>)}
-            </div>
-          </li>
+    <ul className="trust-strip" aria-label={t("Why your bid is safe")}>
+      {items.map(([Icon, label, href]) => (
+        <li key={label}>
+          {href
+            ? <a href={href} target="_blank" rel="noreferrer"><Icon /> {label} ↗</a>
+            : <span><Icon /> {label}</span>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// The welcome picture beside the headline: the FairRound mark with a ring
+// of investors around it (everyone at the same table), and a live ticket
+// for a round that is open now.
+function HeroArt() {
+  const { t } = useT();
+  const { address } = useSession();
+  const [p] = useChain((prov) => (V9_LIVE ? getMyProgress(address, prov) : Promise.resolve(null)), [address]);
+  const name = useCompanyName();
+  const c = p?.suggest;
+  const phase = c ? auctionPhase(c) : null;
+  const clock = useCountdown(c ? (phase === "cooldown" ? c.roundStart : c.roundEnd) : 0);
+  const seats = [0, 40, 140, 180, 220, 320];
+  const sold = c ? Number(c.sharesIssued) / Number(c.totalShares) : 0;
+  return (
+    <div className="hero-art">
+      <div className="hero-orbit" aria-hidden="true">
+        <div className="hero-glow" />
+        {seats.map((deg, i) => (
+          <span key={deg} className={`seat seat-${i % 3}`} style={{ transform: `rotate(${deg}deg) translate(var(--orbit)) rotate(${-deg}deg)` }}>
+            <UserRound size={18} />
+          </span>
         ))}
-      </ul>
-      <p className="trust-foot small">{t("Nobody from FairRound will ever ask for your secret phrase.")}</p>
-    </aside>
+        <span className="hero-mark"><Mark size={150} /></span>
+        <span className="hero-chip hero-chip-a"><Scale size={14} /> {t("Same price for everyone")}</span>
+        <span className="hero-chip hero-chip-b"><Sparkles size={14} /> {t("Your units, your vote")}</span>
+      </div>
+      <div className="round-ticket">
+        {c ? (
+          <>
+            <div className="spread">
+              <span className="ticket-tag"><span className="live-dot" aria-hidden="true" /> {phase === "bidding" ? t("Round open now") : t("Next round")}</span>
+              <span className="small muted num">{phase === "bidding" ? t("closes in {time}", { time: clock.label }) : t("opens in {time}", { time: clock.label })}</span>
+            </div>
+            <strong className="ticket-name">{name(c).main}</strong>
+            <div className="ticket-bar" aria-hidden="true"><span style={{ width: `${Math.max(2, Math.round(sold * 100))}%` }} /></div>
+            <p className="small muted num">{t("{sold} of {total} units sold · up to 150 a round", { sold: int(c.sharesIssued), total: int(c.totalShares) })}</p>
+            <Link to={`/company/${c.id}`} className="btn btn-small ticket-btn">{t("Join this round")} <ArrowRight size={16} /></Link>
+          </>
+        ) : (
+          <>
+            <span className="ticket-tag"><span className="live-dot" aria-hidden="true" /> {t("Live on Arbitrum One")}</span>
+            <strong className="ticket-name">{t("Ten listings, one fair price each round")}</strong>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -99,23 +141,42 @@ export default function Register() {
   return (
     <div className="page">
       <section className="hero">
-        <div className="stack">
-        <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("Own the price discovery.")}</h1>
-        <p className="lede">
-          {t("The on-chain IPO exchange for crypto projects. Projects list through fair rounds: everyone pays the same clearing price, small buyers get filled, and the raise sits in a treasury holders control. Then units trade on the market.")}
-        </p>
-        <p className="lede muted">
-          {t("The process is real: the contracts run on {network} and every bid, vote and payment is public. The demo listings are fictional, and bids use free test credits.", { network: ACTIVE_NETWORK.label })}
-        </p>
-        <div className="row" style={{ paddingTop: 8 }}>
-          {needsCitizenship && <Link to="/invest" className="btn">{t("Become an investor")}</Link>}
-          <Link to="/rules" className="btn btn-secondary">{t("Read the rules")}</Link>
+        <div className="hero-main">
+          <p className="eyebrow">{t("The on-chain IPO exchange for crypto projects")}</p>
+          <h1 className="h1 hero-title">{t("Own the price discovery.")}</h1>
+          <p className="lede">{t("Everyone pays the same price. Small buyers get filled. Holders keep the raise.")}</p>
+          <div className="row hero-cta">
+            {needsCitizenship
+              ? <Link to="/invest" className="btn btn-large">{t("Get 1,000 free UNRIG")} <ArrowRight size={18} /></Link>
+              : <a href="#listings" className="btn btn-large">{t("Pick a listing")} <ArrowDown size={18} /></a>}
+            <a href="#how" className="btn btn-secondary btn-large">{t("How it works")}</a>
+          </div>
+          <TrustStrip />
+          <p className="small muted hero-note"><span className="live-dot" aria-hidden="true" /> {t("Live demo on {network} · free test credits · fictional listings", { network: ACTIVE_NETWORK.label })}</p>
         </div>
-        </div>
-        <TrustPanel />
+        <HeroArt />
       </section>
 
-      <section aria-labelledby="register-title">
+      <section id="how" className="how" aria-labelledby="how-title">
+        <h2 id="how-title" className="h2">{t("How a round works")}</h2>
+        <ol className="how-steps">
+          {[
+            [HandCoins, t("Bid"), t("Commit UNRIG and the most you'll pay per unit.")],
+            [Timer, t("Wait one hour"), t("Bids collect for the hour, in public. Being first gives no edge.")],
+            [Scale, t("One price for all"), t("Everyone filled pays the same clearing price.")],
+            [Landmark, t("Own and vote"), t("Units land in your wallet. Holders control the raise.")],
+          ].map(([Icon, title, body], i) => (
+            <li key={title} className="how-step">
+              <span className="how-icon"><Icon size={26} /></span>
+              <span className="how-num">{i + 1}</span>
+              <strong>{title}</strong>
+              <p className="small muted">{body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="listings" aria-labelledby="register-title">
         <div className="spread" style={{ marginBottom: 12 }}>
           <h2 id="register-title" className="h2">{t("Listings")}</h2>
           {stats && (

@@ -399,7 +399,7 @@ export async function getMyProgress(address, provider) {
       address ? r.activeBidSlot(id, address) : 0n,
       address ? r.companyShareCount(id, address) : 0n,
     ]);
-    return { id, name: c.name, totalShares: c.totalShares, finalized: c.finalized, roundEnd: c.roundEnd, roundStart, hasBid: slot !== 0n, units };
+    return { id, name: c.name, totalShares: c.totalShares, sharesIssued: c.sharesIssued, currentRound: c.currentRound, finalized: c.finalized, roundEnd: c.roundEnd, roundStart, hasBid: slot !== 0n, units };
   }))).filter(Boolean);
   const prefer = [3, 4, 2, 5, 1, 6, 0, 7, 8, 9];
   const open = rows.filter((c) => !c.finalized);
