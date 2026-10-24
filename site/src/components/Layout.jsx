@@ -1,7 +1,7 @@
 import { NavLink, Link, Outlet } from "react-router-dom";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
-import { ACTIVE_NETWORK, CONTRACT_ADDRESSES, getMetaMaskDeepLink } from "../web3.js";
+import { ACTIVE_NETWORK, CONTRACT_ADDRESSES, V9_LIVE, getMetaMaskDeepLink } from "../web3.js";
 import { Button, Notice } from "./ui.jsx";
 import { fmt, short } from "./liveUtils.js";
 import { LockIcon } from "./Icons.jsx";
@@ -31,6 +31,9 @@ function Account() {
   const { t } = useT();
   const { connected, address, account, connect, connecting } = useSession();
   if (!connected) {
+    // The guide bar right under the header already offers "Connect wallet";
+    // the header only shows the wallet once it is connected.
+    if (V9_LIVE) return null;
     return <Button kind="secondary" small busy={connecting} onClick={connect} className="btn-wallet"><LockIcon open />{t("Connect wallet")}</Button>;
   }
   return (
