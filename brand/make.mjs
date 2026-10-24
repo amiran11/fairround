@@ -22,14 +22,14 @@ const pages={
  [`${R}/brand/x/x-header-1500x500.png`]:[1500,500,base(1500,500,C.paper)+`<div style="position:absolute;left:-170px;top:-130px;opacity:.08">${mark(720,C.stamp,C.paper)}</div>
   <div style="position:absolute;right:110px;top:0;height:500px;width:900px;display:flex;flex-direction:column;justify-content:center">
    <div style="font-size:24px;font-weight:700;color:${C.stamp};letter-spacing:3px;text-transform:uppercase">FairRound · on-chain IPO exchange</div>
-   <div class="wd" style="font-size:72px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:16px">Launch without<br>the rug.</div>
+   <div class="wd" style="font-size:84px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:16px">Unrig the <span style="color:${C.stamp}">launch.</span></div>
    <div style="font-size:25px;color:${C.graphite};margin-top:22px;line-height:1.4">One price per round. Small buyers filled.<br>The raise held in a treasury only holders can spend.</div>
    <div style="margin-top:24px;display:flex;gap:18px;align-items:center;font-size:22px;color:${C.graphite}"><span class="stamp" style="font-size:22px">Live on Arbitrum One</span><span>fairround.xyz</span></div></div>`],
  [`${R}/brand/x/x-post-how-it-works-1600x900.png`]:[1600,900,base(1600,900,C.paper)+`<div style="--bg:${C.paper};padding:80px 96px;height:100%;box-sizing:border-box;display:flex;flex-direction:column">
    ${logo(46,30)}
-   <div class="wd" style="font-size:76px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:44px">Launch without the rug.</div>
+   <div class="wd" style="font-size:76px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:44px">Unrig the <span style="color:${C.stamp}">launch.</span></div>
    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:52px">${rules.map(([n,t,p])=>`<div class="card"><div class="n">${n}</div><div class="t">${t}</div><div class="p">${p}</div></div>`).join("")}</div>
-   <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:23px;color:${C.graphite}"><span style="color:${C.stamp};font-weight:650;font-size:30px">fairround.xyz</span><span>Live on Arbitrum One as a demo with test credits.</span></div></div>`],
+   <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:23px;color:${C.graphite}"><span style="color:${C.stamp};font-weight:650;font-size:30px">fairround.xyz</span><span>Live on Arbitrum One as a demo with free UNRIG commitment credits.</span></div></div>`],
  [`${R}/brand/x/x-post-call-for-testers-1600x900.png`]:[1600,900,base(1600,900,C.wash)+`<div style="position:absolute;right:-200px;bottom:-240px;opacity:.13">${mark(860,C.stamp,C.wash)}</div>
    <div style="--bg:${C.wash};padding:84px 96px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;position:relative">
    ${logo(46,30)}
@@ -37,7 +37,20 @@ const pages={
    <div class="wd" style="font-size:100px;font-weight:700;letter-spacing:-.02em;line-height:.98;margin-top:36px">Test it.<br>Break it.<br><span style="color:${C.stamp}">Tell us.</span></div>
    <div style="font-size:32px;color:${C.graphite};line-height:1.4;margin-top:32px;max-width:900px">Verify a wallet, place one bid, tell us what breaks. Ten minutes.</div>
    <div style="margin-top:auto;font-size:34px;font-weight:650;color:${C.stamp}">fairround.xyz</div>
-   <div style="font-size:21px;color:${C.graphite};margin-top:8px">A demo with test credits that have no value. Nobody will ever ask for your secret phrase.</div></div>`],
+   <div style="font-size:21px;color:${C.graphite};margin-top:8px">A demo: UNRIG commitment credits are free and have no value. Nobody will ever ask for your secret phrase.</div></div>`],
+ [`${R}/brand/x/x-post-unrig-1600x900.png`]:[1600,900,base(1600,900,C.paper)+`<div style="--bg:${C.paper};padding:84px 96px;height:100%;box-sizing:border-box;display:flex;flex-direction:column">
+   ${logo(46,30)}
+   <div style="display:flex;align-items:center;gap:72px;margin-top:60px">
+    <img src="unrig.svg" style="width:340px;height:340px">
+    <div><div class="wd" style="font-size:104px;font-weight:700;letter-spacing:-.02em;line-height:1">Meet <span style="color:${C.stamp}">UNRIG.</span></div>
+    <div style="font-size:34px;color:${C.graphite};line-height:1.42;margin-top:28px;max-width:760px">The commitment credit you bid with. 1,000 free for every verified investor. It can't move wallet to wallet: no flipping, no sniping.</div></div></div>
+   <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:23px;color:${C.graphite}"><span style="color:${C.stamp};font-weight:650;font-size:30px">fairround.xyz</span><span>A demo credit with no value. Nobody will ever ask for your secret phrase.</span></div></div>`],
+ [`${R}/brand/x/x-post-ten-listings-1600x900.png`]:[1600,900,base(1600,900,C.wash)+`<div style="--bg:${C.wash};padding:72px 96px;height:100%;box-sizing:border-box;display:flex;flex-direction:column">
+   ${logo(46,30)}
+   <div class="wd" style="font-size:76px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:36px">Ten listings. From <span style="color:${C.stamp}">1 unit</span> to <span style="color:${C.stamp}">300,000.</span></div>
+   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-top:44px">${[["1","The Chosen One"],["3","The Musketeers"],["9","The Fellowship"],["300","Spartans"],["1,000","The Thousand"],["10,000","The Immortals"],["12,000","Camelot"],["30,000","30K Corp"],["100,000","Hundred K Guild"],["300,000","Xerxes’ Host"]].map(([u,n])=>`<div class="card" style="padding:24px"><div style="font-size:40px;font-weight:800;color:${C.stamp};line-height:1">${u}</div><div style="font-size:24px;font-weight:700;margin-top:12px;line-height:1.2">${n}</div></div>`).join("")}</div>
+   <div style="font-size:28px;color:${C.graphite};margin-top:36px">150 units a round, one price per round. Even the founder can't take The Thousand in one go.</div>
+   <div style="margin-top:auto;font-size:30px;font-weight:650;color:${C.stamp}">fairround.xyz</div></div>`],
  [`${R}/site/public/og-image.png`]:[1200,630,base(1200,630,C.paper)+`<div style="position:absolute;right:-140px;top:-120px;opacity:.08">${mark(620,C.stamp,C.paper)}</div><div style="--bg:${C.paper};padding:64px 72px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;position:relative">
    ${logo(44,30)}
    <h1 class="wd" style="margin:52px 0 0;font-size:84px;line-height:1;font-weight:700;letter-spacing:-.02em">Launch without<br>the rug.</h1>
