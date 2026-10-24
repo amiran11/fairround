@@ -7,6 +7,7 @@ import { fmt, short } from "./liveUtils.js";
 import { LockIcon } from "./Icons.jsx";
 import Mark from "./Mark.jsx";
 import ConsentBanner from "./ConsentBanner.jsx";
+import NextStep from "./NextStep.jsx";
 
 const REPO = "https://github.com/amiran11/fairround";
 export const LINKS = {
@@ -98,6 +99,7 @@ export default function Layout() {
           </div>
         </div>
       </header>
+      <NextStep />
       <ConnectProblem />
 
       <main id="main">
