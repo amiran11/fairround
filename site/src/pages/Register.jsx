@@ -3,7 +3,8 @@ import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
 import { useCompanies, useCompanyName, stageOf, StageStamp, visibleListings } from "../v9/companies.jsx";
 import { auctionPhase } from "../v9/chain.js";
-import { getPublicStats, ACTIVE_NETWORK, V9_LIVE } from "../web3.js";
+import { getPublicStats, ACTIVE_NETWORK, CONTRACT_ADDRESSES, V9_LIVE } from "../web3.js";
+import { LockIcon, ShieldCheckIcon, ClockIcon, VaultIcon, KeyIcon } from "../components/Icons.jsx";
 import { fmt, int, useChain, useCountdown } from "../components/liveUtils.js";
 import { ErrorLine, Loading } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
@@ -50,6 +51,40 @@ function Issued({ c }) {
   );
 }
 
+// The "why your bid is safe" panel beside the headline: each line is a
+// fact the contracts enforce, with a link to check it.
+function TrustPanel() {
+  const { t } = useT();
+  const explorer = ACTIVE_NETWORK.blockExplorerUrls[0];
+  const scan = (name) => (explorer && CONTRACT_ADDRESSES[name] ? `${explorer}/address/${CONTRACT_ADDRESSES[name]}#code` : null);
+  const items = [
+    [ShieldCheckIcon, t("7 contracts, source-verified"), t("Anyone can read the exact code that runs every round."), scan("RoundAuctionV9"), t("Check on Arbiscan")],
+    [ClockIcon, t("48-hour timelock"), t("Every admin change is public two days before it can happen."), scan("FairRoundTimelock"), t("See scheduled changes")],
+    [VaultIcon, t("The raise stays with holders"), t("99% goes to a treasury only holders can spend, at most 5% a term."), "/rules", t("Read the rules")],
+    [KeyIcon, t("Your keys never leave your wallet"), t("You confirm every step in MetaMask. Nobody can move your UNRIG or units."), null, null],
+  ];
+  return (
+    <aside className="trust" aria-labelledby="trust-title">
+      <h2 id="trust-title" className="trust-title"><LockIcon /> {t("Why your bid is safe")}</h2>
+      <ul className="trust-list">
+        {items.map(([Icon, title, body, href, linkText]) => (
+          <li key={title}>
+            <span className="trust-icon"><Icon /></span>
+            <div>
+              <strong>{title}</strong>
+              <p className="small muted">{body}</p>
+              {href && (href.startsWith("/")
+                ? <Link className="small" to={href}>{linkText}</Link>
+                : <a className="small" href={href} target="_blank" rel="noreferrer">{linkText} ↗</a>)}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <p className="trust-foot small">{t("Nobody from FairRound will ever ask for your secret phrase.")}</p>
+    </aside>
+  );
+}
+
 export default function Register() {
   const { t } = useT();
   usePageTitle(null, t("The on-chain IPO exchange for crypto projects, on Arbitrum One: every listing round clears at one price, small buyers get filled, and the raise sits in a treasury only holders can spend."));
@@ -63,7 +98,8 @@ export default function Register() {
 
   return (
     <div className="page">
-      <section style={{ padding: "56px 0 40px" }} className="stack">
+      <section className="hero">
+        <div className="stack">
         <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("Own the price discovery.")}</h1>
         <p className="lede">
           {t("The on-chain IPO exchange for crypto projects. Projects list through fair rounds: everyone pays the same clearing price, small buyers get filled, and the raise sits in a treasury holders control. Then units trade on the market.")}
@@ -75,6 +111,8 @@ export default function Register() {
           {needsCitizenship && <Link to="/invest" className="btn">{t("Become an investor")}</Link>}
           <Link to="/rules" className="btn btn-secondary">{t("Read the rules")}</Link>
         </div>
+        </div>
+        <TrustPanel />
       </section>
 
       <section aria-labelledby="register-title">

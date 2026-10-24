@@ -508,3 +508,20 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 .archive-bar { background: var(--paper-sunk); border-bottom: 1px solid var(--rule); padding: var(--space-3) 0; }
 .archive-bar .row { gap: var(--space-2) var(--space-4); }
 .archive-bar .stamp { transform: none; }
+
+/* ---- Trust cues: wallet lock and the "why your bid is safe" panel ---- */
+.btn-wallet { gap: var(--space-2); }
+.btn-wallet svg { font-size: 1.05em; flex: none; }
+.btn-wallet.is-connected .wallet-ok { color: var(--ok); display: inline-flex; }
+
+.hero { display: grid; gap: var(--space-6); padding: 48px 0 40px; align-items: start; }
+@media (min-width: 960px) { .hero { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: var(--space-7); padding-top: 56px; } }
+.trust { background: var(--paper-raised); border: 1px solid var(--rule); border-top: 4px solid var(--stamp); border-radius: var(--r-panel); padding: var(--space-5); }
+.trust-title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--t-lg); font-weight: 700; margin: 0 0 var(--space-4); }
+.trust-title svg { color: var(--stamp); }
+.trust-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
+.trust-list li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: var(--space-3); align-items: start; }
+.trust-list strong { display: block; font-size: var(--t-md); }
+.trust-list p { margin: 2px 0 2px; }
+.trust-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--stamp-wash); color: var(--stamp); display: grid; place-items: center; font-size: 18px; }
+.trust-foot { margin: var(--space-4) 0 0; padding-top: var(--space-3); border-top: 1px solid var(--rule); color: var(--graphite); }
