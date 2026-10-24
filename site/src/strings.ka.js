@@ -638,7 +638,7 @@ export default {
   "Get 1,000 free UNRIG": "მიიღე 1,000 უფასო UNRIG",
   "How a round works": "როგორ მუშაობს რაუნდი",
   "How it works": "როგორ მუშაობს",
-  "Live demo on {network} · free test credits · fictional listings": "ცოცხალი დემო {network}-ზე · უფასო სატესტო კრედიტები · გამოგონილი განთავსებები",
+  "Live on {network} · free test credits · fictional listings": "მუშაობს {network}-ზე · უფასო სატესტო კრედიტები · გამოგონილი განთავსებები",
   "One price for all": "ერთი ფასი ყველასთვის",
   "Own and vote": "ფლობა და ხმის მიცემა",
   "Pick a listing": "აირჩიე განთავსება",
@@ -655,4 +655,7 @@ export default {
   "closes in {time}": "იხურება {time}-ში",
   "opens in {time}": "იხსნება {time}-ში",
   "{sold} of {total} units sold · up to 150 a round": "გაყიდულია {sold} / {total} ერთეული · რაუნდში მაქსიმუმ 150",
+  "Round ended": "რაუნდი დასრულდა",
+  "waiting to be settled": "ელოდება დასრულებას",
+  "Settle it and see the price": "დაასრულე და ნახე ფასი",
 };

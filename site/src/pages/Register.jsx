@@ -108,17 +108,17 @@ function HeroArt() {
         {c ? (
           <>
             <div className="spread">
-              <span className="ticket-tag"><span className="live-dot" aria-hidden="true" /> {phase === "bidding" ? t("Round open now") : t("Next round")}</span>
-              <span className="small muted num">{phase === "bidding" ? t("closes in {time}", { time: clock.label }) : t("opens in {time}", { time: clock.label })}</span>
+              <span className="ticket-tag">{phase === "bidding" ? t("Round open now") : phase === "settle" ? t("Round ended") : t("Next round")}</span>
+              <span className="small muted num">{phase === "bidding" ? t("closes in {time}", { time: clock.label }) : phase === "settle" ? t("waiting to be settled") : t("opens in {time}", { time: clock.label })}</span>
             </div>
             <strong className="ticket-name">{name(c).main}</strong>
             <div className="ticket-bar" aria-hidden="true"><span style={{ width: `${Math.max(2, Math.round(sold * 100))}%` }} /></div>
             <p className="small muted num">{t("{sold} of {total} units sold · up to 150 a round", { sold: int(c.sharesIssued), total: int(c.totalShares) })}</p>
-            <Link to={`/company/${c.id}`} className="btn btn-small ticket-btn">{t("Join this round")} <ArrowRight size={16} /></Link>
+            <Link to={`/company/${c.id}`} className="btn btn-small ticket-btn">{phase === "settle" ? t("Settle it and see the price") : t("Join this round")} <ArrowRight size={16} /></Link>
           </>
         ) : (
           <>
-            <span className="ticket-tag"><span className="live-dot" aria-hidden="true" /> {t("Live on Arbitrum One")}</span>
+            <span className="ticket-tag">{t("Live on Arbitrum One")}</span>
             <strong className="ticket-name">{t("Ten listings, one fair price each round")}</strong>
           </>
         )}
@@ -152,7 +152,7 @@ export default function Register() {
             <a href="#how" className="btn btn-secondary btn-large">{t("How it works")}</a>
           </div>
           <TrustStrip />
-          <p className="small muted hero-note"><span className="live-dot" aria-hidden="true" /> {t("Live demo on {network} · free test credits · fictional listings", { network: ACTIVE_NETWORK.label })}</p>
+          <p className="small muted hero-note">{t("Live on {network} · free test credits · fictional listings", { network: ACTIVE_NETWORK.label })}</p>
         </div>
         <HeroArt />
       </section>
