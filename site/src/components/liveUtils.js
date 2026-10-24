@@ -107,16 +107,37 @@ export function useChain(load, deps) {
   const { provider, version } = useSession();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (live) => {
     if (!provider) return;
-    try {
-      setData(await load(provider));
-      setError("");
-    } catch (err) {
-      console.warn("chain read failed", err);
-      setError(readError(err));
+    const isLive = typeof live === "function" ? live : () => true;
+    // A busy RPC is common on public endpoints: try again quietly a few
+    // times before showing an error, and keep what is already on screen.
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const out = await load(provider);
+        if (!isLive()) return;
+        setData(out);
+        setError("");
+        return;
+      } catch (err) {
+        if (!isLive()) return;
+        const msg = readError(err);
+        const network = msg.startsWith("Couldn't reach");
+        if (network && attempt < 3) {
+          await new Promise((r) => setTimeout(r, 1500 * 2 ** attempt));
+          if (!isLive()) return;
+          continue;
+        }
+        console.warn("chain read failed", err);
+        setError(msg);
+        return;
+      }
     }
   }, [provider, ...deps]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { reload(); }, [reload, version]);
+  useEffect(() => {
+    let live = true;
+    reload(() => live);
+    return () => { live = false; };
+  }, [reload, version]);
   return [data, error, reload];
 }
