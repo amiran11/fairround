@@ -9,8 +9,11 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 - **Domain:** fairround.xyz
 - **Category:** the on-chain IPO exchange for crypto projects.
 - **One line:** Crypto projects list on FairRound through fair rounds (one clearing price per round, equal access for small buyers, the raise held in a treasury only holders can spend), then their units trade on the market.
-- **Slogan:** Diversified ownership defines the price.
-- **Short tagline:** Launch without the rug.
+- **Slogan (also the site's headline):** Go public on-chain.
+- **Mission:** give crypto projects what stock markets give companies: a public listing with fair price discovery, broad ownership, and leadership that answers to shareholders.
+- **Vision:** crypto projects list like public companies, and the people who fund them own them like shareholders.
+- **UNRIG** is the name of the test credit, not a slogan.
+- **Retired:** "Unrig the launch" and "Launch without the rug" (every launchpad claims anti-rug: mentor feedback, 24 October), and "Diversified ownership defines the price" (too academic).
 - **What we say about competitors:** "MetaDAO's protection, on Arbitrum, without whales taking the sale." Never attack Uniswap's auctions: they are the price-discovery standard; FairRound adds who gets filled and what happens to the money.
 
 ## Official accounts
@@ -20,7 +23,7 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 - Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange) (rename the link in channel settings to fairround if free)
 - Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange) (same)
 
-Every bio: "The on-chain IPO exchange for crypto projects. Launch without the rug." then `fairround.xyz`.
+Every bio: "The on-chain IPO exchange for crypto projects. Go public on-chain." then `fairround.xyz`.
 
 ## The ten listings (demo tiers)
 
@@ -175,24 +178,25 @@ fairround.xyz
 
 ## Channel plan
 
-**Tier 1, this week**
-1. **X (@investtoken1 → FairRound):** the launch thread, then one post a day from the five rules.
-2. **Arbitrum community:** Arbitrum Discord and the Open House cohort chat; reply where people discuss launches.
-3. **Telegram:** pin the message above; answer every tester within the hour.
-4. **Georgian network:** the Georgian post, once, explaining the rename.
+The audience is crypto-native: teams planning a token launch, and buyers who have been rugged. One action everywhere: verify a wallet and bid in the next round.
+
+**Tier 1, this week (launch and HackQuest)**
+1. **X:** rename @investtoken1 to @fairroundxyz (or @fairround if free). Pin the launch thread, one post a day from the five rules, reply wherever people complain about a rug or a sniped launch.
+2. **Arbitrum ecosystem:** Open House cohort chat, Arbitrum Discord, the HackQuest project page with the seven verified contracts.
+3. **Telegram:** one channel and one group, links renamed to fairround; answer every tester within the hour.
 
 **Tier 2, next 2–4 weeks**
-5. **Arbitrum DAO forum:** a post "A fair-launch standard for Arbitrum", with the contracts and the treasury rules.
-6. **Mirror or Paragraph essay:** "Why ICOs repeat the mistake of 1990s vouchers", linking the SSRN paper. This keeps the origin story as content.
-7. **Comparison pages on the site:** "FairRound vs MetaDAO", "FairRound vs Uniswap auctions". People search exactly these.
-8. **DefiLlama listing** in the Arbitrum launchpad category.
-9. **Researchers:** mechanism-design and governance people; the paper is the reason to email.
+4. **Founder outreach:** DMs to Arbitrum teams preparing a token launch (grant recipients, accelerator cohorts). One real launch is the first milestone.
+5. **Arbitrum DAO forum:** "A fair-launch standard for Arbitrum", with the contracts and the treasury rules.
+6. **Launch calendars and data sites:** CryptoRank, ICO Drops, DefiLlama (launchpad category).
+7. **One essay** on Mirror or Paragraph: "Why ICOs repeat the mistake of 1990s vouchers", linking the SSRN paper.
+8. **Comparison pages on the site:** FairRound vs MetaDAO, FairRound vs Uniswap auctions.
 
-**Tier 3, once there's a first real launch**
-10. **Podcasts and X Spaces** about fair launches.
-11. **Case study:** the first project's launch, with its numbers.
+**Tier 3, after the first real launch**
+9. **X Spaces and crypto podcasts** about fair launches.
+10. **Case study** of that launch, with its numbers.
 
-Farcaster is on hold: it changed owners twice in 2026 and new-user rules are still settling.
+**Secondary:** LinkedIn for the founder story; the Georgian network gets one post explaining the rename. **Dropped:** government and privatization audiences. **On hold:** Farcaster (changed owners twice in 2026).
 
 ---
 
