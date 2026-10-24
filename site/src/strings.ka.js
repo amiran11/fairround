@@ -167,7 +167,7 @@ export default {
   "Stage": "ეტაპი",
   "Stand for project lead": "აღმასრულებლის კანდიდატად წარდგენა",
   "Start the auction": "აუქციონის დაწყება",
-  "Go public on-chain.": "საჯარო განთავსება ბლოკჩეინზე.",
+  "Own the price discovery.": "ფასის აღმოჩენა შენს ხელშია.",
   "Summary": "შეჯამება",
   "Term": "ვადა",
   "Term ends in {time}": "ვადის დასრულებამდე დარჩა {time}",

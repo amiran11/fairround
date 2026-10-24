@@ -64,7 +64,7 @@ export default function Register() {
   return (
     <div className="page">
       <section style={{ padding: "56px 0 40px" }} className="stack">
-        <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("Go public on-chain.")}</h1>
+        <h1 className="h1" style={{ maxWidth: "15ch" }}>{t("Own the price discovery.")}</h1>
         <p className="lede">
           {t("The on-chain IPO exchange for crypto projects. Projects list through fair rounds: everyone pays the same clearing price, small buyers get filled, and the raise sits in a treasury holders control. Then units trade on the market.")}
         </p>

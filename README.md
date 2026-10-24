@@ -1,6 +1,6 @@
 # FairRound
 
-**Go public on-chain.** The on-chain IPO exchange for crypto projects,
+**Own the price discovery.** The on-chain IPO exchange for crypto projects,
 on Arbitrum: projects list through fair rounds (one clearing price per
 round, equal access for small buyers, the raise held in a treasury only
 holders can spend), then their units trade on the market.
