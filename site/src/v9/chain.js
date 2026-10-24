@@ -384,3 +384,26 @@ export async function getVerifier(provider) {
   return { paused, left, minBalance };
 }
 export const verifySelf = async (signer) => sendTx(await ov(signer), "verifySelf");
+
+// Where a wallet stands on the path "bid, then hold units", for the
+// next-step guide: its open bids and holdings per listing, and the listing
+// to suggest for a first bid (a small one with a round open now).
+export async function getMyProgress(address, provider) {
+  const r = await ra(provider);
+  const ids = Array.from({ length: PROBE }, (_, i) => i);
+  const rows = (await Promise.all(ids.map(async (id) => {
+    const c = await r.companies(id);
+    if (c.totalShares === 0n) return null;
+    const [roundStart, slot, units] = await Promise.all([
+      r.roundStart(id),
+      address ? r.activeBidSlot(id, address) : 0n,
+      address ? r.companyShareCount(id, address) : 0n,
+    ]);
+    return { id, name: c.name, totalShares: c.totalShares, finalized: c.finalized, roundEnd: c.roundEnd, roundStart, hasBid: slot !== 0n, units };
+  }))).filter(Boolean);
+  const prefer = [3, 4, 2, 5, 1, 6, 0, 7, 8, 9];
+  const open = rows.filter((c) => !c.finalized);
+  const byPref = (a, b) => (prefer.indexOf(a.id) + 1 || 99) - (prefer.indexOf(b.id) + 1 || 99);
+  const suggest = [...open].sort(byPref).find((c) => auctionPhase(c) === "bidding") || [...open].sort(byPref)[0] || null;
+  return { bid: rows.find((c) => c.hasBid) || null, held: rows.find((c) => c.units > 0n) || null, suggest };
+}

@@ -4,8 +4,10 @@ import { useSession } from "../session.jsx";
 import { ACTIVE_NETWORK, CONTRACT_ADDRESSES, getMetaMaskDeepLink } from "../web3.js";
 import { Button, Notice } from "./ui.jsx";
 import { fmt, short } from "./liveUtils.js";
+import { LockIcon } from "./Icons.jsx";
 import Mark from "./Mark.jsx";
 import ConsentBanner from "./ConsentBanner.jsx";
+import NextStep from "./NextStep.jsx";
 
 const REPO = "https://github.com/amiran11/fairround";
 export const LINKS = {
@@ -29,10 +31,12 @@ function Account() {
   const { t } = useT();
   const { connected, address, account, connect, connecting } = useSession();
   if (!connected) {
-    return <Button kind="secondary" small busy={connecting} onClick={connect}>{t("Connect wallet")}</Button>;
+    return <Button kind="secondary" small busy={connecting} onClick={connect} className="btn-wallet"><LockIcon open />{t("Connect wallet")}</Button>;
   }
   return (
-    <Link to={account && !account.alreadyClaimed ? "/invest" : "/portfolio"} className="btn btn-secondary btn-small" title={address}>
+    <Link to={account && !account.alreadyClaimed ? "/invest" : "/portfolio"} className="btn btn-secondary btn-small btn-wallet is-connected" title={t("Connected on {network}: {address}", { network: ACTIVE_NETWORK.label, address })}>
+      <span className="wallet-ok" aria-hidden="true"><LockIcon /></span>
+      <span className="visually-hidden">{t("Wallet connected")}</span>
       <span className="addr">{short(address)}</span>
       {account && <span className="num muted">{fmt(account.invest, 18, 0)} UNRIG</span>}
     </Link>
@@ -95,6 +99,7 @@ export default function Layout() {
           </div>
         </div>
       </header>
+      <NextStep />
       <ConnectProblem />
 
       <main id="main">

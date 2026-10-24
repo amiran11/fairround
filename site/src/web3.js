@@ -265,7 +265,7 @@ const ERROR_TEXT = [
   ["GOV: not the proposed key", "This wallet isn't the operating key the project lead named."],
   ["GOV: voting closed", "Voting has closed."],
   ["CT: would outlast the term", "It's too late in the term: a proposal needs 3 days of voting, 5 days of waiting and room for a recall before the term ends."],
-  ["CT: over 20% of the bucket this term", "That would take more than 20% of this balance out in one term."],
+  ["CT: over 5% of the bucket this term", "That would take more than 5% of this balance out in one term."],
   ["CT: execution delay", "Approved proposals wait 5 days after the vote before they can be carried out."],
   ["CT: recall pending", "A recall vote is pending; this waits until it is resolved."],
   ["CT: recipient not allowed", "That recipient isn't allowed: it can't be the project lead, the operating key or the project itself."],
