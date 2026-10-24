@@ -9,11 +9,11 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 - **Domain:** fairround.xyz
 - **Category:** the on-chain IPO exchange for crypto projects.
 - **One line:** Crypto projects list on FairRound through fair rounds (one clearing price per round, equal access for small buyers, the raise held in a treasury only holders can spend), then their units trade on the market.
-- **Slogan:** Unrig the launch.
-- **Short tagline (bios, buttons, the site's headline):** Launch without the rug.
-- **Mission:** make every token launch fair by default: one price for everyone in a round, a real fill for small buyers, and a raise that only holders can spend.
-- **Vision:** a crypto market where launching a token works like listing on a public exchange, with the rules enforced by code instead of trust, so "rug" becomes a word nobody needs.
-- **Retired:** "Diversified ownership defines the price" (too academic for a crypto audience).
+- **Slogan (also the site's headline):** Go public on-chain.
+- **Mission:** give crypto projects what stock markets give companies: a public listing with fair price discovery, broad ownership, and leadership that answers to shareholders.
+- **Vision:** crypto projects list like public companies, and the people who fund them own them like shareholders.
+- **UNRIG** is the name of the test credit, not a slogan.
+- **Retired:** "Unrig the launch" and "Launch without the rug" (every launchpad claims anti-rug: mentor feedback, 24 October), and "Diversified ownership defines the price" (too academic).
 - **What we say about competitors:** "MetaDAO's protection, on Arbitrum, without whales taking the sale." Never attack Uniswap's auctions: they are the price-discovery standard; FairRound adds who gets filled and what happens to the money.
 
 ## Official accounts
@@ -23,7 +23,7 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 - Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange) (rename the link in channel settings to fairround if free)
 - Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange) (same)
 
-Every bio: "The on-chain IPO exchange for crypto projects. Launch without the rug." then `fairround.xyz`.
+Every bio: "The on-chain IPO exchange for crypto projects. Go public on-chain." then `fairround.xyz`.
 
 ## The ten listings (demo tiers)
 

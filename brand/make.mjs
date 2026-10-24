@@ -22,12 +22,12 @@ const pages={
  [`${R}/brand/x/x-header-1500x500.png`]:[1500,500,base(1500,500,C.paper)+`<div style="position:absolute;left:-170px;top:-130px;opacity:.08">${mark(720,C.stamp,C.paper)}</div>
   <div style="position:absolute;right:110px;top:0;height:500px;width:900px;display:flex;flex-direction:column;justify-content:center">
    <div style="font-size:24px;font-weight:700;color:${C.stamp};letter-spacing:3px;text-transform:uppercase">FairRound · on-chain IPO exchange</div>
-   <div class="wd" style="font-size:84px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:16px">Unrig the <span style="color:${C.stamp}">launch.</span></div>
+   <div class="wd" style="font-size:84px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:16px">Go public <span style="color:${C.stamp}">on-chain.</span></div>
    <div style="font-size:25px;color:${C.graphite};margin-top:22px;line-height:1.4">One price per round. Small buyers filled.<br>The raise held in a treasury only holders can spend.</div>
    <div style="margin-top:24px;display:flex;gap:18px;align-items:center;font-size:22px;color:${C.graphite}"><span class="stamp" style="font-size:22px">Live on Arbitrum One</span><span>fairround.xyz</span></div></div>`],
  [`${R}/brand/x/x-post-how-it-works-1600x900.png`]:[1600,900,base(1600,900,C.paper)+`<div style="--bg:${C.paper};padding:80px 96px;height:100%;box-sizing:border-box;display:flex;flex-direction:column">
    ${logo(46,30)}
-   <div class="wd" style="font-size:76px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:44px">Unrig the <span style="color:${C.stamp}">launch.</span></div>
+   <div class="wd" style="font-size:76px;font-weight:700;letter-spacing:-.015em;line-height:1.02;margin-top:44px">Go public <span style="color:${C.stamp}">on-chain.</span></div>
    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:52px">${rules.map(([n,t,p])=>`<div class="card"><div class="n">${n}</div><div class="t">${t}</div><div class="p">${p}</div></div>`).join("")}</div>
    <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:23px;color:${C.graphite}"><span style="color:${C.stamp};font-weight:650;font-size:30px">fairround.xyz</span><span>Live on Arbitrum One as a demo with free UNRIG commitment credits.</span></div></div>`],
  [`${R}/brand/x/x-post-call-for-testers-1600x900.png`]:[1600,900,base(1600,900,C.wash)+`<div style="position:absolute;right:-200px;bottom:-240px;opacity:.13">${mark(860,C.stamp,C.wash)}</div>
@@ -59,7 +59,7 @@ const pages={
    <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:23px;color:#DCDBF5"><span style="color:${C.on};font-weight:650;font-size:30px">fairround.xyz</span><span>Verified on Arbiscan, Sourcify and Blockscout · 134 tests passing</span></div></div>`],
  [`${R}/site/public/og-image.png`]:[1200,630,base(1200,630,C.paper)+`<div style="position:absolute;right:-140px;top:-120px;opacity:.08">${mark(620,C.stamp,C.paper)}</div><div style="--bg:${C.paper};padding:64px 72px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;position:relative">
    ${logo(44,30)}
-   <h1 class="wd" style="margin:52px 0 0;font-size:84px;line-height:1;font-weight:700;letter-spacing:-.02em">Launch without<br>the rug.</h1>
+   <h1 class="wd" style="margin:52px 0 0;font-size:84px;line-height:1;font-weight:700;letter-spacing:-.02em">Go public<br><span style="color:${C.stamp}">on-chain.</span></h1>
    <div style="font-size:28px;color:${C.graphite};margin-top:24px;line-height:1.38;max-width:900px">The on-chain IPO exchange for crypto projects: one price per round, small buyers filled, the raise held by holders.</div>
    <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:24px;color:${C.graphite}"><span style="color:${C.stamp};font-weight:650">fairround.xyz</span><span class="stamp" style="font-size:22px">Live on Arbitrum One</span></div></div>`],
  [`${R}/brand/fairround-banner-1920x384.png`]:[1920,384,base(1920,384,C.paper)+`<div style="position:absolute;right:-90px;top:-170px;opacity:.08">${mark(720,C.stamp,C.paper)}</div>
