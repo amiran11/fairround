@@ -13,6 +13,8 @@ export const NETWORKS = {
     chainName: "Arbitrum One",
     nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
     rpcUrls: ["https://arb1.arbitrum.io/rpc"],
+    // Read-only endpoints, tried in turn when one is busy or rate-limited.
+    readRpcUrls: ["https://arb1.arbitrum.io/rpc", "https://arbitrum-one-rpc.publicnode.com", "https://arbitrum.drpc.org"],
     blockExplorerUrls: ["https://arbiscan.io"],
     label: "Arbitrum One",
     isTestnet: false,
@@ -176,6 +178,14 @@ export async function connectWallet() {
   return { provider, signer, address };
 }
 
+// A JSON-RPC reply that means "busy, try again" rather than a real answer
+// (a revert or a normal error is passed through untouched).
+function isBusyReply(r) {
+  const e = r && r.error;
+  if (!e) return false;
+  return [429, -32005, -32029, -32090].includes(e.code) || /rate|limit|too many|capacity|busy|timeout/i.test(e.message || "");
+}
+
 // A read-only connection for visitors without a wallet: everything on the
 // site can be browsed from the chain before anyone connects.
 let readProvider = null;
@@ -183,7 +193,31 @@ export async function getReadProvider() {
   if (readProvider) return readProvider;
   const { JsonRpcProvider, Network } = await getEthers();
   const network = Network.from(Number(BigInt(ACTIVE_NETWORK.chainIdHex)));
-  readProvider = new JsonRpcProvider(ACTIVE_NETWORK.rpcUrls[0], network, { staticNetwork: network, batchMaxCount: 20 });
+  const urls = ACTIVE_NETWORK.readRpcUrls || ACTIVE_NETWORK.rpcUrls;
+  // Public RPCs refuse bursts now and then (HTTP 429, "rate limit"). A busy
+  // moment used to fail the whole page with a red "couldn't reach the
+  // network". Now a refused request waits a moment and tries the next
+  // endpoint, so visitors only see an error if every endpoint stays down.
+  class ResilientProvider extends JsonRpcProvider {
+    constructor() { super(urls[0], network, { staticNetwork: network, batchMaxCount: 10 }); this._at = 0; }
+    _getConnection() { const req = super._getConnection(); req.url = urls[this._at]; return req; }
+    async _send(payload) {
+      let last;
+      for (let attempt = 0; attempt < 6; attempt++) {
+        try {
+          const resp = await super._send(payload);
+          if (resp.some(isBusyReply)) throw new Error("rpc busy");
+          return resp;
+        } catch (err) {
+          last = err;
+          this._at = (this._at + 1) % urls.length;
+          await new Promise((r) => setTimeout(r, Math.min(300 * 2 ** attempt, 4000) + Math.random() * 300));
+        }
+      }
+      throw last;
+    }
+  }
+  readProvider = new ResilientProvider();
   return readProvider;
 }
 
