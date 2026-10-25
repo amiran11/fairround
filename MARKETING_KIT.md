@@ -19,12 +19,12 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 
 ## Official accounts
 
-- X: [@investtoken1](https://x.com/investtoken1) (rename to @fairround or @fairroundxyz, whichever is free)
+- X: [@fairround](https://x.com/fairround)
 - Reddit: [r/sakartveloexchange](https://www.reddit.com/r/sakartveloexchange/) (keep for now; create r/fairround when there is traffic)
 - Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange) (rename the link in channel settings to fairround if free)
 - Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange) (same)
 
-Every bio: "The on-chain IPO exchange for crypto projects. Own the price discovery." then `fairround.xyz`.
+X bio: "Own the price discovery. The on-chain IPO exchange for crypto projects: one clearing price, small buyers filled, the raise held by holders. Live on @arbitrum" · location "Arbitrum One" · website fairround.xyz.
 
 ## The ten listings (demo tiers)
 
@@ -182,7 +182,7 @@ fairround.xyz
 The audience is crypto-native: teams planning a token launch, and buyers who have been rugged. One action everywhere: verify a wallet and bid in the next round.
 
 **Tier 1, this week (launch and HackQuest)**
-1. **X:** rename @investtoken1 to @fairroundxyz (or @fairround if free). Pin the launch thread, one post a day from the five rules, reply wherever people complain about a rug or a sniped launch.
+1. **X:** @fairround. Pin the launch thread, one post a day from the five rules, reply wherever people complain about a rug or a sniped launch.
 2. **Arbitrum ecosystem:** Open House cohort chat, Arbitrum Discord, the HackQuest project page with the seven verified contracts.
 3. **Telegram:** one channel and one group, links renamed to fairround; answer every tester within the hour.
 

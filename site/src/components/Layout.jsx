@@ -21,7 +21,7 @@ export const LINKS = {
 // Official community accounts. Shown in the footer so visitors can tell
 // the real ones from impostors.
 export const SOCIAL = [
-  ["X", "https://x.com/investtoken1"],
+  ["X", "https://x.com/fairround"],
   ["Reddit", "https://www.reddit.com/r/sakartveloexchange/"],
   ["Telegram channel", "https://t.me/sakartvelo_exchange"],
   ["Telegram group", "https://t.me/sakartveloexchange"],

@@ -35,7 +35,7 @@ The contract names are from the project's first version, Sakartvelo Exchange.
 
 ## Official community
 
-- [X: @investtoken1](https://x.com/investtoken1)
+- [X: @fairround](https://x.com/fairround)
 - [Reddit: r/sakartveloexchange](https://www.reddit.com/r/sakartveloexchange/)
 - [Telegram channel](https://t.me/sakartvelo_exchange)
 - [Telegram group](https://t.me/sakartveloexchange)
