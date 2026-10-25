@@ -8,6 +8,7 @@ import Citizen from "./pages/Citizen.jsx";
 import Market from "./pages/Market.jsx";
 import Portfolio from "./pages/Portfolio.jsx";
 import Rules from "./pages/Rules.jsx";
+import Stats from "./pages/Stats.jsx";
 import WhitePaper from "./pages/WhitePaper.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="portfolio" element={<Portfolio />} />
             <Route path="portfolio/:address" element={<Portfolio />} />
             <Route path="rules" element={<Rules />} />
+            <Route path="stats" element={<Stats />} />
             <Route path="whitepaper" element={<WhitePaper />} />
             {/* Version 8 was retired from the site; old links go home. */}
             <Route path="v8/*" element={<Navigate to="/" replace />} />
