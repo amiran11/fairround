@@ -183,7 +183,9 @@ export async function connectWallet() {
 function isBusyReply(r) {
   const e = r && r.error;
   if (!e) return false;
-  return [429, -32005, -32029, -32090].includes(e.code) || /rate|limit|too many|capacity|busy|timeout/i.test(e.message || "");
+  const msg = e.message || "";
+  if (/range|blocks|exceed|more than|too large|query returned/i.test(msg)) return false; // a real answer: span too wide
+  return [429, -32005, -32029, -32090].includes(e.code) || /rate|too many requests|capacity|busy|timeout|limit/i.test(msg);
 }
 
 // A read-only connection for visitors without a wallet: everything on the
@@ -434,9 +436,24 @@ const DEPLOYMENT_BLOCK = ACTIVE_NETWORK.deploymentBlock;
 // time, so a short chain reorganisation can't leave a stale log behind.
 
 const LOG_CHUNK = 9000; // safely under the common 10,000-block RPC cap
+const LOG_CHUNK_MAX = 200000; // tried first on the read-only connection
 const LOG_PARALLEL = 4;
 const SETTLE_MARGIN = 1000; // ~4 minutes of Arbitrum blocks
-const LOG_CACHE_VERSION = 1;
+const LOG_CACHE_VERSION = 2; // 2: logs keep their transaction hash
+
+// How many blocks one eth_getLogs may span, learned per connection. A
+// wallet's RPC often caps it at 10,000; the public read endpoints usually
+// allow far more, which turns hundreds of requests into a handful. A
+// "range too large" reply halves the span for that connection and retries.
+const logSpan = new WeakMap();
+function spanFor(provider) {
+  if (!logSpan.has(provider)) logSpan.set(provider, provider === readProvider ? LOG_CHUNK_MAX : LOG_CHUNK);
+  return logSpan.get(provider);
+}
+function isRangeError(err) {
+  const raw = `${err?.shortMessage || ""} ${err?.message || ""} ${err?.error?.message || ""} ${err?.info?.error?.message || ""}`;
+  return /range|too many blocks|block.*limit|exceed|more than|too large|10,?000|query returned/i.test(raw);
+}
 
 const settledLogs = new Map(); // cacheKey -> { settledBlock, logs }
 const inflightSync = new Map(); // cacheKey -> Promise, so ten cards share one scan
@@ -466,24 +483,40 @@ function writeStoredLogs(key, value) {
   }
 }
 
-async function getLogsRange(provider, address, topic0, fromBlock, toBlock) {
-  const ranges = [];
-  for (let start = fromBlock; start <= toBlock; start += LOG_CHUNK) {
-    ranges.push([start, Math.min(start + LOG_CHUNK - 1, toBlock)]);
+// Reads one span; if the RPC says the span is too wide, splits it in two
+// (and remembers the smaller span for this connection).
+async function getLogsSpan(provider, address, topic0, start, end) {
+  try {
+    return await provider.getLogs({ address, topics: [topic0], fromBlock: start, toBlock: end });
+  } catch (err) {
+    const width = end - start + 1;
+    if (!isRangeError(err) || width <= 1000) throw err;
+    const half = Math.ceil(width / 2);
+    if (spanFor(provider) > half) logSpan.set(provider, Math.max(LOG_CHUNK, half));
+    const a = await getLogsSpan(provider, address, topic0, start, start + half - 1);
+    const b = await getLogsSpan(provider, address, topic0, start + half, end);
+    return a.concat(b);
   }
-  // Read up to LOG_PARALLEL chunks at a time: much faster on a first visit,
-  // while staying gentle enough for public RPC rate limits.
-  const results = new Array(ranges.length);
-  let next = 0;
+}
+
+async function getLogsRange(provider, address, topic0, fromBlock, toBlock) {
+  const results = [];
+  // Read up to LOG_PARALLEL spans at a time: much faster on a first visit,
+  // while staying gentle enough for public RPC rate limits. The span is
+  // re-read each time, so one "too wide" reply shrinks the rest.
+  let cursor = fromBlock;
   const worker = async () => {
-    while (next < ranges.length) {
-      const i = next++;
-      const [start, end] = ranges[i];
-      results[i] = await provider.getLogs({ address, topics: [topic0], fromBlock: start, toBlock: end });
+    while (cursor <= toBlock) {
+      const start = cursor;
+      const end = Math.min(start + spanFor(provider) - 1, toBlock);
+      cursor = end + 1;
+      results.push(...(await getLogsSpan(provider, address, topic0, start, end)));
     }
   };
-  await Promise.all(Array.from({ length: Math.min(LOG_PARALLEL, ranges.length) }, worker));
-  return results.flat().map((l) => ({ topics: [...l.topics], data: l.data, blockNumber: l.blockNumber, index: l.index }));
+  await Promise.all(Array.from({ length: LOG_PARALLEL }, worker));
+  return results
+    .map((l) => ({ topics: [...l.topics], data: l.data, blockNumber: l.blockNumber, index: l.index, tx: l.transactionHash }))
+    .sort((a, b) => a.blockNumber - b.blockNumber || a.index - b.index);
 }
 
 // Returns every log of one event type on one contract, from the deploy
@@ -546,8 +579,24 @@ export async function queryFilterChunked(contract, filter) {
     .sort((a, b) => a.blockNumber - b.blockNumber || a.index - b.index)
     .map((l) => {
       const parsed = contract.interface.parseLog({ topics: l.topics, data: l.data });
-      return { args: parsed.args, blockNumber: l.blockNumber };
+      return { args: parsed.args, blockNumber: l.blockNumber, tx: l.tx };
     });
+}
+
+// Block number -> unix time, for dating events. Saved in this browser so
+// each block is fetched once.
+const BLOCK_TIME_KEY = `sx-blocktimes:v1:${ACTIVE_NETWORK.chainIdHex}`;
+export async function getBlockTimes(provider, blockNumbers) {
+  let saved = {};
+  try { saved = JSON.parse(window.localStorage.getItem(BLOCK_TIME_KEY) || "{}"); } catch { saved = {}; }
+  const missing = [...new Set(blockNumbers)].filter((b) => saved[b] === undefined);
+  for (let i = 0; i < missing.length; i += 20) {
+    const part = missing.slice(i, i + 20);
+    const blocks = await Promise.all(part.map((b) => provider.getBlock(b)));
+    blocks.forEach((blk, k) => { if (blk) saved[part[k]] = Number(blk.timestamp); });
+  }
+  try { window.localStorage.setItem(BLOCK_TIME_KEY, JSON.stringify(saved)); } catch { /* storage blocked: fine */ }
+  return saved;
 }
 
 // ETH balance of any address: used to warn a governor when their

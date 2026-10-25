@@ -71,6 +71,7 @@ export default function Layout() {
     ["/portfolio", t("Portfolio")],
     ["/invest", t("Invest")],
     ["/market", t("Market")],
+    ["/stats", t("Activity")],
     ["/rules", t("Rules")],
     ["/whitepaper", t("White paper")],
   ];
@@ -119,6 +120,7 @@ export default function Layout() {
               <a href={LINKS.repo} target="_blank" rel="noreferrer">{t("Source code")}</a>
               <a href={LINKS.security} target="_blank" rel="noreferrer">{t("Security review")}</a>
               <a href={LINKS.paper} target="_blank" rel="noreferrer">{t("Research paper (SSRN)")}</a>
+              <Link to="/stats">{t("On-chain activity")}</Link>
             </p>
             <p className="row" aria-label={t("Official community")}>
               <span className="strong" style={{ color: "var(--ink)" }}>{t("Official community")}:</span>
