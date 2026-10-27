@@ -13,8 +13,11 @@ treasury vote pays someone out *and* that person converts it.
 
 1. **Decide `minListingUnits`.** Only treasuries of listings at least this big can release
    convertible UNRIG. It is fixed forever at deployment.
-   - **1000 (recommended):** The Thousand and larger. Taking one over needs 501+ units.
-   - 300: adds Spartans. Faster first vUNRIG, easier to capture (151 units).
+   - **9 (chosen, 28 Oct 2026):** The Fellowship and larger, so the founder can run the full
+     lifecycle in public on The Fellowship with three wallets. Units are cheap while UNRIG is
+     free, so the size limit is weak protection anyway: the real protection is closing the free
+     claim before any pool (see `VOTED_UNRIG.md`).
+   - 1000: only The Thousand and larger; the first vUNRIG would take many weeks.
 2. **Merge the pull request** with `contracts/VotedUnrig.sol`.
 3. **Gas:** about 0.001 ETH on Arbitrum One in your owner wallet (the one that controls the timelock).
 
@@ -39,7 +42,7 @@ Constructor inputs, in this order:
 | `_unrig` | `0xbc780aeB45FdDA0258aB163a99fE92f97209E2c0` (InvestToken) |
 | `_treasury` | `0xD2107dEE7EA2E8038F7778f63Cf6Eee659dB1F29` (CompanyTreasuryV9) |
 | `_roundAuction` | `0xb08631827d87C69Ff44d692EEFF32E1b22E4c503` (RoundAuctionV9) |
-| `_minListingUnits` | `1000` (or your choice from Part 0) |
+| `_minListingUnits` | `9` |
 
 Click **transact** → confirm in MetaMask. If MetaMask shows a gas error, one of the addresses is
 wrong: the constructor refuses a treasury or auction that doesn't belong to this InvestToken.
@@ -91,9 +94,9 @@ data, predecessor, salt; no delay). Confirm.
 
 ## After it's live
 
-- vUNRIG exists only once a big listing's holders vote a payment or a sale and the recipient
-  converts. With `1000`, the first one needs The Thousand (or larger) to reach 50% sold, an
-  election, and a treasury vote: realistically several weeks.
+- vUNRIG exists only once a listing of 9+ units votes a payment or a sale and the recipient
+  converts. The first one is the founder's Fellowship demo: about 3–4 weeks (buy, election,
+  treasury vote, 5-day delay).
 - The site can then get a "Convert to vUNRIG" button next to executed payments and won sales,
   using `convertible(id)`.
 - **No pool until the free entry is closed** (see `VOTED_UNRIG.md`): pause new verifications or
