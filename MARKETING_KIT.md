@@ -20,7 +20,7 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 ## Official accounts
 
 - X: [@fairround](https://x.com/fairround)
-- Reddit: [r/sakartveloexchange](https://www.reddit.com/r/sakartveloexchange/) (keep for now; create r/fairround when there is traffic)
+- Reddit: [r/FairRound](https://www.reddit.com/r/FairRound/) (created 27 Oct 2026; the old r/sakartveloexchange is retired)
 - Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange) (rename the link in channel settings to fairround if free)
 - Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange) (same)
 

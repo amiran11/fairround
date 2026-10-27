@@ -22,7 +22,7 @@ export const LINKS = {
 // the real ones from impostors.
 export const SOCIAL = [
   ["X", "https://x.com/fairround"],
-  ["Reddit", "https://www.reddit.com/r/sakartveloexchange/"],
+  ["Reddit", "https://www.reddit.com/r/FairRound/"],
   ["Telegram channel", "https://t.me/sakartvelo_exchange"],
   ["Telegram group", "https://t.me/sakartveloexchange"],
 ];
