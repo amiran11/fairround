@@ -10,6 +10,7 @@ import { useChain, useCountdown } from "./liveUtils.js";
 import { useCompanyName } from "../v9/companies.jsx";
 import { LockIcon } from "./Icons.jsx";
 import { Button } from "./ui.jsx";
+import { track } from "../analytics.js";
 
 const STEPS = 4;
 
@@ -73,7 +74,7 @@ export default function NextStep() {
         <div className="nextstep-action">
           {action && !action.to ? action : here
             ? <span className="small nextstep-here">{t("You're on the right page ↓")}</span>
-            : <Link to={action.to} className="btn btn-small">{action.text} <ArrowRight size={16} /></Link>}
+            : <Link to={action.to} className="btn btn-small" onClick={() => track("guide_click", { step })}>{action.text} <ArrowRight size={16} /></Link>}
         </div>
       </div>
     </div>

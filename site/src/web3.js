@@ -88,6 +88,7 @@ import GovernanceV9ABI from "./contracts/GovernanceV9.json";
 import CompanyTreasuryV9ABI from "./contracts/CompanyTreasuryV9.json";
 import CompanyDividendsV9ABI from "./contracts/CompanyDividendsV9.json";
 import OpenVerifierV2ABI from "./contracts/OpenVerifierV2.json";
+import { track } from "./analytics.js";
 
 export const ABIS = {
   InvestToken: InvestTokenABI,
@@ -381,6 +382,7 @@ export async function verifySelfReal(signer) {
   const openVerifier = await getContract("OpenVerifierV2", signer);
   const tx = await openVerifier.verifySelf();
   const receipt = await tx.wait();
+  track("verify_wallet");
   return receipt;
 }
 
@@ -410,6 +412,7 @@ export async function claimReal(signer) {
   const investToken = await getContract("InvestToken", signer);
   const tx = await investToken.claim();
   const receipt = await tx.wait();
+  track("claim_unrig");
   return receipt;
 }
 
