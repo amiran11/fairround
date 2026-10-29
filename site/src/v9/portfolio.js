@@ -1,11 +1,13 @@
 // Everything one address has in version 9 and what is waiting for it.
 // Works for any address: the chain is public.
 import { getInvestBalance, getClaimEligibility } from "../web3.js";
+import { ORDER } from "./todo.jsx";
 import {
   ZERO, getCompanies, getBids, getShareCount, getMyShares, getElection, getProposals, getDividendTerms, getRecall,
   governancePhase,
 } from "./chain.js";
 
+const EXECUTION_DELAY = 5 * 86400; // CompanyTreasuryV9.EXECUTION_DELAY
 const same = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
 export async function loadPortfolio(address, provider) {
@@ -36,6 +38,12 @@ export async function loadPortfolio(address, provider) {
     if (g.active && same(g.pendingKey, address)) todo.push({ kind: "acceptKey", company: c });
 
     const phase = governancePhase(c, t);
+    // Steps anyone can take to move a listing along; shown to its holders.
+    if (shares > 0n) {
+      if (phase === "canOpen") todo.push({ kind: "startElection", company: c });
+      if (phase === "readyToVote") todo.push({ kind: "openVoting", company: c });
+      if (phase === "count") todo.push({ kind: "countVotes", company: c });
+    }
     if (phase === "candidacy" || phase === "voting") {
       const e = await getElection(c.id, address, provider);
       if (e) {
@@ -58,6 +66,11 @@ export async function loadPortfolio(address, provider) {
       if (p.status === "Voting" && Number(p.voteEnd) > t && !p.voted && p.myWeight > 0n && !proposer && !same(p.to, address)) {
         todo.push({ kind: "proposal", company: c, proposal: p.id, weight: p.myWeight, until: p.voteEnd });
       }
+      // Approved, waiting period over, not yet carried out (payments and sales).
+      if (p.status === "Voting" && p.passes && g.active && Number(p.voteEnd) + EXECUTION_DELAY <= t && (p.kind === "Payment" || p.kind === "Sale")
+        && (shares > 0n || proposer || same(p.to, address))) {
+        todo.push({ kind: "carryOut", company: c, proposal: p.id });
+      }
       if (p.auction && p.mine) {
         const revealing = Number(p.auction.commitEnd) <= t && Number(p.auction.revealEnd) > t;
         if (p.status === "Auction" && revealing && p.mine.committed && !p.mine.revealed) todo.push({ kind: "reveal", company: c, proposal: p.id, until: p.auction.revealEnd });
@@ -72,8 +85,7 @@ export async function loadPortfolio(address, provider) {
     }
   }));
 
-  const order = { acceptKey: 0, reveal: 1, recall: 2, elect: 3, nominate: 4, proposal: 5, dividendVote: 6, dividend: 7, auctionClaim: 8 };
-  todo.sort((a, b) => order[a.kind] - order[b.kind] || Number(a.until || 0) - Number(b.until || 0));
+  todo.sort((a, b) => ORDER[a.kind] - ORDER[b.kind] || Number(a.until || 0) - Number(b.until || 0));
   holdings.sort((a, b) => (b.shares > a.shares ? 1 : b.shares < a.shares ? -1 : 0));
   return { address, invest, isVerified: elig.isVerified, claimed: elig.alreadyClaimed, holdings, bids, roles, todo, listed, companies };
 }

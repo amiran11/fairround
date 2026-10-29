@@ -8,24 +8,15 @@ import { useCompanyName, StageStamp } from "../v9/companies.jsx";
 import { fmt, fmtDate, int, pct, same, short, useChain, useCountdown } from "../components/liveUtils.js";
 import { Button, ErrorLine, Input, Loading, Muted } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
+import { WHERE, useTodoText } from "../v9/todo.jsx";
+import { governancePhase } from "../v9/chain.js";
+import { Check, ShieldCheck } from "lucide-react";
 
 // `to` deep-links into the company page: a section, and a treasury tab.
 function CompanyLink({ company, to = "" }) {
   const name = useCompanyName()(company);
   return <Link to={`/company/${company.id}${to}`} lang={name.mainLang} className="strong">{name.main}</Link>;
 }
-
-const WHERE = {
-  acceptKey: "#s-election",
-  reveal: "?tab=proposals#s-treasury",
-  recall: "#s-election",
-  elect: "#s-election",
-  nominate: "#s-election",
-  proposal: "?tab=proposals#s-treasury",
-  dividendVote: "?tab=dividends#s-treasury",
-  dividend: "?tab=dividends#s-treasury",
-  auctionClaim: "?tab=proposals#s-treasury",
-};
 
 function Closes({ until }) {
   const { t } = useT();
@@ -34,19 +25,7 @@ function Closes({ until }) {
 }
 
 function TodoItem({ item }) {
-  const { t, tn } = useT();
-  const n = item.weight ?? 0n;
-  const text = {
-    acceptKey: t("The project lead named this wallet as the operating key. Accept it to act for the project."),
-    reveal: t("Reveal your sealed bid on proposal {id}. An unrevealed bid loses its deposit.", { id: item.proposal?.toString() }),
-    recall: tn("Vote on recalling the project lead with {n} unit.", "Vote on recalling the project lead with {n} units.", n),
-    elect: tn("Vote in the election with {n} unit.", "Vote in the election with {n} units.", n),
-    nominate: tn("Back a candidate in the election with {n} unit.", "Back a candidate in the election with {n} units.", n),
-    proposal: tn("Vote on proposal {id} with {n} unit.", "Vote on proposal {id} with {n} units.", n, { id: item.proposal?.toString() }),
-    dividendVote: tn("Vote on the dividend for term {term} with {n} unit.", "Vote on the dividend for term {term} with {n} units.", n, { term: item.term }),
-    dividend: t("Claim a {amount} UNRIG dividend for term {term}.", { amount: fmt(item.amount ?? 0n, 18, 4), term: item.term }),
-    auctionClaim: item.won ? t("Claim what you won on proposal {id}.", { id: item.proposal?.toString() }) : t("Claim back your bid and deposit from proposal {id}.", { id: item.proposal?.toString() }),
-  }[item.kind];
+  const text = useTodoText()(item);
   return (
     <li className="stack-sm">
       <div className="spread"><CompanyLink company={item.company} to={WHERE[item.kind]} />{item.until ? <Closes until={item.until} /> : null}</div>
@@ -99,6 +78,62 @@ function Lock({ free, next }) {
   return <span className="muted">{free > 0 ? t("{n} now, more from {date}", { n: free, date: fmtDate(next, lang) }) : t("From {date}", { date: fmtDate(next, lang) })}</span>;
 }
 
+
+// What happens next in a listing when nothing is waiting for you.
+function Milestone({ company }) {
+  const { t, lang } = useT();
+  const g = company.gov;
+  const phase = governancePhase(company);
+  if (company.finalized && phase === "governed") return <span>{t("Sold out. Project lead until {date}.", { date: fmtDate(Number(g.termEnd), lang) })}</span>;
+  return <span>{{
+    notYet: t("The election opens when half the units are sold: {x} of {y} so far.", { x: int(company.sharesIssued), y: int(company.totalShares) }),
+    canOpen: t("Half the units are sold: holders can open the election."),
+    candidacy: t("Candidates are declaring for project lead."),
+    readyToVote: t("Candidates have declared; the vote can open."),
+    voting: t("Holders are voting for a project lead."),
+    count: t("The vote has ended; the votes can be counted."),
+    governed: t("Project lead until {date}. Payments from the treasury need your vote.", { date: fmtDate(Number(g.termEnd), lang) }),
+    termOver: t("The lead's term is over; a new election can open."),
+  }[phase]}</span>;
+}
+
+function HoldingCard({ h, todo, own }) {
+  const { t, tn } = useT();
+  const text = useTodoText();
+  const mine = todo.filter((x) => x.company.id === h.company.id);
+  return (
+    <li className="holding">
+      <div className="spread"><CompanyLink company={h.company} /><StageStamp company={h.company} /></div>
+      <p className="holding-num"><strong>{tn("{n} unit", "{n} units", h.shares)}</strong> <span className="muted">{t("{p} of the project", { p: pct(h.shares, h.company.sharesIssued) })}</span></p>
+      <p className="small">{tn("You vote with {n} unit.", "You vote with {n} units.", h.shares)} {t("Can be sold or moved:")} <Lock free={h.free} next={h.nextUnlock} /></p>
+      {mine.length > 0 ? (
+        <ul className="holding-now">
+          {mine.map((it, i) => <li key={i}><Link to={`/company/${h.company.id}${WHERE[it.kind]}`}>{own ? t("Now:") : t("Open:")} {text(it)}</Link>{it.until ? <> <Closes until={it.until} /></> : null}</li>)}
+        </ul>
+      ) : <p className="small muted">{t("Next:")} <Milestone company={h.company} /></p>}
+    </li>
+  );
+}
+
+function StartGuide({ data }) {
+  const { t } = useT();
+  const steps = [
+    { done: data.isVerified, text: t("Verify your wallet"), to: "/invest" },
+    { done: data.claimed, text: t("Claim your 1,000 UNRIG"), to: "/invest" },
+    { done: data.bids.length > 0, text: data.bids.length > 0 ? t("Bid placed: units arrive when the round is settled") : t("Place a bid on a listing"), to: "/" },
+  ];
+  const next = steps.findIndex((x) => !x.done);
+  return (
+    <ol className="start-guide">
+      {steps.map((x, i) => (
+        <li key={i} className={x.done ? "done" : i === next ? "current" : ""}>
+          <span className="dot" aria-hidden="true">{x.done ? <Check size={12} strokeWidth={3} /> : i + 1}</span>
+          {i === next ? <Link to={x.to} className="strong">{x.text}</Link> : <span>{x.text}</span>}
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 function BidRow({ b }) {
   const { t } = useT();
@@ -180,30 +215,12 @@ export default function Portfolio() {
           <section className="section" aria-labelledby="p-shares">
             <div className="section-head"><h2 id="p-shares" className="h2">{t("Units")}</h2></div>
             {data.holdings.length === 0 ? (
-              <Muted>{own ? <>{t("No units yet.")} <Link to="/">{t("Choose a listing on the Listings page")}</Link></> : t("No units.")}</Muted>
+              own ? <div className="stack-sm"><p>{t("No units yet. Three steps to your first ones:")}</p><StartGuide data={data} /></div> : <Muted>{t("No units.")}</Muted>
             ) : (
-              <table className="ledger">
-                <thead>
-                  <tr>
-                    <th scope="col">{t("Listing")}</th>
-                    <th scope="col" className="num-cell">{t("Units")}</th>
-                    <th scope="col" className="num-cell">{t("Of the project")}</th>
-                    <th scope="col" className="hide-sm">{t("Stage")}</th>
-                    <th scope="col">{t("Can be sold or moved")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.holdings.map((h) => (
-                    <tr key={h.company.id}>
-                      <td><CompanyLink company={h.company} /></td>
-                      <td className="num-cell">{int(h.shares)}</td>
-                      <td className="num-cell">{pct(h.shares, h.company.sharesIssued)}</td>
-                      <td className="hide-sm"><StageStamp company={h.company} /></td>
-                      <td><Lock free={h.free} next={h.nextUnlock} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <>
+                <ul className="holdings">{data.holdings.map((h) => <HoldingCard key={h.company.id} h={h} todo={data.todo} own={own} />)}</ul>
+                <p className="small muted row-tight" style={{ marginTop: 12 }}><ShieldCheck size={16} aria-hidden="true" /> {t("Units are tokens in your own wallet. Nobody, FairRound included, can take or move them, and each one locks for 7 days after you get it.")}</p>
+              </>
             )}
           </section>
 

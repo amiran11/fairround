@@ -5,6 +5,7 @@ import { useSession } from "../session.jsx";
 import { parseAmount } from "../web3.js";
 import { getBids, getRules, getLastPrice, placeBid, withdrawBid, settleRound, auctionPhase } from "./chain.js";
 import { fmt, int, same, useChain, useCountdown, useTx } from "../components/liveUtils.js";
+import { Scale, ShieldCheck, Undo2, Clock, Lock } from "lucide-react";
 import { Act, Address, AmountInput, Button, ConnectToAct, ErrorLine, Field, Loading, Muted } from "../components/ui.jsx";
 
 function BidForm({ company, full, rules, lowestEff }) {
@@ -51,6 +52,43 @@ function BidForm({ company, full, rules, lowestEff }) {
   );
 }
 
+// The three moments of a round, the current one lit, so a bidder always
+// knows what happens next and what they can do now.
+function RoundTimeline({ phase, label, n }) {
+  const { t } = useT();
+  const parts = [
+    { key: "bidding", name: t("Bidding"), note: t("Place or raise your bid") },
+    { key: "settle", name: t("Settle"), note: t("Anyone settles; units are issued") },
+    { key: "cooldown", name: t("Hour between rounds"), note: t("Withdraw if you want") },
+  ];
+  return (
+    <ol className="round-line" aria-label={t("Round {n}", { n })}>
+      {parts.map((x) => (
+        <li key={x.key} className={x.key === phase ? "is-now" : ""} aria-current={x.key === phase ? "step" : undefined}>
+          <strong>{x.name}</strong>
+          <span className="small">{x.key === phase && label ? (x.key === "settle" ? t("Now") : t("Now · {time} left", { time: label })) : x.note}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function SafetyStrip() {
+  const { t } = useT();
+  const items = [
+    [Scale, t("Everyone filled in a round pays the same price per unit.")],
+    [ShieldCheck, t("You never pay more per unit than your limit.")],
+    [Undo2, t("UNRIG not spent on units stays in your bid or comes back to you.")],
+    [Clock, t("You can withdraw your bid in the hour between rounds.")],
+    [Lock, t("Units go straight to your wallet. Nobody, FairRound included, can move them.")],
+  ];
+  return (
+    <ul className="safety-strip" aria-label={t("What protects your bid")}>
+      {items.map(([Icon, text], i) => <li key={i}><Icon size={16} aria-hidden="true" /><span>{text}</span></li>)}
+    </ul>
+  );
+}
+
 export default function Auction({ company }) {
   const { t, tn } = useT();
   const { signer, address } = useSession();
@@ -70,12 +108,14 @@ export default function Auction({ company }) {
   const sorted = bids ? [...bids].sort((a, b) => (eff(b) > eff(a) ? 1 : eff(b) < eff(a) ? -1 : Number(a.seq - b.seq))) : null;
   const lowestEff = sorted && sorted.length ? eff(sorted[sorted.length - 1]) : null;
   const mine = bids?.find((b) => same(b.bidder, address));
+  const rank = mine && sorted ? sorted.findIndex((b) => same(b.bidder, address)) + 1 : 0;
   const full = rules && bids && BigInt(bids.length) >= rules.maxBids;
   const left = company.totalShares - company.sharesIssued;
   const n = company.currentRound.toString();
 
   return (
     <div className="stack">
+      <RoundTimeline phase={phase} label={phase === "settle" ? "" : closes.label} n={n} />
       <p>
         {phase === "bidding" && t("Round {n} is open for bids and closes in {time}.", { n, time: closes.label })}
         {phase === "cooldown" && t("Round {n} opens in {time}. Until then nobody can bid, and anyone can withdraw their bid.", { n, time: closes.label })}
@@ -93,7 +133,7 @@ export default function Auction({ company }) {
 
       <ErrorLine error={bidsError} />
       {!sorted ? !bidsError && <Loading /> : sorted.length === 0 ? (
-        <Muted>{t("No bids yet.")}</Muted>
+        <Muted>{t("No bids yet this round. If yours is the only bid, your price per unit sets the round's price.")}</Muted>
       ) : (
         <table className="ledger">
           <caption>{tn("{n} active bid", "{n} active bids", sorted.length)}{rules ? ` ${t("(at most {max})", { max: int(rules.maxBids) })}` : ""}</caption>
@@ -106,7 +146,7 @@ export default function Auction({ company }) {
           </thead>
           <tbody>
             {sorted.map((b) => (
-              <tr key={b.bidder}>
+              <tr key={b.bidder} className={same(b.bidder, address) ? "is-mine" : undefined}>
                 <td><Address value={b.bidder} /></td>
                 <td className="num-cell">{fmt(b.amount)}</td>
                 <td className="num-cell">{b.maxPrice >= b.amount ? t("no limit") : fmt(b.maxPrice)}</td>
@@ -129,9 +169,20 @@ export default function Auction({ company }) {
                 <Button kind="secondary" small busy={wd.busy} onClick={() => wd.run(() => withdrawBid(signer, company.id))}>{t("Withdraw my bid")}</Button>
               </span>
             ) : t("You can withdraw it in the hour between rounds.")}
+            {rank > 0 && <span className="small" style={{ display: "block", marginTop: 6 }}>
+              {t("By price per unit it is number {rank} of {total} bids.", { rank, total: sorted.length })}{" "}
+              {full && rank === sorted.length ? t("The book is full and yours is the lowest: a higher new bid would replace it, and your UNRIG would come back.") : null}
+            </span>}
             <ErrorLine error={wd.error} />
           </div>
-        ) : phase === "bidding" ? <BidForm company={company} full={full} rules={rules} lowestEff={lowestEff} /> : null}
+        ) : phase === "bidding" ? <BidForm company={company} full={full} rules={rules} lowestEff={lowestEff} />
+        : phase === "cooldown" ? (
+          <div className="notice">
+            <strong>{t("Bidding opens in {time}", { time: closes.label })}</strong>
+            {t("Come back then to bid in round {n}. Meanwhile you can read the bids above and the last price.", { n })}
+          </div>
+        ) : null}
+      <SafetyStrip />
     </div>
   );
 }
