@@ -3,7 +3,7 @@ Deploy
   PASS no owner, no free mint, no unwrap, no admin settings
   PASS constructor refuses a treasury that isn't a FairRound treasury
   PASS constructor refuses an auction the treasury doesn't use
-  PASS fits Arbitrum's size limit (5988 bytes runtime, 7704 with constructor)
+  PASS fits Arbitrum's size limit (6145 bytes runtime, 7875 with constructor)
 
 Proposals (all inside one 30-day term)
   PASS can't convert while the vote is still running
@@ -51,10 +51,22 @@ Voted sale -> burn UNRIG -> vUNRIG
   PASS sale winner converted the 20 UNRIG they bought
   PASS ATTACK: and not a wei more
 
+Other treasury tokens are never converted or burned
+  PASS a voted payment of 20 USDC was executed to cits[11]
+  PASS ATTACK: a USDC payment can't be used to convert UNRIG (the recipient holds faucet UNRIG)
+  PASS nothing burned or minted: UNRIG, vUNRIG and USDC balances unchanged
+  PASS convertible() reports nothing for the USDC payment
+  PASS USDC-for-UNRIG sale settled; the winner received 20 USDC
+  PASS ATTACK: winning a USDC sale paid in UNRIG can't be converted
+  PASS convertible() reports nothing for the USDC sale
+  PASS USDC sent to the contract by mistake: burnStray ignores it (only UNRIG is ever burned)
+  PASS the USDC sits untouched; none was sent to the dead address
+  PASS nothing recorded as converted from either USDC proposal
+
 Accounting
   PASS vUNRIG supply 40 (20 paid + 20 sold); 140 UNRIG burned (incl. the farmer's 100 stray)
   PASS the contract ends holding no UNRIG
-  PASS the listing's capital fell by exactly what holders voted out (20 paid + 20 sold)
+  PASS the listing's UNRIG capital = before - 20 paid - 20 sold + 4.95 UNRIG from the USDC sale (5 minus the 1% host fee)
 
-40 passed, 0 failed
+50 passed, 0 failed
 EXIT 0

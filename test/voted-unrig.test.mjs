@@ -67,6 +67,8 @@ await warp(DAY + 1);
 await elect(GOV, 0, cits[0], cits.slice(0, 5)); await setKey(GOV, 0, cits[0], cits[10]);
 await elect(GOV, 1, cits[0], cits.slice(0, 3)); await setKey(GOV, 1, cits[0], cits[13]);
 const capital0 = (await RA.companies(0)).capital;
+// Listing 0 also holds 1,000 USDC-style tokens (an approved treasury token).
+await w(usdc.mint(owner.address, 1000n)); await w(usdc.approve(ct, 1000n)); await w(CT.depositToken(0, u, 1000n));
 
 console.log("Deploy");
 const VU = await deploy("VotedUnrig", it, ct, ra, 5); const vu = await VU.getAddress();
@@ -83,11 +85,15 @@ await w(CT.connect(cits[10]).proposePayment(0, it, 0, cits[11].address, E(20)));
 const rej = pay + 1n; await w(CT.connect(cits[10]).proposePayment(0, it, 0, cits[15].address, E(5)));
 const sale = pay + 2n; await w(CT.connect(cits[10]).proposeSale(0, it, 0, E(20), u, 1000n));
 const small = pay + 3n; await w(CT.connect(cits[13]).proposePayment(1, it, 0, cits[12].address, E(5)));
+// Other treasury tokens: a voted USDC payment, and a sale of USDC paid for in UNRIG.
+const payU = pay + 4n; await w(CT.connect(cits[10]).proposePayment(0, u, 0, cits[11].address, 20n));
+const saleU = pay + 5n; await w(CT.connect(cits[10]).proposeSale(0, u, 0, 20n, it, E(1)));
 ok(await reverts(() => VU.connect(cits[11]).convertPayment(pay, E(1)), "payment not executed"), "can't convert while the vote is still running");
-for (let i = 1; i < 5; i++) { await w(CT.connect(cits[i]).vote(pay, true)); await w(CT.connect(cits[i]).vote(sale, true)); }
+for (let i = 1; i < 5; i++) for (const id of [pay, sale, payU, saleU]) await w(CT.connect(cits[i]).vote(id, true));
 await w(CT.connect(cits[1]).vote(small, true)); await w(CT.connect(cits[2]).vote(small, true));
 await warp(EXEC);
 await w(CT.executePayment(pay)); await w(CT.executePayment(rej)); await w(CT.executePayment(small)); await w(CT.startAuction(sale));
+await w(CT.executePayment(payU)); await w(CT.startAuction(saleU));
 ok((await CT.proposals(pay)).status === 2n, "payment of 20 UNRIG executed after vote + 5-day delay");
 // The sale's sealed bids go in now (2-day commit window); they are revealed after the timelock wait.
 const [bA, bB] = [cits[12], cits[14]];
@@ -95,6 +101,9 @@ for (const s of [bA, bB]) { await w(usdc.mint(s.address, 10000n)); await w(usdc.
 const salt = ethers.id("salt");
 await w(CT.connect(bA).commitBid(sale, await CT.commitHashFor(sale, 1500n, salt, bA.address)));
 await w(CT.connect(bB).commitBid(sale, await CT.commitHashFor(sale, 1200n, salt, bB.address)));
+// USDC sale: bidder cits[11] (who also holds UNRIG from the faucet) pays in UNRIG.
+const bU = cits[11]; await w(IT.connect(bU).approve(ct, MAX));
+await w(CT.connect(bU).commitBid(saleU, await CT.commitHashFor(saleU, E(5), salt, bU.address)));
 
 console.log("\nTimelock: make vUNRIG an authorized sink (the mainnet step)");
 const TL = await deploy("FairRoundTimelock", owner.address); const tl = await TL.getAddress();
@@ -112,6 +121,7 @@ await w(TL.execute(it, 0, data, ZERO32, salt0));
 ok(await IT.authorizedSink(vu), "after 48 hours: execute -> vUNRIG is an authorized sink");
 { const t = await now(); const ce = (await CT.auctions(sale)).commitEnd; if (BigInt(t) <= ce) await warp(Number(ce) - t + 1); }
 await w(CT.connect(bA).revealBid(sale, 1500n, salt)); await w(CT.connect(bB).revealBid(sale, 1200n, salt));
+await w(CT.connect(bU).revealBid(saleU, E(5), salt));
 
 console.log("\nVoted payment -> burn UNRIG -> vUNRIG");
 let [acct, left] = await VU.convertible(pay);
@@ -163,11 +173,28 @@ await w(VU.connect(bA).convertSale(sale, E(20)));
 ok((await VU.balanceOf(bA.address)) === E(20), "sale winner converted the 20 UNRIG they bought");
 ok(await reverts(() => VU.connect(bA).convertSale(sale, 1n), "more than the treasury released"), "ATTACK: and not a wei more");
 
+console.log("\nOther treasury tokens are never converted or burned");
+ok((await CT.proposals(payU)).status === 2n && (await usdc.balanceOf(cits[11].address)) === 20n, "a voted payment of 20 USDC was executed to cits[11]");
+{ const ub = await IT.balanceOf(cits[11].address), vb = await VU.balanceOf(cits[11].address);
+  ok(await reverts(() => VU.connect(cits[11]).convertPayment(payU, 1n), "only UNRIG can be converted"), "ATTACK: a USDC payment can't be used to convert UNRIG (the recipient holds faucet UNRIG)");
+  ok((await IT.balanceOf(cits[11].address)) === ub && (await VU.balanceOf(cits[11].address)) === vb && (await usdc.balanceOf(cits[11].address)) === 20n, "nothing burned or minted: UNRIG, vUNRIG and USDC balances unchanged"); }
+[acct, left] = await VU.convertible(payU);
+ok(acct === ethers.ZeroAddress && left === 0n, "convertible() reports nothing for the USDC payment");
+await w(CT.settleAuction(saleU)); await w(CT.connect(bU).claimAuction(saleU));
+ok((await CT.proposals(saleU)).status === 5n && (await usdc.balanceOf(bU.address)) === 40n, "USDC-for-UNRIG sale settled; the winner received 20 USDC");
+ok(await reverts(() => VU.connect(bU).convertSale(saleU, 1n), "only UNRIG can be converted"), "ATTACK: winning a USDC sale paid in UNRIG can't be converted");
+[acct, left] = await VU.convertible(saleU);
+ok(acct === ethers.ZeroAddress && left === 0n, "convertible() reports nothing for the USDC sale");
+await w(usdc.connect(bU).transfer(vu, 10n));
+ok(await reverts(() => VU.burnStray(), "nothing to burn"), "USDC sent to the contract by mistake: burnStray ignores it (only UNRIG is ever burned)");
+ok((await usdc.balanceOf(vu)) === 10n && (await usdc.balanceOf(await VU.DEAD())) === 0n, "the USDC sits untouched; none was sent to the dead address");
+ok(!(await VU.convertedFrom(payU)) && !(await VU.convertedFrom(saleU)), "nothing recorded as converted from either USDC proposal");
+
 console.log("\nAccounting");
 const deadNow = (await IT.balanceOf(await VU.DEAD())) - dead0;
 ok((await VU.totalSupply()) === E(40) && deadNow === E(140) && (await VU.totalBurned()) === E(140), "vUNRIG supply 40 (20 paid + 20 sold); 140 UNRIG burned (incl. the farmer's 100 stray)");
 ok((await IT.balanceOf(vu)) === 0n, "the contract ends holding no UNRIG");
-ok((await RA.companies(0)).capital === capital0 - E(20) - E(20), "the listing's capital fell by exactly what holders voted out (20 paid + 20 sold)");
+ok((await RA.companies(0)).capital === capital0 - E(20) - E(20) + E("4.95"), "the listing's UNRIG capital = before - 20 paid - 20 sold + 4.95 UNRIG from the USDC sale (5 minus the 1% host fee)");
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

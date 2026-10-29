@@ -24,9 +24,17 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 /// The "stamp" is the treasury proposal id: each executed payment or settled
 /// sale can be converted once, up to its amount, only by the wallet it paid.
 ///
+/// Only UNRIG is ever burned. A treasury can also pay out or sell other
+/// approved tokens (USDC, WETH); those proposals can't be converted, and this
+/// contract never calls any token except UNRIG, so it can't move or burn
+/// anyone's USDC, WETH or other tokens. A sale where the treasury sells
+/// another token and bidders pay in UNRIG can't be converted either: the
+/// winner received that other token, not UNRIG.
+///
 /// No owner, no admin, no upgrade. Every rule is fixed at deployment. The
 /// contract never keeps UNRIG: anything sent to it outside a conversion can
-/// be burned by anyone with burnStray(), and mints nothing.
+/// be burned by anyone with burnStray(), and mints nothing. Other tokens sent
+/// here by mistake are never touched (and, with no admin, can't be recovered).
 contract VotedUnrig is ERC20, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -99,6 +107,7 @@ contract VotedUnrig is ERC20, ReentrancyGuard {
     /// receive the same amount of vUNRIG. Approve this contract first.
     function convertPayment(uint256 proposalId, uint256 amount) external nonReentrant {
         ProposalView memory p = _proposal(proposalId);
+        require(p.token == address(unrig), "vUNRIG: only UNRIG can be converted");
         require(p.kind == KIND_PAYMENT, "vUNRIG: not a payment");
         require(p.status == STATUS_PAID, "vUNRIG: payment not executed");
         require(p.to == msg.sender, "vUNRIG: not the recipient");
@@ -109,6 +118,7 @@ contract VotedUnrig is ERC20, ReentrancyGuard {
     /// receive the same amount of vUNRIG. Approve this contract first.
     function convertSale(uint256 proposalId, uint256 amount) external nonReentrant {
         ProposalView memory p = _proposal(proposalId);
+        require(p.token == address(unrig), "vUNRIG: only UNRIG can be converted");
         require(p.kind == KIND_SALE, "vUNRIG: not a sale");
         require(p.status == STATUS_SETTLED, "vUNRIG: sale not settled");
         (,,,,, address leader,) = treasury.auctions(proposalId);
@@ -119,7 +129,8 @@ contract VotedUnrig is ERC20, ReentrancyGuard {
     }
 
     /// @notice Anyone can burn UNRIG that was sent to this contract outside a
-    /// conversion. It mints nothing; it keeps the contract empty.
+    /// conversion. It mints nothing; it keeps the contract empty. Only UNRIG:
+    /// no other token is ever moved.
     function burnStray() external nonReentrant {
         uint256 bal = unrig.balanceOf(address(this));
         require(bal > 0, "vUNRIG: nothing to burn");
@@ -141,7 +152,7 @@ contract VotedUnrig is ERC20, ReentrancyGuard {
 
     function _convert(uint256 proposalId, ProposalView memory p, uint256 amount) internal {
         require(amount > 0, "vUNRIG: amount must be > 0");
-        require(p.token == address(unrig), "vUNRIG: not UNRIG");
+        require(p.token == address(unrig), "vUNRIG: only UNRIG can be converted"); // belt and braces
         require(_eligible(p.companyId), "vUNRIG: listing too small");
         uint256 done = convertedFrom[proposalId] + amount;
         require(done <= p.amount, "vUNRIG: more than the treasury released");

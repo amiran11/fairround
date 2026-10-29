@@ -1,6 +1,6 @@
 # vUNRIG — Voted UNRIG
 
-**Status:** built and tested on a local chain (40 of 40 checks pass), including the
+**Status:** built and tested on a local chain (50 of 50 checks pass), including the
 48-hour timelock step exactly as on mainnet. **Deploy guide:** `DEPLOY_VUNRIG.md`.
 
 ## The problem it solves
@@ -38,6 +38,11 @@ refunds, dividends or anything else can never be converted.
 **Only listings of at least `minListingUnits` units count.** One person can buy a small
 listing outright and vote payments to their own other wallets; big listings need many holders.
 
+**Only UNRIG is ever burned.** A treasury can also pay out or sell other approved tokens
+(USDC, WETH). Those proposals can't be converted, and the contract never calls any token but
+UNRIG, so it can't move or burn anyone's USDC or WETH. Other tokens sent to it by mistake stay
+untouched (and, with no admin, can't be recovered).
+
 The contract **never keeps UNRIG**, has **no owner, no admin, no upgrade**: every rule is
 fixed at deployment.
 
@@ -55,9 +60,13 @@ owned by FairRoundTimelock:
   a rejected payment, a payment still in its vote, an unsettled or unclaimed sale, the losing
   bidder, a sale converted as a payment and vice versa, converting twice or one wei too much,
   a listing below the minimum, sending free claims straight to the contract (mints nothing,
-  and `burnStray` clears it).
+  and `burnStray` clears it);
+- other treasury tokens are never converted or burned: a voted USDC payment to a wallet that
+  also holds faucet UNRIG can't be used to convert, a sale of USDC paid for in UNRIG can't be
+  converted by its winner, `convertible()` reports nothing for both, and USDC sent to the
+  contract is ignored by `burnStray` (none reaches the dead address).
 
-Result: **40 passed, 0 failed**. Runtime size 5,988 bytes (limit 24,576).
+Result: **50 passed, 0 failed**. Runtime size 6,145 bytes (limit 24,576).
 
 ## What it does not fix: the free claim
 

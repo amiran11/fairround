@@ -2,7 +2,7 @@
 
 One contract, then one timelock action (48-hour wait). About 15 minutes of clicking plus the
 wait. Everything here was rehearsed on a local chain with the same contracts and timelock
-(`test/voted-unrig.test.mjs`, 40 of 40 passed).
+(`test/voted-unrig.test.mjs`, 50 of 50 passed).
 
 **What doesn't change:** UNRIG stays closed-loop. Nothing new can leave FairRound until a
 treasury vote pays someone out *and* that person converts it.
