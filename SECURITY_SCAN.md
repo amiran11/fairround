@@ -38,6 +38,7 @@ audit: these tools catch common bug classes, not logic errors in the rules thems
 
 - Whether the rules are economically sound (capture by many wallets, bot behaviour): that is what
   the field experiment tests.
-- Mythril on the large contracts (RoundAuctionV9, GovernanceV9, CompanyTreasuryV9) times out at
-  this depth; they are covered by the existing test suites and SECURITY_REVIEW.md.
+- Mythril was not run on the large contracts (RoundAuctionV9, GovernanceV9, CompanyTreasuryV9,
+  CompanyDividendsV9): symbolic execution on contracts this size takes hours per run. They are
+  covered by Slither, Aderyn, the existing test suites and SECURITY_REVIEW.md.
 - A human audit is still needed before real value sits in the system.
