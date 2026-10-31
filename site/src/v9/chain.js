@@ -9,6 +9,14 @@
 import {
   CONTRACT_ADDRESSES, getContract, getTokenInfo, sendTx, queryFilterChunked, ensureAllowance, getEthers, ACTIVE_NETWORK,
 } from "../web3.js";
+import { track } from "../analytics.js";
+
+// Records a confirmed transaction as an analytics event (only with consent).
+async function tracked(receiptPromise, event, listingId) {
+  const receipt = await receiptPromise;
+  track(event, listingId === undefined ? {} : { listing_id: Number(listingId) });
+  return receipt;
+}
 
 export const ZERO = "0x0000000000000000000000000000000000000000";
 export const CAPITAL = 0;
@@ -110,10 +118,10 @@ export async function getInvestAllowanceFor(owner, spender, provider) {
 export async function placeBid(signer, companyId, amount, maxPrice) {
   const r = await ra(signer);
   await ensureAllowance(signer, CONTRACT_ADDRESSES.InvestToken, await r.getAddress(), amount);
-  return sendTx(r, "placeBid", companyId, amount, maxPrice);
+  return tracked(sendTx(r, "placeBid", companyId, amount, maxPrice), "place_bid", companyId);
 }
-export const withdrawBid = async (signer, companyId) => sendTx(await ra(signer), "withdrawBid", companyId);
-export const settleRound = async (signer, companyId) => sendTx(await ra(signer), "settleRound", companyId);
+export const withdrawBid = async (signer, companyId) => tracked(sendTx(await ra(signer), "withdrawBid", companyId), "withdraw_bid", companyId);
+export const settleRound = async (signer, companyId) => tracked(sendTx(await ra(signer), "settleRound", companyId), "settle_round", companyId);
 
 // The last settled round's price, from the RoundSettled event.
 export async function getLastPrice(companyId, provider) {
@@ -162,7 +170,11 @@ export async function getMyWeightNow(companyId, me, provider) {
   return r.votingWeight(companyId, me, now() - 86400);
 }
 
-const g = async (signer, m, ...a) => sendTx(await gov(signer), m, ...a);
+const GOV_EVENTS = { openCandidacy: "open_candidacy", declareCandidacy: "declare_candidacy", openVoting: "open_voting", vote: "election_vote", tallyRound: "count_votes", openRecall: "open_recall", voteRecall: "recall_vote" };
+const g = async (signer, m, ...a) => {
+  const rc = sendTx(await gov(signer), m, ...a);
+  return GOV_EVENTS[m] ? tracked(rc, GOV_EVENTS[m], a[0]) : rc;
+};
 export const openCandidacy = (s, id) => g(s, "openCandidacy", id);
 export const declareCandidacy = (s, id, program) => g(s, "declareCandidacy", id, program);
 export const nominate = (s, id, cand) => g(s, "nominate", id, cand);
@@ -247,7 +259,11 @@ export async function getProposals(companyId, me, provider) {
   return list.sort((a, b) => Number(b.id - a.id));
 }
 
-const t = async (signer, m, ...a) => sendTx(await ct(signer), m, ...a);
+const CT_EVENTS = { vote: "treasury_vote", proposePayment: "propose_payment", proposeSale: "propose_sale", executePayment: "execute_payment" };
+const t = async (signer, m, ...a) => {
+  const rc = sendTx(await ct(signer), m, ...a);
+  return CT_EVENTS[m] ? tracked(rc, CT_EVENTS[m]) : rc;
+};
 export async function depositToken(signer, companyId, token, amount) {
   const c = await ct(signer);
   await ensureAllowance(signer, token, await c.getAddress(), amount);
@@ -383,7 +399,7 @@ export async function getVerifier(provider) {
   const [paused, left, minBalance] = await Promise.all([v.paused(), v.remainingThisHour(), v.MIN_BALANCE()]);
   return { paused, left, minBalance };
 }
-export const verifySelf = async (signer) => sendTx(await ov(signer), "verifySelf");
+export const verifySelf = async (signer) => tracked(sendTx(await ov(signer), "verifySelf"), "verify_wallet");
 
 // Where a wallet stands on the path "bid, then hold units", for the
 // next-step guide: its open bids and holdings per listing, and the listing

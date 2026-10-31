@@ -3,6 +3,7 @@
 // through `provider` either way, and only show actions when `signer` is set.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { connectWallet, getReadProvider, getInvestBalance, getClaimEligibility } from "./web3.js";
+import { track } from "./analytics.js";
 
 export const ZERO = "0x0000000000000000000000000000000000000000";
 const WAS_CONNECTED = "sakartvelo_connected";
@@ -21,12 +22,14 @@ export function SessionProvider({ children }) {
     getReadProvider().then(setReadProvider).catch(() => setReadProvider(null));
   }, []);
 
-  const connect = useCallback(async () => {
+  // auto = true for the quiet reconnect on return visits (not counted).
+  const connect = useCallback(async (auto) => {
     setConnecting(true);
     setConnectError(null);
     try {
       const w = await connectWallet();
       setWallet(w);
+      if (auto !== true) track("wallet_connect");
       try { localStorage.setItem(WAS_CONNECTED, "1"); } catch { /* storage blocked */ }
       return w;
     } catch (err) {
@@ -49,7 +52,7 @@ export function SessionProvider({ children }) {
     try { wasConnected = localStorage.getItem(WAS_CONNECTED) === "1"; } catch { /* storage blocked */ }
     if (!wasConnected || !window.ethereum) return;
     window.ethereum.request({ method: "eth_accounts" }).then((accts) => {
-      if (accts && accts.length) connect();
+      if (accts && accts.length) connect(true);
     }).catch(() => {});
   }, [connect]);
 
