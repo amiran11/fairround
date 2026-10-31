@@ -1,5 +1,16 @@
 # Deploy vUNRIG on Arbitrum One
 
+> **Status (31 Oct 2026):** deployed and timelock step scheduled.
+> - vUNRIG: `0xe945B87f8B506B05Eb50c5d19ffe954398E49684` (deploy tx
+>   `0xefa79f7d9889b21a400b4c4f215977872c63bb75e96f5cdd5d5a859a13ba5f90`, block 519986335,
+>   minListingUnits 9; source verified on Sourcify)
+> - Timelock `schedule` tx `0xb3c35b75ec0e8c60b737029291ff27cafabb013b5b8f23cc07961d74e3413b3f`
+>   (block 519988911), operation id `0x39cad4d92e6118300a025f4d7d1948b7653bbd02dba9052be36410f599e6031a`
+> - **Execute** from Monday 2 Nov 2026, ~16:40 Tbilisi time, with the same five values:
+>   target `0xbc780aeB45FdDA0258aB163a99fE92f97209E2c0`, value `0`, data
+>   `0x28e95402000000000000000000000000e945b87f8b506b05eb50c5d19ffe954398e496840000000000000000000000000000000000000000000000000000000000000001`,
+>   predecessor `0x00…00` (64 zeros), salt `0x00…01` (63 zeros then 1).
+
 One contract, then one timelock action (48-hour wait). About 15 minutes of clicking plus the
 wait. Everything here was rehearsed on a local chain with the same contracts and timelock
 (`test/voted-unrig.test.mjs`, 50 of 50 passed).
@@ -99,8 +110,10 @@ data, predecessor, salt; no delay). Confirm.
   treasury vote, 5-day delay).
 - The site can then get a "Convert to vUNRIG" button next to executed payments and won sales,
   using `convertible(id)`.
-- **No pool until the free entry is closed** (see `VOTED_UNRIG.md`): pause new verifications or
-  cap `maxCitizens` first.
+- **Decision (29 Oct 2026):** the free claim stays open during the public test, so its weak
+  points are tested in the open; the pool is capped at about $20 and announced in advance.
+  The levers remain available if the data calls for them: pause new verifications or cap
+  `maxCitizens`.
 
 **Do NOT touch:** InvestToken **setRoundAuctionForTradability**, **setAuctionHouse**, and never
 **renounceOwnership**.
