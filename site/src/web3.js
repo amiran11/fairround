@@ -32,6 +32,9 @@ export const NETWORKS = {
       CompanyDividendsV9: "0x91B05614ae7c6cA516820317aDf3D03cCa056C73",
       OpenVerifierV2: "0x0d07CB79b17229d6301E96dBfEDf09e76c9d68C7",
       FairRoundTimelock: "0x15FC689FD5ba86D3FC052E6E1E7b48623c17732A",
+      // vUNRIG, 31 Oct 2026 (DEPLOY_VUNRIG.md): created only by burning UNRIG
+      // that a holder vote released from a treasury.
+      VotedUnrig: "0xe945B87f8B506B05Eb50c5d19ffe954398E49684",
     },
   },
 };
