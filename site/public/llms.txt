@@ -34,6 +34,10 @@ The contract names are from the project's first version, Sakartvelo Exchange.
 - FairRoundTimelock (owner, 48-hour delay): 0x15FC689FD5ba86D3FC052E6E1E7b48623c17732A
 - VotedUnrig (vUNRIG): 0xe945B87f8B506B05Eb50c5d19ffe954398E49684. A freely transferable demo token created only by burning UNRIG that a holder vote paid out of a treasury of a listing with at least 9 units. One-way: not backed, not redeemable, not an investment, no promise of price. Free claims, refunds and dividends can never be converted. Public test from 31 October 2026.
 
+## Research
+
+- [Pre-registered hypotheses for the FairRound field experiment (PDF)](https://www.fairround.xyz/research/fairround-preregistration.pdf), archived on Zenodo: DOI 10.5281/zenodo.23844124
+
 ## Official community
 
 - [X: @fairround](https://x.com/fairround)

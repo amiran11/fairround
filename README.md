@@ -1,5 +1,7 @@
 # FairRound
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23844124.svg)](https://doi.org/10.5281/zenodo.23844124)
+
 **Own the price discovery.** The on-chain IPO exchange for crypto projects,
 on Arbitrum: projects list through fair rounds (one clearing price per
 round, equal access for small buyers, the raise held in a treasury only
