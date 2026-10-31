@@ -1,53 +1,72 @@
 Deploy
-  PASS vUNRIG deployed: symbol vUNRIG, minimum listing 5 units
-  PASS no owner, no free mint, no admin settings
+  PASS deployed: Voted UNRIG (vUNRIG), minimum listing 5 units
+  PASS no owner, no free mint, no unwrap, no admin settings
   PASS constructor refuses a treasury that isn't a FairRound treasury
-  PASS fits Arbitrum's size limit (5785 bytes runtime, 7501 with constructor)
+  PASS constructor refuses an auction the treasury doesn't use
+  PASS fits Arbitrum's size limit (6145 bytes runtime, 7875 with constructor)
 
 Proposals (all inside one 30-day term)
-  PASS can't wrap while the vote is still running
+  PASS can't convert while the vote is still running
   PASS payment of 20 UNRIG executed after vote + 5-day delay
 
-Voted payment -> vUNRIG
-  PASS until the timelock makes vUNRIG an authorized sink, nothing can be wrapped
-  PASS wrappable(): recipient may wrap the full 20
-  PASS wrapped 12: 12 vUNRIG minted, 12 UNRIG held as backing
-  PASS partial wraps add up to the payment (12 + 8)
-  PASS ATTACK: wrapping the same payment again fails
+Timelock: make vUNRIG an authorized sink (the mainnet step)
+  PASS InvestToken owned by the 48-hour timelock, as on mainnet
+  PASS before the timelock step, nothing can be converted
+  PASS the deployer wallet can no longer change InvestToken directly
+  PASS execute fails before 48 hours have passed
+  PASS after 48 hours: execute -> vUNRIG is an authorized sink
+
+Voted payment -> burn UNRIG -> vUNRIG
+  PASS convertible(): recipient may convert the full 20
+  PASS converted 12: 12 vUNRIG minted
+  PASS the 12 UNRIG went to the dead address; the contract holds none
+  PASS partial conversions add up to the payment (12 + 8)
+  PASS ATTACK: converting the same payment again fails
 
 vUNRIG trades freely; UNRIG stays closed-loop
   PASS vUNRIG moves wallet to wallet (a pool or exchange could hold it)
   PASS plain UNRIG still can't move wallet to wallet
-  PASS unwrap: 5 vUNRIG burned, 5 UNRIG back (spendable inside FairRound)
-  PASS unwrapped UNRIG is closed-loop again
-  PASS backing: vUNRIG supply never exceeds the UNRIG the wrapper holds
+  PASS supply = UNRIG burned: every vUNRIG destroyed one UNRIG
 
 Farmers and other ways around the vote
-  PASS ATTACK: a farmer can't wrap someone else's payment
+  PASS ATTACK: a farmer can't convert someone else's payment
   PASS ATTACK: a made-up proposal id fails
-  PASS ATTACK: sending free claims straight to the wrapper mints nothing (they're just lost)
-  PASS ATTACK: unwrap needs vUNRIG; donated UNRIG can't be pulled back out
-  PASS donations only over-back vUNRIG
+  PASS ATTACK: sending free claims straight to the contract mints nothing
+  PASS anyone can burn stray UNRIG; the contract is empty again
+  PASS burnStray with nothing to burn reverts
 
 Rejected payments, small listings
   PASS a payment nobody voted for is rejected
-  PASS ATTACK: a rejected payment can't be wrapped
+  PASS ATTACK: a rejected payment can't be converted
   PASS small listing (3 units): payment executed
-  PASS ATTACK: UNRIG from a listing below 5 units can't be wrapped (one person could own it)
-  PASS wrappable() says so too
+  PASS ATTACK: UNRIG from a listing below 5 units can't be converted (one person could own it)
+  PASS convertible() says so too
 
-Voted sale -> vUNRIG
-  PASS can't wrap before the sale is settled
+Voted sale -> burn UNRIG -> vUNRIG
+  PASS can't convert before the sale is settled
   PASS winner must claim the UNRIG first
-  PASS ATTACK: the losing bidder can't wrap
-  PASS ATTACK: a sale can't be wrapped as a payment
-  PASS ATTACK: a payment can't be wrapped as a sale
-  PASS sale winner wrapped the 20 UNRIG they bought
+  PASS ATTACK: the losing bidder can't convert
+  PASS ATTACK: a sale can't be converted as a payment
+  PASS ATTACK: a payment can't be converted as a sale
+  PASS sale winner converted the 20 UNRIG they bought
   PASS ATTACK: and not a wei more
 
-Accounting
-  PASS supply 35 (20 + 20 - 5 unwrapped) vs backing 135 (incl. the farmer's 100 donation)
-  PASS the listing's capital fell by exactly what holders voted out (20 paid + 20 sold)
+Other treasury tokens are never converted or burned
+  PASS a voted payment of 20 USDC was executed to cits[11]
+  PASS ATTACK: a USDC payment can't be used to convert UNRIG (the recipient holds faucet UNRIG)
+  PASS nothing burned or minted: UNRIG, vUNRIG and USDC balances unchanged
+  PASS convertible() reports nothing for the USDC payment
+  PASS USDC-for-UNRIG sale settled; the winner received 20 USDC
+  PASS ATTACK: winning a USDC sale paid in UNRIG can't be converted
+  PASS convertible() reports nothing for the USDC sale
+  PASS USDC sent to the contract by mistake: burnStray ignores it (only UNRIG is ever burned)
+  PASS the USDC sits untouched; none was sent to the dead address
+  PASS nothing recorded as converted from either USDC proposal
 
-35 passed, 0 failed
+Accounting
+  PASS vUNRIG supply 40 (20 paid + 20 sold); 140 UNRIG burned (incl. the farmer's 100 stray)
+  PASS the contract ends holding no UNRIG
+  PASS the listing's UNRIG capital = before - 20 paid - 20 sold + 4.95 UNRIG from the USDC sale (5 minus the 1% host fee)
+
+50 passed, 0 failed
 EXIT 0
