@@ -17,7 +17,7 @@ The site is available in English and Georgian (ქართული). Pages are
 
 - Rounds: up to 150 units a round, one-hour rounds with a one-hour pause between them. Everyone in a round pays the same clearing price. 99% of what is paid goes to the project treasury, 1% to FairRound. Units lock for 7 days.
 - Project lead: elections open at 50% of units sold. A lead wins with yes votes from 20% of the electorate and 51% of votes cast, serves 30 days, and holders can vote to remove them.
-- Treasury: every payment, sale or investment is a holder proposal with a 5-day delay before it runs. At most 20% of a bucket can be spent per term.
+- Treasury: every payment, sale or investment is a holder proposal with a 5-day delay before it runs. At most 5% of a bucket can be spent per term.
 - New investors: at most 50 an hour.
 - Admin: every owner change goes through a public 48-hour timelock.
 
@@ -32,6 +32,7 @@ The contract names are from the project's first version, Sakartvelo Exchange.
 - CompanyDividendsV9: 0x91B05614ae7c6cA516820317aDf3D03cCa056C73
 - OpenVerifierV2: 0x0d07CB79b17229d6301E96dBfEDf09e76c9d68C7
 - FairRoundTimelock (owner, 48-hour delay): 0x15FC689FD5ba86D3FC052E6E1E7b48623c17732A
+- VotedUnrig (vUNRIG): 0xe945B87f8B506B05Eb50c5d19ffe954398E49684. A freely transferable demo token created only by burning UNRIG that a holder vote paid out of a treasury of a listing with at least 9 units. One-way: not backed, not redeemable, not an investment, no promise of price. Free claims, refunds and dividends can never be converted. Public test from 31 October 2026.
 
 ## Official community
 

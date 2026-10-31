@@ -132,7 +132,7 @@ export default function Layout() {
           </div>
           <div>
             {[
-              [t("FairRound contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "FairRoundTimelock"]],
+              [t("FairRound contracts on {network}", { network: ACTIVE_NETWORK.label }), ["InvestToken", "RoundAuctionV9", "GovernanceV9", "CompanyTreasuryV9", "CompanyDividendsV9", "OpenVerifierV2", "FairRoundTimelock", "VotedUnrig"]],
             ].map(([title, names]) => (
               <div key={title} style={{ marginBottom: 16 }}>
                 <p className="strong" style={{ color: "var(--ink)", marginBottom: 8 }}>{title}</p>
