@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use FairRound or its field-experiment data, please cite it as below."
+title: "FairRound: an on-chain IPO exchange and a public field experiment on exploiters, automated wallets and procedural filters"
+type: software
+authors:
+  - family-names: Kapanadze
+    given-names: Amiran
+    orcid: "https://orcid.org/0000-0002-3992-5954"
+repository-code: "https://github.com/amiran11/fairround"
+url: "https://www.fairround.xyz"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23844124
+    description: "Release v1.0-preregistration: pre-registered hypotheses, 31 October 2026"
+keywords:
+  - mechanism design
+  - token launch
+  - on-chain governance
+  - Sybil resistance
+  - field experiment
+  - Arbitrum
+abstract: >-
+  FairRound runs fair, hourly uniform-price rounds for listings on Arbitrum One,
+  with holder-controlled treasuries and elected project leads. From 31 October 2026
+  it is used as a public field experiment on how individual users and automated
+  wallets behave, and which design defences hold against automation.
+  Code, tests and documentation were prepared with assistance from Claude
+  (Anthropic), an AI model; the author designed the system and the experiment
+  and takes responsibility for the work.
