@@ -43,7 +43,7 @@ the recipient can't vote on a payment to itself, and only the operating key can 
 | 4 | **Open the election, declare Account 2.** | Opens at 50% sold; candidates need 0.1% of units. | None: the founder holds 100%. | _to fill_ |
 | 5 | **Open the vote (after 5 days), vote, count (after 3 more).** | Winner needs votes of 20% of the electorate and 51% of votes cast. | **Slows:** about 9 days, all public. | _to fill_ |
 | 6 | **Lead names Account 4 as operating key; key accepts.** | The lead never operates directly; the key expires with the term. | Separation of roles: costs one extra wallet. | _to fill_ |
-| 7 | **Execute the vUNRIG timelock step** (owner action, scheduled 31 Oct). | 48-hour public delay on every owner action. | **Holds:** visible two days ahead. | scheduled `0xb3c35b75ec0e8c60b737029291ff27cafabb013b5b8f23cc07961d74e3413b3f` |
+| 7 | **Execute the vUNRIG timelock step** (owner action, scheduled 31 Oct). | 48-hour public delay on every owner action. | **Holds:** visible two days ahead. | scheduled `0xb3c35b75…3b3f`; executed 2 Nov `0xba68df561600b84fca624b6ec19a61a9cf36dd7a5cc87d6881a4514b1458cfc5` |
 | 8 | **Propose a payment of about 148 UNRIG to Account 3.** | At most 5% of the capital per 30-day term; recipient can't be the lead or the key. | **Holds as a brake:** 148 of about 2,967 UNRIG. | _to fill_ |
 | 9 | **Account 1 votes yes; vote ends after 3 days.** | Quorum 20% of eligible units; lead's units excluded. | None: the founder is the only other holder. | _to fill_ |
 | 10 | **Wait 5 days, then carry out the payment.** | 5-day delay so holders can recall the lead first. | **Would hold** in a listing with independent holders; useless here. | _to fill_ |
