@@ -24,6 +24,7 @@ export const SOCIAL = [
   ["X", "https://x.com/fairround"],
   ["Telegram channel", "https://t.me/sakartvelo_exchange"],
   ["Telegram group", "https://t.me/sakartveloexchange"],
+  ["Discord", "https://discord.gg/pmvpbjx6f"],
 ];
 
 function Account() {

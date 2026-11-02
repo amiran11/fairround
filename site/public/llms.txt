@@ -43,6 +43,7 @@ The contract names are from the project's first version, Sakartvelo Exchange.
 - [X: @fairround](https://x.com/fairround)
 - [Telegram channel](https://t.me/sakartvelo_exchange)
 - [Telegram group](https://t.me/sakartveloexchange)
+- [Discord](https://discord.gg/pmvpbjx6f)
 
 ## Optional
 

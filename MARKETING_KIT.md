@@ -20,6 +20,7 @@ Sakartvelo Exchange kit is archived in `docs/archive/`.
 ## Official accounts
 
 - X: [@fairround](https://x.com/fairround)
+- Discord: https://discord.gg/pmvpbjx6f (created 2 Nov 2026)
 - Reddit: none. r/FairRound was banned by Reddit on 1 Nov 2026 (automated, no reason given); link removed from the site.
 - Telegram channel: [t.me/sakartvelo_exchange](https://t.me/sakartvelo_exchange) (rename the link in channel settings to fairround if free)
 - Telegram group: [t.me/sakartveloexchange](https://t.me/sakartveloexchange) (same)
