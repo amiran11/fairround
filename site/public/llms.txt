@@ -41,7 +41,6 @@ The contract names are from the project's first version, Sakartvelo Exchange.
 ## Official community
 
 - [X: @fairround](https://x.com/fairround)
-- [Reddit: r/FairRound](https://www.reddit.com/r/FairRound/)
 - [Telegram channel](https://t.me/sakartvelo_exchange)
 - [Telegram group](https://t.me/sakartveloexchange)
 
