@@ -15,3 +15,8 @@ support.
 
 Follow-up to: *Monetization, Privatization, Capitalization: Formalizing a Primary-market Sequence
 for State-asset Privatization on-chain* (SSRN abstract 7419018).
+
+## Observation log
+
+[OBSERVATIONS.md](OBSERVATIONS.md): field notes recorded as they happen, with screenshots in
+[observations/](observations/). Each entry states what it can and cannot show.
