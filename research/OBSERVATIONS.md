@@ -72,6 +72,27 @@ things stand out: "I" became "we" (a service, not a person); "no charge" turned 
 service within one exchange; and the offer is a launch on pump.fun, a first-come memecoin launchpad,
 which is the model FairRound was built to replace. Nothing in the pitch shows the project was read.
 
+**Follow-up, 6 Nov 18:14: the playbook.** Asked what exactly they would do and what it costs, account
+E proposed a call and sent a launch script
+([observations/2026-11-06-account-e-playbook.png](observations/2026-11-06-account-e-playbook.png)):
+
+1. Create the token on pump.fun from a "dev wallet" with 1 SOL.
+2. The dev wallet sells straight away "to clear the bots".
+3. A second, undisclosed "supply wallet" buys 25 SOL.
+4. The dev wallet rebuys 1 SOL.
+5. The dev wallet's tokens are locked.
+6. The service posts in "alpha channels" and on X so trading monitors pick the launch up "before
+   bonding".
+
+In plain terms: the creator buys most of the early supply through a wallet the public cannot link
+to them, locks only the small, visible dev wallet so the launch looks safe, and pays for coordinated
+promotion to bring buyers in afterwards. The public then buys from a position the insider already
+holds. No price was given; the next step offered was a call. The founder declined to continue.
+
+This is the launch pattern FairRound's rules are designed to rule out: in a FairRound listing every
+filled bidder pays the same round price, a hidden early wallet gains nothing from being first, and
+the creator cannot sell into the round.
+
 ### Comparison with site and on-chain activity
 
 Read from Arbiscan on 5 Nov 2026 at 17:34–17:36 (OpenVerifierV2 and RoundAuctionV9 transaction lists;
