@@ -87,11 +87,11 @@ E proposed a call and sent a launch script
 In plain terms: the creator buys most of the early supply through a wallet the public cannot link
 to them, locks only the small, visible dev wallet so the launch looks safe, and pays for coordinated
 promotion to bring buyers in afterwards. The public then buys from a position the insider already
-holds. No price was given; the next step offered was a call. The founder declined to continue.
+holds. No price was given; the next step offered was a call.
 
 This is the launch pattern FairRound's rules are designed to rule out: in a FairRound listing every
-filled bidder pays the same round price, a hidden early wallet gains nothing from being first, and
-the creator cannot sell into the round.
+filled bidder pays the same round price, so a hidden early wallet gains nothing from being first,
+and the capital raised goes to a treasury that holders must vote on before anything is paid out.
 
 ### Comparison with site and on-chain activity
 
