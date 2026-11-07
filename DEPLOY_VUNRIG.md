@@ -1,15 +1,13 @@
 # Deploy vUNRIG on Arbitrum One
 
-> **Status (31 Oct 2026):** deployed and timelock step scheduled.
+> **Status (31 Oct 2026):** deployed, timelock step executed: live.
 > - vUNRIG: `0xe945B87f8B506B05Eb50c5d19ffe954398E49684` (deploy tx
 >   `0xefa79f7d9889b21a400b4c4f215977872c63bb75e96f5cdd5d5a859a13ba5f90`, block 519986335,
 >   minListingUnits 9; source verified on Sourcify)
 > - Timelock `schedule` tx `0xb3c35b75ec0e8c60b737029291ff27cafabb013b5b8f23cc07961d74e3413b3f`
 >   (block 519988911), operation id `0x39cad4d92e6118300a025f4d7d1948b7653bbd02dba9052be36410f599e6031a`
-> - **Execute** from Monday 2 Nov 2026, ~16:40 Tbilisi time, with the same five values:
->   target `0xbc780aeB45FdDA0258aB163a99fE92f97209E2c0`, value `0`, data
->   `0x28e95402000000000000000000000000e945b87f8b506b05eb50c5d19ffe954398e496840000000000000000000000000000000000000000000000000000000000000001`,
->   predecessor `0x00…00` (64 zeros), salt `0x00…01` (63 zeros then 1).
+> - **Executed** 2 Nov 2026, tx `0xba68df561600b84fca624b6ec19a61a9cf36dd7a5cc87d6881a4514b1458cfc5`
+>   (block 520589524): InvestToken `authorizedSink(vUNRIG) = true`. vUNRIG is live.
 
 One contract, then one timelock action (48-hour wait). About 15 minutes of clicking plus the
 wait. Everything here was rehearsed on a local chain with the same contracts and timelock
