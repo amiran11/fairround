@@ -1,7 +1,8 @@
 # The Fellowship playbook: how the founder captures a listing, in public
 
 **Status:** in progress, started 1 November 2026. This file is updated as each step happens,
-with the transaction on Arbiscan. Part of the FairRound field experiment
+with the transaction on Arbiscan (hashes shortened as shown on the GovernanceV9 page; full hashes on
+[Arbiscan](https://arbiscan.io/address/0x2fd99a2328866E458Cbc38266c9ff49319A7613b)). Part of the FairRound field experiment
 (pre-registration: [DOI 10.5281/zenodo.23844124](https://doi.org/10.5281/zenodo.23844124)).
 
 ## Why we publish this
@@ -25,9 +26,9 @@ All four belong to the founder. That is the point: one person, four wallets.
 
 | Role | Wallet | Units | What it does |
 |---|---|---|---|
-| Voter | Account 1 `0xD9fb2141222E6395c4F8787440EBc8f7c73b2de0` (also the owner wallet) | 3 | votes yes on the payment |
-| Project lead | Account 2 `0x31A05…42f71` | 3 | wins the election, names the operating key |
-| Recipient | Account 3 `0x4D865…` | 3 | receives the payment, burns it into vUNRIG |
+| Project lead | Account 1 `0xD9fb2141222E6395c4F8787440EBc8f7c73b2de0` (also the owner wallet) | 3 | declared candidacy, names the operating key |
+| Voter | Account 2 `0x31A0…2f71` | 3 | backs and votes for the lead; votes yes on the payment |
+| Recipient | Account 3 `0x4D8659c461e7b6f1420b5eC3c3898476BeF9F9f2` | 3 | receives the payment, burns it into vUNRIG |
 | Operating key | Account 4 (to be created) | 0 | proposes the payment |
 
 The treasury rules force four wallets: the lead and the operating key can't vote on a proposal,
@@ -39,11 +40,11 @@ the recipient can't vote on a payment to itself, and only the operating key can 
 |---|---|---|---|---|
 | 1 | **Verify three wallets.** One balance of 0.0083 ETH was enough: verify a wallet, move the ETH on, verify the next. | Verification checks the balance only at that moment; 50 wallets an hour, ordinary wallets only. | **Weak:** the ETH check is recyclable (demonstrated here). The hourly cap only slows, it doesn't stop. | _to fill_ |
 | 2 | **Claim 1,000 UNRIG per wallet.** | Once per verified wallet. | None beyond step 1. | _to fill_ |
-| 3 | **Buy all 9 units in one round:** each wallet bids 999 UNRIG with a limit of 333 per unit. | Uniform price; one bid per wallet; at most 150 units a round. | **Weak for small listings:** 9 units fit in one round, so nobody else had a chance to buy in unless they bid in the same hour. | _to fill_ |
-| 4 | **Open the election, declare Account 2.** | Opens at 50% sold; candidates need 0.1% of units. | None: the founder holds 100%. | _to fill_ |
-| 5 | **Open the vote (after 5 days), vote, count (after 3 more).** | Winner needs votes of 20% of the electorate and 51% of votes cast. | **Slows:** about 9 days, all public. | _to fill_ |
+| 3 | **Buy all 9 units in one round:** each wallet bids 999 UNRIG with a limit of 333 per unit. Settled 1 Nov 18:11; capital 2,967.03 UNRIG. The round was announced on X 40 minutes before it closed; no outside bids. | Uniform price; one bid per wallet; at most 150 units a round. | **Weak for small listings:** 9 units fit in one round, so nobody else had a chance to buy in unless they bid in the same hour. | _to fill_ |
+| 4 | **Open the election (2 Nov), Account 1 declares; Accounts 2 and 3 back it.** Backing only puts a candidate on the ballot: the vote is a separate stage. | Opens at 50% sold; candidates need 0.1% of units. | None: the founder holds 100%. | open candidacy `0xe8f293d8cbd…`; declare `0xcc9b00e980…`; backing `0x72fc99fe72d…`, `0x06eb9965b5…` |
+| 5 | **Open the vote (after 5 days), vote, count (after 3 more).** | Winner needs votes of 20% of the electorate and 51% of votes cast. | **Slows:** 5-day candidacy can't be cut short even when every holder has backed the same candidate; then a 3-day vote. All public. | vote opened 7 Nov ~18:18 `0xa4f79bc1352…`; votes `0xf3169cd472e…`, `0x30be7d1127…`, `0x605aba498e…` (9 of 9 units for Account 1); count due 10 Nov |
 | 6 | **Lead names Account 4 as operating key; key accepts.** | The lead never operates directly; the key expires with the term. | Separation of roles: costs one extra wallet. | _to fill_ |
-| 7 | **Execute the vUNRIG timelock step** (owner action, scheduled 31 Oct). | 48-hour public delay on every owner action. | **Holds:** visible two days ahead. | scheduled `0xb3c35b75…3b3f`; executed 2 Nov `0xba68df561600b84fca624b6ec19a61a9cf36dd7a5cc87d6881a4514b1458cfc5` |
+| 7 | **Execute the vUNRIG timelock step** (owner action, scheduled 31 Oct, executed 2 Nov). | 48-hour public delay on every owner action. | **Holds:** visible two days ahead. | scheduled `0xb3c35b75…3b3f`; executed `0xba68df561600b84fca624b6ec19a61a9cf36dd7a5cc87d6881a4514b1458cfc5` |
 | 8 | **Propose a payment of about 148 UNRIG to Account 3.** | At most 5% of the capital per 30-day term; recipient can't be the lead or the key. | **Holds as a brake:** 148 of about 2,967 UNRIG. | _to fill_ |
 | 9 | **Account 1 votes yes; vote ends after 3 days.** | Quorum 20% of eligible units; lead's units excluded. | None: the founder is the only other holder. | _to fill_ |
 | 10 | **Wait 5 days, then carry out the payment.** | 5-day delay so holders can recall the lead first. | **Would hold** in a listing with independent holders; useless here. | _to fill_ |
