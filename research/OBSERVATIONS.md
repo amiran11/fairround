@@ -182,3 +182,8 @@ question about the project's path, so the sender has read the project. It does n
 **What this can and cannot show:** one message cannot show intent; outreach accounts can also open
 with a specific question. It is the first contact that engaged with the mechanism itself. Whether
 it leads to a wallet verification will show on chain.
+
+**Prediction recorded before the outcome (founder, 7 Nov 23:42):** account G will reply by 8 Nov,
+at the latest within 3 days (by 10 Nov), and the reply will include some kind of proposal. The
+furthest step G takes in the protocol will be claiming the free credits, possibly none: no bid.
+To be checked against the chain and the DMs, and the result recorded here whether it holds or not.
