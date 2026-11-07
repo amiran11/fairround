@@ -163,3 +163,22 @@ is "valuta saqartvelo" (1 impression, 0 clicks); the rest are hidden as too rare
 kind, explains at most a few of the ~35 first visits in the funnel window. The currency-exchange
 explanation is ruled out for most of them: the strangers came by direct links or social posts, and
 still did not connect a wallet.
+
+---
+
+## 2026-11-07 — First on-topic contact: a question about the mechanism
+
+**Source:** X, a reply thread and a DM to the FairRound account under the X thread of 6 Nov
+([observations/2026-11-07-account-g-question.png](observations/2026-11-07-account-g-question.png)).
+
+Account G (a smaller account, about a thousand followers) liked the thread and replied publicly:
+"People tend to think being first actually means getting it right early whereas they might have
+some worst haha". Its DM, sent 07:13: "I like the one-clearing-price auction and holder-voted
+treasury proposals. What will determine when demo listings move to real-money launches?"
+
+**Difference from accounts A–F:** the message names two specific FairRound mechanisms and asks a
+question about the project's path, so the sender has read the project. It does not offer a service.
+
+**What this can and cannot show:** one message cannot show intent; outreach accounts can also open
+with a specific question. It is the first contact that engaged with the mechanism itself. Whether
+it leads to a wallet verification will show on chain.
