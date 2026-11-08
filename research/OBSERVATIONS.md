@@ -196,5 +196,5 @@ flow now. Timing and "includes a proposal": **held.** The protocol part (claim a
 still open and will be checked on chain.
 
 The offer would undermine the test it claims to help: a group recruited and coordinated by one
-person measures that person's coordination, not how independent users behave. The founder
-declined recruitment and coordinated voting and kept the invitation to test individually.
+person measures that person's coordination, not how independent users behave. Founder's
+response: to be recorded.
