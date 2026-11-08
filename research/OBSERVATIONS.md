@@ -187,3 +187,14 @@ it leads to a wallet verification will show on chain.
 at the latest within 3 days (by 10 Nov), and the reply will include some kind of proposal. The
 furthest step G takes in the protocol will be claiming the free credits, possibly none: no bid.
 To be checked against the chain and the DMs, and the result recorded here whether it holds or not.
+
+**Follow-up, 8 Nov 17:19 (first part of the prediction checked):** G replied within a day. The
+reply praised the project's transparency, in particular that the founder logged the credit
+(Sybil) weakness himself, then made an offer: to "drive that first wave of users, get them
+claiming credits, and actually coordinate that first vote". G said they would test the settlement
+flow now. Timing and "includes a proposal": **held.** The protocol part (claim at most, no bid) is
+still open and will be checked on chain.
+
+The offer would undermine the test it claims to help: a group recruited and coordinated by one
+person measures that person's coordination, not how independent users behave. The founder
+declined recruitment and coordinated voting and kept the invitation to test individually.
