@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Wallet, ShieldCheck, Coins, Gavel, Check } from "lucide-react";
+import { ExternalLink, Wallet, ShieldCheck, Coins, Gavel, Check, Lock, KeyRound } from "lucide-react";
+import PageArt from "../components/PageArt.jsx";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
 import { ACTIVE_NETWORK, getClaimEligibility, claimReal, getPublicStats, V9_LIVE, getVerifySelfEligibility, verifySelfReal } from "../web3.js";
@@ -35,11 +36,18 @@ export default function Citizen() {
 
   return (
     <div className="page" style={{ paddingTop: 48 }}>
+      <section className="hero page-hero">
       <div className="prose stack">
         <h1 className="h1">{t("Become an investor")}</h1>
         <p className="lede">{t("Investors each claim 1,000 UNRIG, once. UNRIG is what you bid with for units. It takes two transactions; each costs a fraction of a cent in gas on {network}.", { network: ACTIVE_NETWORK.label })}</p>
         {stats && <p className="muted num">{t("{n} investors have joined, of {max} places.", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}</p>}
       </div>
+      <PageArt
+        Icon={Wallet}
+        chips={[{ Icon: Lock, text: t("Nothing is taken") }, { Icon: KeyRound, text: t("Your keys stay with you") }]}
+        card={{ tag: t("What it costs"), title: t("Gas only: a fraction of a cent"), lines: [t("0.0083 ETH is checked, never moved."), t("1,000 UNRIG test credits, with no value.")] }}
+      />
+      </section>
 
       <ol className="journey" aria-label={t("The four steps")}>
         {[

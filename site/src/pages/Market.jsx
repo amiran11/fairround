@@ -8,6 +8,8 @@ import { useCompanies, useCompanyName } from "../v9/companies.jsx";
 import { fmt, fmtDate, same, useChain, useTx } from "../components/liveUtils.js";
 import { Act, Address, AmountInput, Button, ConnectToAct, ErrorLine, Field, Loading, Muted, Select } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
+import PageArt from "../components/PageArt.jsx";
+import { ArrowLeftRight, Tag, Wallet } from "lucide-react";
 
 function CompanyName({ id, companies }) {
   const name = useCompanyName();
@@ -94,11 +96,18 @@ export default function Market() {
 
   return (
     <div className="page" style={{ paddingTop: 48 }}>
+      <section className="hero page-hero">
       <div className="prose stack">
         <h1 className="h1">{t("Unit market")}</h1>
         <p className="lede">{t("Units that holders offer for sale, at a price in UNRIG they set. Buying one moves it straight to your wallet.")}</p>
         <p className="muted">{t("A unit can be sold 7 days after it was issued. Units a project holds in another project can't be sold here.")}</p>
       </div>
+      <PageArt
+        Icon={ArrowLeftRight}
+        chips={[{ Icon: Tag, text: t("The seller sets the price") }, { Icon: Wallet, text: t("Straight to your wallet") }]}
+        card={{ tag: t("How it works"), title: t("Holders offer units; anyone can buy"), lines: [t("Priced in UNRIG test credits, with no value."), t("Nobody holds the unit in between: it moves wallet to wallet.")] }}
+      />
+      </section>
 
       <section className="section" style={{ marginTop: 40 }} aria-labelledby="offers">
         <div className="section-head"><h2 id="offers" className="h2">{t("Units for sale")}</h2></div>

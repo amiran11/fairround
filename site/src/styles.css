@@ -673,3 +673,10 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 .example { margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .example .holding { border-style: dashed; }
 .example-tag { align-self: flex-start; font-size: var(--t-sm); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted, #6b6f76); }
+
+/* The orbit illustration on inner pages */
+.page-hero { padding: 0 0 8px; align-items: center; }
+@media (min-width: 960px) { .page-hero { padding-top: 0; } }
+.page-art-mark { width: 150px; height: 150px; border-radius: 50%; background: var(--paper-raised); border: 1px solid var(--rule); box-shadow: 0 6px 20px rgba(27, 29, 33, 0.10); }
+@media (max-width: 959px) { .page-art-mark { width: 110px; height: 110px; } .page-art-mark svg { width: 60px; height: 60px; } }
+@media (max-width: 959px) { .page-art .hero-orbit { display: none; } .page-art .round-ticket { margin-top: 0; width: 100%; } }
