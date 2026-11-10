@@ -211,5 +211,10 @@ comparable with the 8 Oct–4 Nov baseline. **Credit: account G.** The message a
 offer to help "more independent users find it" once the product is ready.
 
 **Prediction check (recorded 7 Nov):** reply within 1–3 days: held. Includes a proposal: held.
-Furthest protocol step a claim, or none: the notes describe the flow without a wallet; to be
-confirmed on chain.
+Furthest protocol step a claim, or none: **held, none.** The site's live
+stats on 10 Nov 21:40 ([observations/2026-11-10-stats-funnel.png](observations/2026-11-10-stats-funnel.png))
+still show 4 verified wallets, 4 claims and 4 bidders, with no on-chain activity since 1 Nov. G
+reported accurate findings from browsing the site but never verified a wallet.
+
+**Result of the prediction:** all three parts held. One prediction about one account; it shows
+the method works, not how accurate the founder's reads are in general.
