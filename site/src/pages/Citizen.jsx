@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Wallet, ShieldCheck, Coins, Gavel, Check } from "lucide-react";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
 import { ACTIVE_NETWORK, getClaimEligibility, claimReal, getPublicStats, V9_LIVE, getVerifySelfEligibility, verifySelfReal } from "../web3.js";
@@ -41,6 +41,25 @@ export default function Citizen() {
         {stats && <p className="muted num">{t("{n} investors have joined, of {max} places.", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}</p>}
       </div>
 
+      <ol className="journey" aria-label={t("The four steps")}>
+        {[
+          { Icon: Wallet, title: t("Connect"), fact: t("MetaMask on {network}", { network: ACTIVE_NETWORK.label }), done: connected },
+          { Icon: ShieldCheck, title: t("Verify"), fact: t("0.0083 ETH checked, not taken"), done: verified },
+          { Icon: Coins, title: t("Claim"), fact: t("1,000 UNRIG, once"), done: claimed },
+          { Icon: Gavel, title: t("Bid"), fact: t("Same price for everyone in a round"), done: false },
+        ].map((s, i, all) => {
+          const current = !s.done && all.slice(0, i).every((x) => x.done);
+          return (
+            <li key={i} className={s.done ? "done" : current ? "current" : ""}>
+              <span className="journey-icon" aria-hidden="true">{s.done ? <Check size={22} strokeWidth={3} /> : <s.Icon size={22} />}</span>
+              <span className="journey-n">{i + 1}</span>
+              <strong>{s.title}</strong>
+              <span className="small muted">{s.fact}</span>
+            </li>
+          );
+        })}
+      </ol>
+
       <ol className="steps" style={{ maxWidth: 720, marginTop: 40 }}>
         <li className={stepClass(connected, !connected)}>
           <div className="stack-sm">
@@ -67,7 +86,7 @@ export default function Citizen() {
               <Notice tone="plain">{t("Self-verification is switched off at the moment, so new wallets can't verify.")}</Notice>
             )}
             {connected && !verified && verifyOpen && v2 && v2.left === 0n && (
-              <Notice tone="plain">{t("The 10 verifications for this hour are used up. Try again at the start of the next hour.")}</Notice>
+              <Notice tone="plain">{t("This hour's verifications are used up. Try again at the start of the next hour.")}</Notice>
             )}
             {connected && !verified && ethCheck && !ethCheck.eligible && (
               <Notice tone="danger">{t("This wallet holds {have} ETH; it needs at least {min}. Add some ETH on {network}, then come back.", { have: eth(ethCheck.currentBalance), min: eth(ethCheck.minBalance), network: ACTIVE_NETWORK.label })}</Notice>

@@ -135,6 +135,24 @@ function StartGuide({ data }) {
   );
 }
 
+// A clearly labelled, made-up holding, so a newcomer can see what the page
+// shows once they own units. Never real data.
+function ExampleHolding() {
+  const { t } = useT();
+  return (
+    <figure className="example" aria-label={t("Example")}>
+      <figcaption className="example-tag">{t("Example · not a real holding")}</figcaption>
+      <div className="holding">
+        <div className="spread"><strong>{t("Example listing")}</strong><span className="stamp stamp-done">{t("Governed, term {n}", { n: "1" })}</span></div>
+        <p className="holding-num"><strong>{t("{n} units", { n: "3" })}</strong> <span className="muted">{t("{p} of the project", { p: "33.3%" })}</span></p>
+        <p className="small">{t("You vote with {n} units.", { n: "3" })} {t("Can be sold or moved:")} <span className="muted">{t("7 days after you get them")}</span></p>
+        <ul className="holding-now"><li><span className="strong">{t("Now:")} {t("Vote on a payment of {amount} UNRIG from the treasury", { amount: "148" })}</span> <span className="muted small">{t("closes in 2 days")}</span></li></ul>
+      </div>
+      <p className="small muted">{t("Once you hold units, each listing gets a card like this: your share, when you can move your units, and anything waiting for your vote. The numbers above are made up.")}</p>
+    </figure>
+  );
+}
+
 function BidRow({ b }) {
   const { t } = useT();
   const cool = Date.now() / 1000 < Number(b.roundStart);
@@ -168,6 +186,7 @@ export default function Portfolio() {
         <h1 className="h1">{t("Your portfolio")}</h1>
         <p className="lede">{t("Your units, open bids and anything waiting for your vote or claim, in one place. Connect a wallet to see yours. Everything on FairRound is public, so you can also look up any address.")}</p>
         <div><Button busy={connecting} onClick={connect}>{t("Connect wallet")}</Button></div>
+        <div style={{ paddingTop: 16, maxWidth: 520 }}><ExampleHolding /></div>
         <div style={{ paddingTop: 24 }}><Lookup /></div>
       </div>
     );
@@ -215,7 +234,7 @@ export default function Portfolio() {
           <section className="section" aria-labelledby="p-shares">
             <div className="section-head"><h2 id="p-shares" className="h2">{t("Units")}</h2></div>
             {data.holdings.length === 0 ? (
-              own ? <div className="stack-sm"><p>{t("No units yet. Three steps to your first ones:")}</p><StartGuide data={data} /></div> : <Muted>{t("No units.")}</Muted>
+              own ? <div className="stack-sm"><p>{t("No units yet. Three steps to your first ones:")}</p><StartGuide data={data} /><div style={{ paddingTop: 16, maxWidth: 520 }}><ExampleHolding /></div></div> : <Muted>{t("No units.")}</Muted>
             ) : (
               <>
                 <ul className="holdings">{data.holdings.map((h) => <HoldingCard key={h.company.id} h={h} todo={data.todo} own={own} />)}</ul>

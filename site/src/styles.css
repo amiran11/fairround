@@ -658,3 +658,18 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 .start-guide li.current .dot { background: var(--stamp); border-color: var(--stamp); color: var(--on-stamp); }
 
 .hero-req { margin: 12px 0 0; max-width: 34rem; }
+
+/* Become an investor: the four steps at a glance */
+.journey { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 880px; }
+.journey li { position: relative; border: 1px solid var(--rule); border-radius: 12px; padding: 16px; background: var(--paper-raised); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.journey li.current { border-color: var(--accent, #3B3A9F); box-shadow: 0 0 0 2px var(--accent, #3B3A9F) inset; }
+.journey li.done { opacity: .75; }
+.journey-icon { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--stamp-wash); color: var(--accent, #3B3A9F); }
+.journey li.done .journey-icon { background: #2E7D4F; color: #fff; }
+.journey-n { position: absolute; top: 12px; right: 14px; font-size: var(--t-sm); color: var(--muted, #6b6f76); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .journey { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Portfolio: a labelled example holding */
+.example { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.example .holding { border-style: dashed; }
+.example-tag { align-self: flex-start; font-size: var(--t-sm); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted, #6b6f76); }
