@@ -34,7 +34,11 @@ export function stageOf(c) {
   const g = governancePhase(c);
   const recallOpen = c.gov.recall && !c.gov.recall.resolved && c.gov.active && Number(c.gov.recall.voteEnd) > Date.now() / 1000;
   if (recallOpen) return "recall";
-  if (g === "notYet") return c.finalized ? "soldOut" : auctionPhase(c) === "cooldown" ? "cooldown" : "auction";
+  if (g === "notYet") {
+    if (c.finalized) return "soldOut";
+    const a = auctionPhase(c);
+    return a === "cooldown" ? "cooldown" : a === "settle" ? "settle" : "auction";
+  }
   return g;
 }
 
@@ -49,6 +53,7 @@ export function StageStamp({ company }) {
   const text = {
     auction: t("Auction open"),
     cooldown: t("Between rounds"),
+    settle: t("Awaiting settlement"),
     soldOut: t("Sold out"),
     canOpen: t("Election can open"),
     candidacy: t("Candidates declaring"),
@@ -59,6 +64,6 @@ export function StageStamp({ company }) {
     termOver: t("Term over"),
     recall: t("Recall vote"),
   }[s];
-  const quiet = ["auction", "cooldown", "soldOut", "termOver", "count", "readyToVote", "canOpen"].includes(s);
+  const quiet = ["auction", "cooldown", "settle", "soldOut", "termOver", "count", "readyToVote", "canOpen"].includes(s);
   return <Stamp key={s} tone={quiet ? "quiet" : s === "governed" ? "done" : undefined} landed={landed}>{text}</Stamp>;
 }

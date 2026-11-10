@@ -38,7 +38,7 @@ export default function NextStep() {
   let holderTask = false;
   if (!connected) {
     step = 1; title = t("Connect your wallet");
-    body = t("MetaMask on Arbitrum One. Connecting only shows your address; nothing moves without your OK.");
+    body = t("MetaMask on Arbitrum One. Connecting only shows your address; nothing moves without your OK. To claim the free UNRIG later, the wallet needs 0.0083 ETH there (checked, not taken).");
     action = <Button small busy={connecting} onClick={connect} className="btn-wallet"><LockIcon open />{t("Connect wallet")}</Button>;
   } else if (!account) {
     return null; // reading the wallet's state

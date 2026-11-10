@@ -656,3 +656,5 @@ html[lang="ka"] .h1, html[lang="ka"] .h2 { letter-spacing: 0; line-height: 1.2; 
 .start-guide li.done .dot { background: var(--ok); border-color: var(--ok); color: var(--on-stamp); }
 .start-guide li.current { border-color: var(--stamp); background: var(--stamp-wash); }
 .start-guide li.current .dot { background: var(--stamp); border-color: var(--stamp); color: var(--on-stamp); }
+
+.hero-req { margin: 12px 0 0; max-width: 34rem; }
