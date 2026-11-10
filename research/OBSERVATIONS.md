@@ -187,3 +187,29 @@ it leads to a wallet verification will show on chain.
 at the latest within 3 days (by 10 Nov), and the reply will include some kind of proposal. The
 furthest step G takes in the protocol will be claiming the free credits, possibly none: no bid.
 To be checked against the chain and the DMs, and the result recorded here whether it holds or not.
+
+**Follow-up, 8 Nov 17:19 (first part of the prediction checked):** G replied within a day. The
+reply praised the project's transparency, in particular that the founder logged the credit
+(Sybil) weakness himself, then made an offer: to "drive that first wave of users, get them
+claiming credits, and actually coordinate that first vote". G said they would test the settlement
+flow now. Timing and "includes a proposal": **held.** The protocol part (claim at most, no bid) is
+still open and will be checked on chain.
+
+The offer would undermine the test it claims to help: a group recruited and coordinated by one
+person measures that person's coordination, not how independent users behave. The founder
+accepted individual testing and left growth and budget decisions until after the test data.
+**Follow-up, 10 Nov 19:05: G's testing notes.** Two specific, accurate findings from the public
+flow (without a wallet):
+
+1. The free-claim button didn't show the 0.0083 ETH requirement until after it was clicked.
+2. A listing whose round had closed was labelled "Auction open" in the list while its own page
+   said the round was awaiting settlement.
+
+Both were fixed on the site the same evening (front end only, no contract change); the first
+changes what new visitors see at the first step, so funnel numbers after 10 Nov are not directly
+comparable with the 8 Oct–4 Nov baseline. **Credit: account G.** The message again ended with an
+offer to help "more independent users find it" once the product is ready.
+
+**Prediction check (recorded 7 Nov):** reply within 1–3 days: held. Includes a proposal: held.
+Furthest protocol step a claim, or none: the notes describe the flow without a wallet; to be
+confirmed on chain.

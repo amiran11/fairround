@@ -151,6 +151,7 @@ export default function Register() {
               : <a href="#listings" className="btn btn-large">{t("Pick a listing")} <ArrowDown size={18} /></a>}
             <a href="#how" className="btn btn-secondary btn-large">{t("How it works")}</a>
           </div>
+          {needsCitizenship && <p className="small muted hero-req">{t("To claim, your wallet needs at least 0.0083 ETH on {network} for a one-time check. Nothing is taken; you pay only gas.", { network: ACTIVE_NETWORK.label })}</p>}
           <TrustStrip />
           <p className="small muted hero-note">{t("Live on {network} · free test credits · fictional listings", { network: ACTIVE_NETWORK.label })}</p>
         </div>
