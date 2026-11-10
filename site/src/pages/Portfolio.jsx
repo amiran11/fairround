@@ -10,7 +10,8 @@ import { Button, ErrorLine, Input, Loading, Muted } from "../components/ui.jsx";
 import { usePageTitle } from "../meta.js";
 import { WHERE, useTodoText } from "../v9/todo.jsx";
 import { governancePhase } from "../v9/chain.js";
-import { Check, ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck, Layers, Wallet, Eye } from "lucide-react";
+import PageArt from "../components/PageArt.jsx";
 
 // `to` deep-links into the company page: a section, and a treasury tab.
 function CompanyLink({ company, to = "" }) {
@@ -182,12 +183,23 @@ export default function Portfolio() {
 
   if (!target) {
     return (
-      <div className="page stack" style={{ paddingTop: 48 }}>
-        <h1 className="h1">{t("Your portfolio")}</h1>
-        <p className="lede">{t("Your units, open bids and anything waiting for your vote or claim, in one place. Connect a wallet to see yours. Everything on FairRound is public, so you can also look up any address.")}</p>
-        <div><Button busy={connecting} onClick={connect}>{t("Connect wallet")}</Button></div>
-        <div style={{ paddingTop: 16, maxWidth: 520 }}><ExampleHolding /></div>
-        <div style={{ paddingTop: 24 }}><Lookup /></div>
+      <div className="page" style={{ paddingTop: 48 }}>
+        <section className="hero page-hero">
+          <div className="stack">
+            <h1 className="h1">{t("Your portfolio")}</h1>
+            <p className="lede">{t("Your units, open bids and anything waiting for your vote or claim, in one place. Connect a wallet to see yours. Everything on FairRound is public, so you can also look up any address.")}</p>
+            <div><Button busy={connecting} onClick={connect}>{t("Connect wallet")}</Button></div>
+          </div>
+          <PageArt
+            Icon={Layers}
+            chips={[{ Icon: Wallet, text: t("Units stay in your wallet") }, { Icon: Eye, text: t("Read live from the chain") }]}
+            card={{ tag: t("Only you decide"), title: t("Nobody can move your units"), lines: [t("Not FairRound, not the project lead."), t("Each unit locks for 7 days, then it's yours to move or sell.")] }}
+          />
+        </section>
+        <div className="stack">
+          <div style={{ maxWidth: 520 }}><ExampleHolding /></div>
+          <div style={{ paddingTop: 24 }}><Lookup /></div>
+        </div>
       </div>
     );
   }
