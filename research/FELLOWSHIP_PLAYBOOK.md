@@ -50,6 +50,22 @@ the recipient can't vote on a payment to itself, and only the operating key can 
 | 10 | **Wait 5 days, then carry out the payment.** | 5-day delay so holders can recall the lead first. | **Would hold** in a listing with independent holders; useless here. | _to fill_ |
 | 11 | **Account 3 converts: burns the UNRIG, receives vUNRIG.** | Only the payment's recipient, only once, only up to its amount, only listings of 9+ units. | **Holds:** nobody else can convert this payment. | _to fill_ |
 
+## Attempts to break the rules (10 Nov 2026)
+
+Right after proposing the 148 UNRIG payment (the whole 5% term cap), the operating key (Account 4)
+tried three things the rules forbid:
+
+| Attempt | Through | Result |
+|---|---|---|
+| Pay 1 UNRIG to the project lead's own wallet (Account 1) | FairRound site | Blocked by the site: "That recipient isn't allowed: it can't be the project lead, the operating key or the project itself." |
+| Pay 1 UNRIG more to Account 3 (148 + 1 > the 148.35 cap) | FairRound site | Blocked by the site: "That would take more than 5% of this balance out in one term." |
+| The same 1 UNRIG payment, sent straight to CompanyTreasuryV9 (`proposePayment(2, UNRIG, 0, Account 3, 1e18)`), bypassing the site | Arbiscan, Write Contract, simulated | **Rejected by the contract:** `execution reverted: CT: over 5% of the bucket this term`. MetaMask's own pre-flight simulation failed the same way and refused to estimate a fee. |
+
+The third row is the one that matters: an attacker wouldn't use the site, and the contract refused
+on its own. Not sent as a transaction (a simulation reverts identically and costs nothing), so
+there is no transaction hash; anyone can repeat the simulation on
+[Arbiscan](https://arbiscan.io/address/0xD2107dEE7EA2E8038F7778f63Cf6Eee659dB1F29#writeContract).
+
 ## What this shows (so far)
 
 - **In a listing one person fully owns, the rules can't protect anyone, because there's nobody
