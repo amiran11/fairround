@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Wallet, ShieldCheck, Coins, Gavel, Check, Lock, KeyRound } from "lucide-react";
+import { ExternalLink, Wallet, ShieldCheck, Coins, Gavel, Check, Lock, KeyRound, Vault } from "lucide-react";
 import PageArt from "../components/PageArt.jsx";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
@@ -43,7 +43,7 @@ export default function Citizen() {
         {stats && <p className="muted num">{t("{n} investors have joined, of {max} places.", { n: int(stats.citizenCount), max: int(stats.maxCitizens) })}</p>}
       </div>
       <PageArt
-        Icon={Wallet}
+        Icon={Vault}
         chips={[{ Icon: Lock, text: t("Nothing is taken") }, { Icon: KeyRound, text: t("Your keys stay with you") }]}
         card={{ tag: t("What it costs"), title: t("Gas only: a fraction of a cent"), lines: [t("0.0083 ETH is checked, never moved."), t("1,000 UNRIG test credits, with no value.")] }}
       />
