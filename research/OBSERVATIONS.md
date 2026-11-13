@@ -242,6 +242,6 @@ illustration from the home page was also added to the investor, portfolio and ma
 with two safety cues and a short card (PR #41).
 
 **What this can and cannot show:** one invited reader with a dashboard background, so it says
-what a first-time viewer with that eye noticed, not how common the problem is. Together with the
-first tester (25 Oct) and account G (10 Nov), all three people who looked closely got stuck before
-or at the first step, never later in the flow.
+what a first-time viewer with that eye noticed, not how common the problem is. Like the first
+tester (25 Oct) and account G (10 Nov), his points are about understanding the flow before starting
+it, not about the contracts.
