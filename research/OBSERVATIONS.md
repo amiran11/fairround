@@ -218,3 +218,30 @@ reported accurate findings from browsing the site but never verified a wallet.
 
 **Result of the prediction:** all three parts held. One prediction about one account; it shows
 the method works, not how accurate the founder's reads are in general.
+
+---
+
+## 2026-11-10 — Second invited tester: too much text, no picture of the destination
+
+*Consent to describe this anonymously given on 13 Nov 2026.*
+
+**Setting:** a workforce-management colleague of the founder, asked for feedback over chat. He
+looked at the site on his phone; no wallet was connected.
+
+**Observation:** two points.
+
+1. **"Become an investor" was text-heavy.** Four steps explained in paragraphs; he suggested
+   visuals so the flow can be grasped at a glance.
+2. **The empty portfolio gave no idea what it becomes.** He suggested showing an example
+   portfolio, so a newcomer sees the destination before starting.
+
+**Response:** shipped the same evening, together with account G's two fixes (PR #38, merged
+10 Nov): four step cards with icons on the investor page, and a dashed card on the empty
+portfolio labelled "Example · not a real holding" with made-up numbers. On 10 Nov the orbit
+illustration from the home page was also added to the investor, portfolio and market pages, each
+with two safety cues and a short card (PR #41).
+
+**What this can and cannot show:** one invited reader with a dashboard background, so it says
+what a first-time viewer with that eye noticed, not how common the problem is. Together with the
+first tester (25 Oct) and account G (10 Nov), all three people who looked closely got stuck before
+or at the first step, never later in the flow.

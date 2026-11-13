@@ -42,7 +42,8 @@ handles, avatars and follower counts are removed. The founder replied to one mes
 pitch run to its end, without misrepresenting himself, promising payment or accepting any offer.
 
 **Invited testers.** Testers invited in person are described anonymously, and only with their
-written consent. Consent from the first tester (25 October 2026) has been requested.
+written consent. Consent from the first tester (25 October 2026) has been requested; the second
+(10 November 2026) gave consent on 13 November 2026.
 
 **Researcher's role.** The founder designed the system, operates it and analyses it. This conflict
 of interest is disclosed: the hypotheses were pre-registered before any data were collected, every
