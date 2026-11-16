@@ -15,6 +15,7 @@ export const WHERE = {
   countVotes: "#s-election",
   proposal: "?tab=proposals#s-treasury",
   carryOut: "?tab=proposals#s-treasury",
+  convert: "?tab=proposals#s-treasury",
   dividendVote: "?tab=dividends#s-treasury",
   dividend: "?tab=dividends#s-treasury",
   auctionClaim: "?tab=proposals#s-treasury",
@@ -24,7 +25,7 @@ export const WHERE = {
 // anyone can do to move a listing along.
 export const ORDER = {
   acceptKey: 0, reveal: 1, recall: 2, elect: 3, nominate: 4, proposal: 5, dividendVote: 6,
-  dividend: 7, auctionClaim: 8, countVotes: 9, openVoting: 10, carryOut: 11, startElection: 12,
+  dividend: 7, convert: 7, auctionClaim: 8, countVotes: 9, openVoting: 10, carryOut: 11, startElection: 12,
 };
 
 export function useTodoText() {
@@ -42,6 +43,7 @@ export function useTodoText() {
       countVotes: t("The vote has ended. Count the votes to name the project lead: anyone can."),
       proposal: tn("Vote on proposal {id} with {n} unit.", "Vote on proposal {id} with {n} units.", n, { id: item.proposal?.toString() }),
       carryOut: t("Holders approved proposal {id} and its waiting period is over. Carry it out: anyone can.", { id: item.proposal?.toString() }),
+      convert: t("Proposal {id} paid this wallet in UNRIG. Only you can turn it into vUNRIG, the record that holders voted it out.", { id: item.proposal?.toString() }),
       dividendVote: tn("Vote on the dividend for term {term} with {n} unit.", "Vote on the dividend for term {term} with {n} units.", n, { term: item.term }),
       dividend: t("Claim a {amount} UNRIG dividend for term {term}.", { amount: fmt(item.amount ?? 0n, 18, 4), term: item.term }),
       auctionClaim: item.won ? t("Claim what you won on proposal {id}.", { id: item.proposal?.toString() }) : t("Claim back your bid and deposit from proposal {id}.", { id: item.proposal?.toString() }),
@@ -63,6 +65,7 @@ export function useTodoTitle() {
     countVotes: t("Count the votes in {name}", { name }),
     proposal: t("Vote on a proposal in {name}", { name }),
     carryOut: t("Carry out an approved proposal in {name}", { name }),
+    convert: t("Convert your payment from {name} to vUNRIG", { name }),
     dividendVote: t("Vote on {name}'s dividend", { name }),
     dividend: t("Claim your dividend from {name}", { name }),
     auctionClaim: t("Claim from {name}'s sale", { name }),

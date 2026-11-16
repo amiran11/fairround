@@ -4,8 +4,9 @@ import { getInvestBalance, getClaimEligibility } from "../web3.js";
 import { ORDER } from "./todo.jsx";
 import {
   ZERO, getCompanies, getBids, getShareCount, getMyShares, getElection, getProposals, getDividendTerms, getRecall,
-  governancePhase,
+  governancePhase, getConvertible,
 } from "./chain.js";
+import { CONTRACT_ADDRESSES } from "../web3.js";
 
 const EXECUTION_DELAY = 5 * 86400; // CompanyTreasuryV9.EXECUTION_DELAY
 const same = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
@@ -70,6 +71,11 @@ export async function loadPortfolio(address, provider) {
       if (p.status === "Voting" && p.passes && g.active && Number(p.voteEnd) + EXECUTION_DELAY <= t && (p.kind === "Payment" || p.kind === "Sale")
         && (shares > 0n || proposer || same(p.to, address))) {
         todo.push({ kind: "carryOut", company: c, proposal: p.id });
+      }
+      // A paid UNRIG payment to this wallet that can still become vUNRIG.
+      if (p.kind === "Payment" && p.status === "Paid" && same(p.to, address) && same(p.token?.address, CONTRACT_ADDRESSES.InvestToken)) {
+        const cv = await getConvertible(p.id, address, provider).catch(() => null);
+        if (cv && cv.amount > 0n && same(cv.account, address)) todo.push({ kind: "convert", company: c, proposal: p.id, amount: cv.amount });
       }
       if (p.auction && p.mine) {
         const revealing = Number(p.auction.commitEnd) <= t && Number(p.auction.revealEnd) > t;
