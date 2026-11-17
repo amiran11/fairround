@@ -1,5 +1,6 @@
 // The guide under the header: always the one next thing to do, from
 // connecting a wallet to holding units, with a single button that goes there.
+import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Check } from "lucide-react";
 import { useT } from "../i18n.jsx";
@@ -25,8 +26,19 @@ export default function NextStep() {
   const bidRound = useCountdown(p?.bid ? (auctionPhase(p.bid) === "cooldown" ? p.bid.roundStart : p.bid.roundEnd) : 0);
   // Once a wallet holds units, the guide follows its listings: elections,
   // votes and approved proposals waiting for it (same list as the portfolio).
-  const holds = !!p?.held;
-  const [todo] = useChain((prov) => (V9_LIVE && holds && address ? loadPortfolio(address, prov).then((d) => d.todo) : Promise.resolve(null)), [address, holds]);
+  // Load the portfolio for any connected wallet: an operating key or a lead
+  // may hold no units and need no verification, but still has tasks.
+  const [port, , reloadPort] = useChain((prov) => (V9_LIVE && address ? loadPortfolio(address, prov) : Promise.resolve(null)), [address]);
+  const { version } = useSession();
+  // Right after a transaction the node can still return the old state:
+  // read again a few seconds later so the guide doesn't lag one step behind.
+  useEffect(() => {
+    if (!version) return undefined;
+    const id = setTimeout(() => reloadPort(), 6000);
+    return () => clearTimeout(id);
+  }, [version]); // eslint-disable-line react-hooks/exhaustive-deps
+  const todo = port?.todo || null;
+  const roles = port?.roles || [];
   const first = todo && todo[0];
   const todoClose = useCountdown(first?.until ? first.until : 0);
   const todoText = useTodoText();
@@ -42,6 +54,18 @@ export default function NextStep() {
     action = <Button small busy={connecting} onClick={connect} className="btn-wallet"><LockIcon open />{t("Connect wallet")}</Button>;
   } else if (!account) {
     return null; // reading the wallet's state
+  } else if (first && (!account.isVerified || !account.alreadyClaimed || !p?.held)) {
+    // A task for this wallet (e.g. accept the operating key, carry out a
+    // payment) comes before the investor steps, which a key doesn't need.
+    step = 5; holderTask = true;
+    title = todoTitle(first, label(first.company));
+    body = [todoText(first), first.until && !todoClose.passed ? t("Closes in {time}.", { time: todoClose.label }) : null].filter(Boolean).join(" ");
+    action = { to: `/company/${first.company.id}${WHERE[first.kind]}`, text: t("Go there") };
+  } else if (!account.isVerified && roles.some((r) => r.role === "key")) {
+    const r = roles.find((x) => x.role === "key");
+    step = 5; title = t("Operating key of {name}", { name: label(r.company) });
+    body = t("This wallet acts for the project lead. It doesn't need to verify, claim or hold units; its proposals appear under the listing's project lead tools.");
+    action = { to: `/company/${r.company.id}`, text: t("Open {name}", { name: label(r.company) }) };
   } else if (!account.isVerified) {
     step = 2; title = t("Verify your wallet");
     body = t("One transaction checks that the wallet holds 0.0083 ETH. Nothing is taken.");
@@ -61,7 +85,7 @@ export default function NextStep() {
     action = { to: `/company/${first.company.id}${WHERE[first.kind]}`, text: t("Go there") };
   } else if (p.held) {
     step = 5; title = t("You hold units in {name}", { name: label(p.held) });
-    body = t("They're yours on-chain. When half a listing is sold, holders elect its project lead: watch for your vote.");
+    body = t("They're yours on-chain. Elections, votes and payouts that need you will show up here.");
     action = { to: "/portfolio", text: t("Open your portfolio") };
   } else if (p.bid) {
     step = 5; title = t("Your bid on {name} is in", { name: label(p.bid) });

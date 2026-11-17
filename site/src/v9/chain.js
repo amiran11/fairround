@@ -423,3 +423,35 @@ export async function getMyProgress(address, provider) {
   const suggest = [...open].sort(byPref).find((c) => auctionPhase(c) === "bidding") || [...open].sort(byPref)[0] || null;
   return { bid: rows.find((c) => c.hasBid) || null, held: rows.find((c) => c.units > 0n) || null, suggest };
 }
+
+
+// vUNRIG: an executed UNRIG payment's recipient (or a sale's winner) burns
+// that UNRIG and receives the same amount of vUNRIG. Approval is for the
+// exact amount, never unlimited, because the contract burns what it holds.
+const VUNRIG_ABI = [
+  "function convertible(uint256) view returns (address account, uint256 amount)",
+  "function convertedFrom(uint256) view returns (uint256)",
+  "function convertPayment(uint256 proposalId, uint256 amount)",
+  "function balanceOf(address) view returns (uint256)",
+];
+async function vunrig(r) {
+  const { Contract } = await getEthers();
+  return new Contract(CONTRACT_ADDRESSES.VotedUnrig, VUNRIG_ABI, r);
+}
+export async function getConvertible(proposalId, me, provider) {
+  if (!CONTRACT_ADDRESSES.VotedUnrig) return null;
+  const v = await vunrig(provider);
+  const [[account, amount], done, balance] = await Promise.all([v.convertible(proposalId), v.convertedFrom(proposalId), me ? v.balanceOf(me) : 0n]);
+  return { account, amount, done, balance };
+}
+export async function convertPayment(signer, proposalId, amount) {
+  const { Contract } = await getEthers();
+  const v = await vunrig(signer);
+  const it = new Contract(CONTRACT_ADDRESSES.InvestToken, ["function allowance(address,address) view returns (uint256)", "function approve(address,uint256) returns (bool)"], signer);
+  const owner = await signer.getAddress();
+  if ((await it.allowance(owner, CONTRACT_ADDRESSES.VotedUnrig)) < amount) {
+    const tx = await it.approve(CONTRACT_ADDRESSES.VotedUnrig, amount);
+    await tx.wait();
+  }
+  return tracked(sendTx(v, "convertPayment", proposalId, amount), "convert_vunrig");
+}

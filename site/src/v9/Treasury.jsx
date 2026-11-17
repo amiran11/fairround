@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Copy } from "lucide-react";
 import { useT } from "../i18n.jsx";
 import { useSession } from "../session.jsx";
-import { normalizeAddress, parseAmount } from "../web3.js";
+import { normalizeAddress, parseAmount, CONTRACT_ADDRESSES } from "../web3.js";
 import {
   ZERO, CAPITAL, INCOME, getHoldings, getTokens, getProposals, getRules, getDividendTerms, getCorporateHoldings,
-  depositToken, proposePayment, proposeSale, proposeInvest, voteProposal, executePayment, executeInvest, startAuction,
+  depositToken, proposePayment, proposeSale, proposeInvest, voteProposal, executePayment, executeInvest, startAuction, getConvertible, convertPayment,
   commitBid, revealBid, settleAuction, claimAuction, getSavedBid, parseRevealCode, revealCode,
   openPolicyVote, votePolicy, resolvePolicyVote, claimDividend, claimDividendAsCorporation, closeTerm, governancePhase,
 } from "./chain.js";
@@ -199,7 +199,7 @@ function ProposalItem({ p, companies, gov, delay }) {
           <p className="small muted num">
             {voting ? <><Left to={p.voteEnd} label="Voting closes in {time}" />.</> : !termLive ? t("The term ended before this was carried out, so it is void.") : due ? t("Voting has closed.") : t("Voting has closed. It can be carried out from {date}, after the 5-day wait.", { date: fmtDate(dueAt, lang) })}
             {" "}{t("Yes {y}, no {n}. Yes votes needed: {q} ({pct} of {eligible} units).", { y: int(p.yes), n: int(p.no), q: int(needed), pct: `${Number(p.quorumBps) / 100}%`, eligible: int(p.eligible) })}
-            {" "}<span style={{ color: p.passes ? "var(--ok)" : "var(--danger)" }}>{p.passes ? t("It would pass now.") : t("It would fail now.")}</span>
+            {" "}<span style={{ color: p.passes ? "var(--ok)" : "var(--danger)" }}>{voting ? (p.passes ? t("It would pass now.") : t("It would fail now.")) : (p.passes ? t("Passed.") : t("Failed."))}</span>
           </p>
           {signer && voting && !p.voted && p.myWeight > 0n && !proposer && !same(address, p.to) && (
             <div className="row-tight">
@@ -220,8 +220,40 @@ function ProposalItem({ p, companies, gov, delay }) {
       )}
       {p.kind === "Sale" && (p.status === "Auction" || p.status === "Settled") && p.auction && <SaleAuction p={p} />}
       {statusText && <p className="small muted">{statusText}</p>}
+      {p.kind === "Payment" && p.status === "Paid" && same(p.token?.address, CONTRACT_ADDRESSES.InvestToken) && <ConvertBox p={p} />}
       <ErrorLine error={tx.error} />
     </li>
+  );
+}
+
+// After a UNRIG payment is carried out, its recipient can turn it into
+// vUNRIG: the UNRIG is burned and the same amount of vUNRIG is minted,
+// a public record that holders voted this money out.
+function ConvertBox({ p }) {
+  const { t } = useT();
+  const { signer, address, me } = useSession();
+  const tx = useTx();
+  const [c] = useChain((prov) => getConvertible(p.id, me, prov), [p.id, me]);
+  if (!c) return null;
+  const mine = same(address, c.account);
+  const amt = fmt(c.amount, 18, 4);
+  if (c.amount === 0n) {
+    return c.done > 0n ? <p className="small muted">{t("{n} UNRIG from this payment became vUNRIG.", { n: fmt(c.done, 18, 4) })}</p> : null;
+  }
+  return (
+    <div className="convert-box stack-sm">
+      <p className="small">
+        <span className="strong">{t("Can become vUNRIG")}</span>{" "}
+        {t("{n} UNRIG from this voted payment can be turned into vUNRIG by its recipient. The UNRIG is burned; the same amount of vUNRIG is created.", { n: amt })}
+      </p>
+      {signer && mine ? (
+        <div className="row-tight">
+          <Button busy={tx.busy} onClick={() => tx.run(() => convertPayment(signer, p.id, c.amount))}>{t("Convert {n} UNRIG to vUNRIG", { n: amt })}</Button>
+          <Muted small>{t("Two confirmations: allow this amount, then convert.")}</Muted>
+        </div>
+      ) : <Muted small>{t("Only the recipient's wallet can do this.")}</Muted>}
+      <ErrorLine error={tx.error} />
+    </div>
   );
 }
 
