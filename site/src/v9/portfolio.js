@@ -4,7 +4,7 @@ import { getInvestBalance, getClaimEligibility } from "../web3.js";
 import { ORDER } from "./todo.jsx";
 import {
   ZERO, getCompanies, getBids, getShareCount, getMyShares, getElection, getProposals, getDividendTerms, getRecall,
-  governancePhase, getConvertible,
+  governancePhase, getConvertible, getVunrigBalance,
 } from "./chain.js";
 import { CONTRACT_ADDRESSES } from "../web3.js";
 
@@ -13,8 +13,9 @@ const same = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
 export async function loadPortfolio(address, provider) {
   const t = Math.floor(Date.now() / 1000);
-  const [companies, invest, elig, tokens] = await Promise.all([
+  const [companies, invest, elig, tokens, vunrig] = await Promise.all([
     getCompanies(provider), getInvestBalance(address, provider), getClaimEligibility(address, provider), getMyShares(address, provider),
+    getVunrigBalance(address, provider).catch(() => 0n),
   ]);
   const holdings = [];
   const bids = [];
@@ -93,5 +94,5 @@ export async function loadPortfolio(address, provider) {
 
   todo.sort((a, b) => ORDER[a.kind] - ORDER[b.kind] || Number(a.until || 0) - Number(b.until || 0));
   holdings.sort((a, b) => (b.shares > a.shares ? 1 : b.shares < a.shares ? -1 : 0));
-  return { address, invest, isVerified: elig.isVerified, claimed: elig.alreadyClaimed, holdings, bids, roles, todo, listed, companies };
+  return { address, invest, vunrig, isVerified: elig.isVerified, claimed: elig.alreadyClaimed, holdings, bids, roles, todo, listed, companies };
 }

@@ -444,6 +444,10 @@ export async function getConvertible(proposalId, me, provider) {
   const [[account, amount], done, balance] = await Promise.all([v.convertible(proposalId), v.convertedFrom(proposalId), me ? v.balanceOf(me) : 0n]);
   return { account, amount, done, balance };
 }
+export async function getVunrigBalance(address, provider) {
+  if (!CONTRACT_ADDRESSES.VotedUnrig) return 0n;
+  return (await vunrig(provider)).balanceOf(address);
+}
 export async function convertPayment(signer, proposalId, amount) {
   const { Contract } = await getEthers();
   const v = await vunrig(signer);

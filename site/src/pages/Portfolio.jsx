@@ -230,6 +230,7 @@ export default function Portfolio() {
         <>
           <dl className="facts" style={{ margin: "40px 0 8px" }}>
             <div><dt>UNRIG</dt><dd>{fmt(data.invest)}</dd></div>
+            {data.vunrig > 0n && <div><dt title={t("Voted UNRIG: UNRIG paid out by a project's vote and converted")}>vUNRIG</dt><dd>{fmt(data.vunrig)}</dd></div>}
             <div><dt>{t("Units")}</dt><dd>{tn("{n} unit", "{n} units", shareTotal)} {t("in {n} projects", { n: data.holdings.length })}</dd></div>
             <div><dt>{t("Open bids")}</dt><dd>{int(data.bids.length)}</dd></div>
             <div><dt>{t("Investor")}</dt><dd>{data.claimed ? t("Yes, claimed") : data.isVerified ? t("Verified, not claimed yet") : t("No")}</dd></div>
