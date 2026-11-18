@@ -47,8 +47,8 @@ the recipient can't vote on a payment to itself, and only the operating key can 
 | 7 | **Execute the vUNRIG timelock step** (owner action, scheduled 31 Oct, executed 2 Nov). | 48-hour public delay on every owner action. | **Holds:** visible two days ahead. | scheduled `0xb3c35b75…3b3f`; executed `0xba68df561600b84fca624b6ec19a61a9cf36dd7a5cc87d6881a4514b1458cfc5` |
 | 8 | **Propose a payment of about 148 UNRIG to Account 3.** | At most 5% of the capital per 30-day term; recipient can't be the lead or the key. | **Holds as a brake:** 148 of about 2,967 UNRIG. | 10 Nov: proposal 0, 148 UNRIG to Account 3, `0xfc079c7bfee…` (Account 4) |
 | 9 | **Account 2 votes yes; vote ends after 3 days.** (The lead, the key and the recipient cannot vote, so Account 2's 3 units are the whole vote.) | Quorum 20% of eligible units; lead's units excluded. | None: the founder is the only other holder. | vote opened with the proposal 10 Nov ~20:31; Account 2 voted yes 10 Nov `0x8727f305b4e…`; **closed 13 Nov 20:31: passed, yes 3, no 0** (2 needed, 20% of 6 eligible units) |
-| 10 | **Wait 5 days, then carry out the payment.** | 5-day delay so holders can recall the lead first. | **Would hold** in a listing with independent holders; useless here. | can be carried out from **18 Nov, 20:31** |
-| 11 | **Account 3 converts: burns the UNRIG, receives vUNRIG.** | Only the payment's recipient, only once, only up to its amount, only listings of 9+ units. | **Holds:** nobody else can convert this payment. | _to fill_ |
+| 10 | **Wait 5 days, then carry out the payment.** | 5-day delay so holders can recall the lead first. | **Would hold** in a listing with independent holders; useless here. | carried out **18 Nov** by Account 3: `0x018edc660e…` (block 525383338); 148 UNRIG to Account 3 |
+| 11 | **Account 3 converts: burns the UNRIG, receives vUNRIG.** | Only the payment's recipient, only once, only up to its amount, only listings of 9+ units. | **Holds:** nobody else can convert this payment. | **18 Nov:** approve exactly 148 UNRIG `0x564216c2d9…`; convert `0x7ecf95dc52f…` (block 525383859, sent through MetaMask's delegation contract because the wallet's optional "added protection" was on). **148 vUNRIG minted: the first in existence.** |
 
 ## Attempts to break the rules (10 Nov 2026)
 
@@ -65,6 +65,20 @@ The third row is the one that matters: an attacker wouldn't use the site, and th
 on its own. Not sent as a transaction (a simulation reverts identically and costs nothing), so
 there is no transaction hash; anyone can repeat the simulation on
 [Arbiscan](https://arbiscan.io/address/0xD2107dEE7EA2E8038F7778f63Cf6Eee659dB1F29#writeContract).
+
+## The first vUNRIG (18 Nov 2026)
+
+The cycle closed 18 days after the bid: units bought (1 Nov), lead elected (10 Nov), payment
+proposed (10 Nov), voted 3–0 (closed 13 Nov), carried out after the 5-day wait (18 Nov), and
+converted the same evening. Total supply of vUNRIG: 148, all in Account 3. Gas for the whole cycle
+was a few dollars' worth of ETH; the waiting periods, not the fees, set the pace.
+
+**Wallet warning.** MetaMask labels vUNRIG "Malicious" ("Suspicious code", "Resembles malicious
+contract"), while reporting no hidden fees. vUNRIG is a plain ERC-20 without an owner or admin
+functions, and its source is verified. The likely trigger is the burn: conversion pulls the
+approved UNRIG and sends it to the dead address, the same shape as a wallet drainer's transfer, and
+the token's name contains another token's name. Reported to MetaMask as a false positive on 18 Nov
+(ticket "vUNRIG False Malicious"). A later version could burn UNRIG natively instead of by transfer.
 
 ## What this shows (so far)
 
