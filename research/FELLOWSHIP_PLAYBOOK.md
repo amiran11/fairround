@@ -80,6 +80,11 @@ approved UNRIG and sends it to the dead address, the same shape as a wallet drai
 the token's name contains another token's name. Reported to MetaMask as a false positive on 18 Nov
 (ticket "vUNRIG False Malicious"). A later version could burn UNRIG natively instead of by transfer.
 
+**Outcome.** MetaMask's safety team forwarded the report to Blockaid, the scanner behind the label,
+the same evening. On **20 Nov 2026** Blockaid marked the vUNRIG address as benign; MetaMask said the
+warning should clear within 24 hours. From report to review: about two days. The lesson for the
+next version stands: a native burn avoids the drainer-like pattern altogether.
+
 ## What this shows (so far)
 
 - **In a listing one person fully owns, the rules can't protect anyone, because there's nobody
